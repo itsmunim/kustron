@@ -1,0 +1,13 @@
+# Generates a google managed certificate which
+# can be attached with ingress. Please check the ingress.yml
+# for further details.
+apiVersion: networking.gke.io/v1beta1
+kind: ManagedCertificate
+metadata:
+  name: cert
+spec:
+  domains:
+    # The domain for your dev project service, should
+    # be added here.
+    # Example:
+    # - dev.sso.com

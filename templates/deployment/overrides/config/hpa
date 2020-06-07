@@ -1,0 +1,25 @@
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hpa
+spec:
+  # Override autoscaling policy for your project ie. dev, stg, prd
+  # etc. Check base/config/hpa.yml for values that can be overriden.
+  #
+  # A sample override:
+  #
+  # minReplicas: 5
+  # maxReplicas: 25
+  # metrics:
+  #   - type: Resource
+  #     resource:
+  #       name: cpu
+  #       target:
+  #         type: Utilization
+  #         averageUtilization: 60
+  #   - type: Resource
+  #     resource:
+  #       name: memory
+  #       target:
+  #         type: Utilization
+  #         averageUtilization: 65

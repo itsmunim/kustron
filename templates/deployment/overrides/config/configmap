@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap
+data:
+  # The dev project specific env var overrides or
+  # any new non-sensitive env vars should be added
+  # here.
+  # Example:
+  # NODE_ENV: dev
