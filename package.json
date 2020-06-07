@@ -1,0 +1,36 @@
+{
+  "name": "kustron",
+  "version": "1.0.0",
+  "description": "kustomize based kubernetes manifest generator for your services with GKE friendly pipeline commands",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/dibosh/kustron.git"
+  },
+  "keywords": [
+    "kustomize",
+    "kubernetes",
+    "k8s",
+    "gke",
+    "manifest",
+    "config",
+    "service",
+    "app",
+    "golang",
+    "java",
+    "nodejs",
+    "python"
+  ],
+  "author": "Munim Dibosh",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dibosh/kustron/issues"
+  },
+  "homepage": "https://github.com/dibosh/kustron#readme",
+  "dependencies": {
+    "handlebars": "^4.7.6"
+  }
+}
