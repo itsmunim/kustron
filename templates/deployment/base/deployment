@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 25%
+  template:
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: container
+          envFrom:
+            - configMapRef:
+                name: configmap
+
+          # This is where the envs loaded
+          # from secrets should be defined
+          # like the sample below. Envs from
+          # secrets should be used when the
+          # env vars are sensitive like third
+          # party access token, api key etc.
+          # ----------------------------------
+          # env:
+          #  - name: CACHE_HOST
+          #    valueFrom:
+          #      secretKeyRef:
+          #        name: cache
+          #        key: host
+          # -------------------------------
+
+          # IMAGE_PLACEHOLDER will be replaced
+          # by dynamic docker image name with
+          # tag by proper `make` command.
+          image: IMAGE_PLACEHOLDER
+          resources:
+            limits:
+              memory: {{app.memorylimit}}
+              cpu: {{app.cpulimit}}
+            requests:
+              memory: {{app.initialmemory}}
+              cpu: {{app.initialcpu}}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{app.port}}
+          {{#if app.healthcheck}}
+          readinessProbe:
+            httpGet:
+              path: {{app.healthcheck}}
+              port: {{app.port}}
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            successThreshold: 1
+          {{/if}}

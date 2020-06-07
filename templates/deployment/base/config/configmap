@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap
+data:
+  # The environment vars that will be available
+  # to your service container. Normally non-sensitive
+  # env vars should be defined here and in project
+  # specific(i.e. dev, stg etc.) configmaps.
+  # Example:
+  # PORT: 3090
+  # ANOTHER_SERVICE_URL: http://servicename.namespace

@@ -1,0 +1,10 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress
+  annotations:
+    kubernetes.io/ingress.allow-http: "{{app.allowhttp}}"
+spec:
+  backend:
+    serviceName: {{app.name}}-service
+    servicePort: {{app.port}}
