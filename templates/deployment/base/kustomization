@@ -2,11 +2,11 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: {{#if app.namespace}}{{app.namespace}}{{else}}{{app.name}}{{/if}}
 commonLabels:
-  app: {{app.name}}
+  app.kubernetes.io/name: {{app.name}}
 namePrefix: {{app.name}}-
 resources:
 - deployment.yml
 - ingress.yml
 - service.yml
-- config/autoscaling.yml
+- config/hpa.yml
 - config/configmap.yml
