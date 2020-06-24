@@ -10,3 +10,4 @@ resources:
 patchesStrategicMerge:
   - ingress.yml
   - config/configmap.yml
+  - config/hpa.yml
