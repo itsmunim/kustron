@@ -1,6 +1,6 @@
 {
   "name": "kustron",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "kustomize based kubernetes manifest generator for your services with GKE friendly pipeline commands",
   "main": "bin/cli.js",
   "bin": {
