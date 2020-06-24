@@ -4,7 +4,7 @@
   "description": "kustomize based kubernetes manifest generator for your services with GKE friendly pipeline commands",
   "main": "bin/cli.js",
   "bin": {
-    "kustron": "./bin/kustron"
+    "kustron": "./bin/kustron.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
