@@ -1,35 +1,36 @@
 const inquiries = [
   {
     name: 'name',
-    message: `Name of your application:`,
+    message: `Application Name:`,
   },
   {
     name: 'namespace',
-    message: `Namespace messages to isolate kubernetes resources for your application;
-    if not given, name will be used as default:`,
+    message: `Namespace(If not given application name will be used):`,
   },
   {
     name: 'port',
-    message: `The service port. e.g. 8080`,
+    type: 'number',
+    message: `Service Port:`,
+    default: 8080,
+    validate: isValidPort,
+    filter: replaceNaN(8080),
   },
   {
     name: 'healthcheck',
-    message: `The healthcheck path. Needed to define readiness probe- it should just return 200
-      when hit. e.g. '/health'. Readiness probe informs ingress to know when your service is
-      ready to serve.`,
+    message: `Healthcheck Path:`,
+    default: '/health',
   },
   {
     type: 'list',
     name: 'language',
-    message: `In which language your app is written? A respective dockerfile will also be generated:`,
+    message: `Application Language(will generate respective dockerfile):`,
     choices: ['java', 'nodejs', 'golang'],
     default: 'java',
   },
   {
     type: 'list',
     name: 'exposed',
-    message: `Denotes if the app should be exposed publicly. Based on this a proper service setup
-    will be done and ingress will be defined:`,
+    message: `Is Public(ingress will be created if the service or app is public)?:`,
     choices: ['yes', 'no'],
     default: 'no',
     filter: replaceWithBoolean,
@@ -37,7 +38,7 @@ const inquiries = [
   {
     type: 'list',
     name: 'allowhttp',
-    message: `If exposed is true, then this one defines if http is allowed or only https is:`,
+    message: `Allow Http(if exposed was YES, this value should be provided; default is NO)?:`,
     choices: ['yes', 'no'],
     default: 'no',
     filter: replaceWithBoolean,
@@ -45,8 +46,7 @@ const inquiries = [
   {
     type: 'list',
     name: 'enableautoscale',
-    message: `Should enable autoscaling of pods or not. If set, then 'minreplicas' and 'maxreplicas'
-     should be provided:`,
+    message: `Enable Autoscaling?:`,
     choices: ['yes', 'no'],
     default: 'no',
     filter: replaceWithBoolean,
@@ -54,71 +54,99 @@ const inquiries = [
   {
     type: 'number',
     name: 'minreplicas',
-    message: `Minimum number of service pods:`,
+    message: `Min Num of Pods(effective only if autoscaling has been turned on):`,
     default: 2,
+    filter: replaceNaN(2),
   },
   {
     type: 'number',
     name: 'maxreplicas',
-    message: `Max number of service pods:`,
+    message: `Max Num of Pods(effective only if autoscaling has been turned on):`,
     default: 20,
+    filter: replaceNaN(20),
   },
   {
     type: 'number',
     name: 'cputhreshold',
-    message: `HPA to decide when to increase number of pods based on cpu usage of each pod:`,
+    message: `Max CPU Usage(per pod, if usage is more; autoscaling kicks in):`,
     default: 75,
+    filter: replaceNaN(75),
   },
   {
     type: 'number',
     name: 'memthreshold',
-    message: `HPA to decide when to increase number of pods based on memory usage of each pod:`,
+    message: `Max Memory Usage(per pod, if usage is more; autoscaling kicks in):`,
     default: 70,
+    filter: replaceNaN(70),
   },
   {
     name: 'cpulimit',
-    message: `The cpu limit for each pod in a scale where 1 vCPU = 1000m:`,
+    message: `CPU Limit(per pod, in 1 vCPU = 1000m format):`,
     default: '500m',
     validate: isValidCPU,
   },
   {
     name: 'initialcpu',
-    message: `The initial cpu amount for each pod in a scale where 1 vCPU = 1000m:`,
+    message: `Initial CPU(per pod, in 1 vCPU = 1000m format):`,
     default: '150m',
     validate: isValidCPU,
   },
   {
     name: 'memorylimit',
-    message: `The highest memory limit for each pod either in Gi(GB) or Mi(MB):`,
+    message: `Memory Limit(per pod, in Gi[GB] or Mi[MB]):`,
     default: '1Gi',
     validate: isValidMem,
   },
   {
     name: 'initialmemory',
-    message: `The initial memory amount for each pod either in Gi(GB) or Mi(MB):`,
+    message: `Initial Memory(per pod, in Gi[GB] or Mi[MB]):`,
     default: '512Mi',
     validate: isValidMem,
   },
 ];
 
+function isValidPort(input) {
+  return validate(
+    input,
+    /[\d]{4}/,
+    'Has to be of this format: 8080, 9091, 4200 etc.'
+  );
+}
+
 function isValidCPU(input) {
-  const isValid = /[\d]+m/.test(input);
-  if (!isValid) {
-    throw new Error('Has to be of this format: 100m, 150m, 200m etc.');
-  }
-  return isValid;
+  return validate(
+    input,
+    /[\d]+m/,
+    'Has to be of this format: 100m, 150m, 200m etc.'
+  );
 }
 
 function isValidMem(input) {
-  const isValid = /[\d]+Mi|Gi/.test(input);
-  if (!isValid) {
-    throw new Error('Has to be of this format: 100Mi, 500Mi, 2Gi etc.');
-  }
-  return isValid;
+  return validate(
+    input,
+    /[\d]+Mi|Gi/,
+    'Has to be of this format: 100Mi, 500Mi, 2Gi etc.'
+  );
 }
 
 function replaceWithBoolean(input) {
   return input === 'yes';
+}
+
+function replaceNaN(defaultVal) {
+  return (input) => {
+    return Number.isNaN(input) ? defaultVal : input;
+  };
+}
+
+function validate(value, regex, errMsg) {
+  const isValid = regex.test(value);
+
+  if (!isValid) {
+    throw new Error(errMsg);
+  }
+
+  return isValid;
 }
 
 module.exports = inquiries;
