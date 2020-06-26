@@ -31,3 +31,6 @@ app.log
 builds
 cache
 tmp
+
+# ignore test generated files
+/deployment/
