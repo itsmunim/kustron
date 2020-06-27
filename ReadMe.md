@@ -1,3 +1,6 @@
+![downloads](https://img.shields.io/npm/dm/kustron?style=flat-square)
+![version](https://img.shields.io/npm/v/kustron?color=green&style=flat-square)
+
 <p align="center">
   <a href="https://github.com/dibosh/kustron">
     <img alt="Kustron" title="Kustron" src="https://i.imgur.com/Nndv5Vv.png" width="300">
