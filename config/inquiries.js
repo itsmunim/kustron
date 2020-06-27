@@ -17,16 +17,23 @@ const inquiries = [
   },
   {
     name: 'healthcheck',
-    message: `Healthcheck Path:`,
+    message: `Healthcheck Path(default is /health):`,
     default: '/health',
   },
   {
     type: 'list',
     name: 'language',
     message: `Application Language(will generate respective dockerfile):`,
-    choices: ['java', 'nodejs', 'golang'],
-    default: 'java',
+    choices: ['java(with maven)', 'nodejs', 'go'],
+    default: 'java(with maven)',
+    filter: function (input) {
+      if (input.startsWith('java')) {
+        return 'java';
+      }
+      return input;
+    },
   },
+  // app - expose public or private?
   {
     type: 'list',
     name: 'exposed',
@@ -38,11 +45,15 @@ const inquiries = [
   {
     type: 'list',
     name: 'allowhttp',
-    message: `Allow Http(if exposed was YES, this value should be provided; default is NO)?:`,
+    message: `Allow Http(default is NO)?:`,
     choices: ['yes', 'no'],
     default: 'no',
     filter: replaceWithBoolean,
+    when: function (answers) {
+      return answers.exposed;
+    },
   },
+  // app - autoscaling setup
   {
     type: 'list',
     name: 'enableautoscale',
@@ -54,16 +65,22 @@ const inquiries = [
   {
     type: 'number',
     name: 'minreplicas',
-    message: `Min Num of Pods(effective only if autoscaling has been turned on):`,
+    message: `Min Num of Pods:`,
     default: 2,
     filter: replaceNaN(2),
+    when: function (answers) {
+      return answers.enableautoscale;
+    },
   },
   {
     type: 'number',
     name: 'maxreplicas',
-    message: `Max Num of Pods(effective only if autoscaling has been turned on):`,
+    message: `Max Num of Pods:`,
     default: 20,
     filter: replaceNaN(20),
+    when: function (answers) {
+      return Boolean(answers.enableautoscale);
+    },
   },
   {
     type: 'number',
@@ -71,6 +88,9 @@ const inquiries = [
     message: `Max CPU Usage(per pod, if usage is more; autoscaling kicks in):`,
     default: 75,
     filter: replaceNaN(75),
+    when: function (answers) {
+      return Boolean(answers.enableautoscale);
+    },
   },
   {
     type: 'number',
@@ -78,7 +98,11 @@ const inquiries = [
     message: `Max Memory Usage(per pod, if usage is more; autoscaling kicks in):`,
     default: 70,
     filter: replaceNaN(70),
+    when: function (answers) {
+      return Boolean(answers.enableautoscale);
+    },
   },
+  // app - resource limits
   {
     name: 'cpulimit',
     message: `CPU Limit(per pod, in 1 vCPU = 1000m format):`,
@@ -102,6 +126,23 @@ const inquiries = [
     message: `Initial Memory(per pod, in Gi[GB] or Mi[MB]):`,
     default: '512Mi',
     validate: isValidMem,
+  },
+  // app - ci/cd
+  {
+    type: 'list',
+    name: 'generatepipeline',
+    message: `Generate Pipeline(only gitlab and deployment into GCP is supported)?:`,
+    choices: ['yes', 'no'],
+    default: 'no',
+    filter: replaceWithBoolean,
+  },
+  {
+    type: 'string',
+    name: 'pipelineconfigpath',
+    message: `Pipeline config json file path:`,
+    when: function (answers) {
+      return answers.generatepipeline;
+    },
   },
 ];
 
