@@ -1,0 +1,92 @@
+# This gitlab pipeline is GCP(https://cloud.google.com/) driven- 
+# more providers will come in future.
+image: gcr.io/cloud-builders/kubectl
+
+services:
+  - docker:18.09.9-dind
+
+# Make sure to assign proper values to following variables(except DOCKER_HOST),
+# to make this pipeline work. DOCKER_IMAGE_HOST is assigned the value that is 
+# for google cloud registry. For other providers this also has to be changed.
+#
+# {ENV}_CLUSTER_LOC_TYPE can either be 'zone' or 'region'
+# {ENV}_CLUSTER_LOC should be the location like 'asia-southeast1'
+variables:
+  DOCKER_IMAGE_HOST: https://gcr.io
+  DOCKER_HOST: tcp://localhost:2375
+  # dev
+  DEV_GCP_PROJECT: ""
+  DEV_CLUSTER: ""
+  DEV_CLUSTER_LOC_TYPE: ""
+  DEV_CLUSTER_LOC: ""
+  # stg
+  STG_GCP_PROJECT: ""
+  STG_CLUSTER: ""
+  STG_CLUSTER_LOC_TYPE: ""
+  STG_CLUSTER_LOC: ""
+  # prd
+  PRD_GCP_PROJECT: ""
+  PRD_CLUSTER: ""
+  PRD_CLUSTER_LOC_TYPE: ""
+  PRD_CLUSTER_LOC: ""
+
+stages:
+  - deploy_dev
+  - deploy_stg
+  - deploy_prd
+
+.install_deps: &install_deps |
+  # download & install kustomize
+  apt-get update && apt-get install -y make docker.io
+  curl -sLO https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv3.5.4/kustomize_v3.5.4_linux_amd64.tar.gz
+  tar zxvf kustomize_v3.5.4_linux_amd64.tar.gz && mv ./kustomize /usr/bin
+
+deploy_dev:
+  stage: deploy_dev
+  script:
+    - *install_deps
+    # Configure
+    - make configure cluster=${DEV_CLUSTER} project=${DEV_GCP_PROJECT} location="--${DEV_CLUSTER_LOC_TYPE} ${DEV_CLUSTER_LOC}" env=dev img_registry_host=${DOCKER_IMAGE_HOST}
+    # Publish the image to docker registry
+    - make publish_dev img_path=gcr.io/${DEV_GCP_PROJECT}/{{app.name}}
+    # Deploy to dev cluster
+    - make install_dev img_path=gcr.io/${DEV_GCP_PROJECT}/{{app.name}}
+  only:
+    refs:
+      - master
+      - merge_requests
+
+deploy_stg:
+  stage: deploy_stg
+  when: manual
+  dependencies:
+    - deploy_dev
+  script:
+    - *install_deps
+    # Configure
+    - make configure cluster=${STG_CLUSTER} project=${STG_GCP_PROJECT} location="--${STG_CLUSTER_LOC_TYPE} ${STG_CLUSTER_LOC}" env=stg img_registry_host=${DOCKER_IMAGE_HOST}
+    # Publish the image to docker registry
+    - make publish_dev img_path=gcr.io/${STG_GCP_PROJECT}/{{app.name}}
+    # Deploy to stg cluster
+    - make install_dev img_path=gcr.io/${STG_GCP_PROJECT}/{{app.name}}
+  only:
+    refs:
+      - master
+
+deploy_prd:
+  stage: deploy_prd
+  dependencies:
+    - deploy_stg
+  script:
+    - *install_deps
+    # Configure
+    - make configure cluster=${PRD_CLUSTER} project=${PRD_GCP_PROJECT} location="--${PRD_CLUSTER_LOC_TYPE} ${PRD_CLUSTER_LOC}" env=prd img_registry_host=${DOCKER_IMAGE_HOST}
+    # Publish the image to docker registry
+    - make publish_dev img_path=gcr.io/${PRD_GCP_PROJECT}/{{app.name}}
+    # Deploy to prd cluster
+    - make install_dev img_path=gcr.io/${PRD_GCP_PROJECT}/{{app.name}}
+
+  # After proper test cycles, when a production release is ensured, a final tag
+  # is attached to the repo- which triggers this production deployment.
+  only:
+    - /v\d+\.\d+\.\d+/
