@@ -135,15 +135,7 @@ const inquiries = [
     choices: ['yes', 'no'],
     default: 'no',
     filter: replaceWithBoolean,
-  },
-  {
-    type: 'string',
-    name: 'pipelineconfigpath',
-    message: `Pipeline config json file path:`,
-    when: function (answers) {
-      return answers.generatepipeline;
-    },
-  },
+  }
 ];
 
 function isValidPort(input) {
