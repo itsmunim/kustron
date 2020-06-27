@@ -14,6 +14,7 @@
 - [Features](#features)
 - [Usage](#usage)
 - [Structure](#structure)
+- [CI/CD Pipeline](#ci/cd-pipeline)
 - [Feedback](#feedback)
 
 ## Introduction
