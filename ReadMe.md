@@ -14,7 +14,7 @@
 - [Features](#features)
 - [Usage](#usage)
 - [Structure](#structure)
-- [CI/CD Pipeline](#ci/cd-pipeline)
+- [Release Flow](#release-flow)
 - [Feedback](#feedback)
 
 ## Introduction
@@ -87,7 +87,7 @@ A few of the things `kustron` can do for you:
 
 - The goal is to get you started with your manifestation with a full fledged CI/CD- even though right now only GCP specific suffs are available, you can easily tweak this to add providers like AWS or Azure. `kustron` will be enriched with those options in future releases
 
-## CI/CD Pipeline
+## Release Flow
 
 The default generated gitlab pipeline respects the following release flow-
 
