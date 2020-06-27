@@ -24,11 +24,15 @@ If you have started moving your services to `kubernetes` cluster and was looking
 
 ## Features
 
-A few of the things `kustron` does for you:
+A few of the things `kustron` can do for you:
 
-* Generates k8s manifests with different env specific overrides
-* Generates `dockerfile` for your specific stack; currently supported- `java spring boot`, `golang` and `nodejs`
-* Generates a `Makefile` with helper commands that you can utilise in your CI/CD pipelines
+* Generate k8s manifests with different env specific overrides
+
+* Generate `dockerfile` for your specific stack; currently supported- `java with maven`, `golang` and `nodejs`(more language options will be added soon)
+
+* Generate a `Makefile` with helper commands that you can utilise in your CI/CD pipelines
+
+* Generate a gitlab pipeline with GCP integration format(more cloud providers and other pipeline runners will be available in near future)
 
 ## Usage
 
@@ -36,11 +40,13 @@ A few of the things `kustron` does for you:
 
 - In your service source dir, you can run this- `kustron -g` e.g. `cd projects/checkout-service && kustron -g`
 
-- It will ask you a few questions regarding your app/service
+- It will ask you a few questions regarding your app/service; the questions are pretty straight-forward and self-explanatory
 
 - Once you have provided all the answers, a `deployment` folder will be generated with all the necessary files
 
-- A `dockerfile` and `Makefile` will also be generated at the project root
+- A `dockerfile` will also be generated at the project root
+
+- If you have chosen the option to generate pipeline, it will also generate a `Makefile` and `gitlab` pipeline for you
 
 - You can also do- `kustron -g -p /absolute/path/of/your/service/folder` to generate all the mentioned files and folders in the path you specified. e.g. `kustron -g /users/lbm/projects/gaan-recorder/`
 
@@ -76,7 +82,18 @@ A few of the things `kustron` does for you:
 
 - Adding another `env` override should be as simple as creating a dir under `overrides` and copying the files from any of the existing `env` and doing necessary amendments
 
-- The goal is to get you started with your manifestation- but be mindful that whatever the modifications or additions you made, double check the `Makefile` to verify, if you have to make any amendments there too- in most of the cases, you won't need
+- If you have asked `kustron` to generate pipeline as well, it will generate a `Makefile` as well as a `.gitlab-ci.yml` file(right now only gitlab pipeline with GCP integration is supported, more options with different providers will come in future)
+
+- The goal is to get you started with your manifestation with a full fledged CI/CD- even though right now only GCP specific suffs are available, you can easily tweak this to add providers like AWS or Azure. `kustron` will be enriched with those options in future releases
+
+## CI/CD Pipeline
+
+The default generated gitlab pipeline respects the following release flow-
+
+<p align="center">
+  <img alt="kustron release flow" title="kustron release flow"
+  src="https://i.imgur.com/gsKDi0a.jpg" width="500">
+</p>
 
 ## Feedback
 
