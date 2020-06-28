@@ -10,5 +10,7 @@ resources:
 - ingress.yml
 {{/if}}
 - service.yml
+{{#if app.enableautoscale}}
 - config/hpa.yml
+{{/if}}
 - config/configmap.yml

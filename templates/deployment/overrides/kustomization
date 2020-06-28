@@ -19,4 +19,6 @@ bases:
   # - ingress.yml
   {{/if}}
   # - config/configmap.yml
+  {{#if app.enableautoscale}}
   # - config/hpa.yml
+  {{/if}}
