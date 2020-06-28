@@ -6,7 +6,9 @@ commonLabels:
 namePrefix: {{app.name}}-
 resources:
 - deployment.yml
+{{#if app.exposed}}
 - ingress.yml
+{{/if}}
 - service.yml
 - config/hpa.yml
 - config/configmap.yml

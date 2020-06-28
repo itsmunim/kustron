@@ -4,10 +4,19 @@ kind: Kustomization
 bases:
   - ../../base
 
-resources:
-  - config/cert.yml
+# Uncomment the following if you have defined a
+# google managed cert in config for this env.
 
-patchesStrategicMerge:
-  - ingress.yml
-  - config/configmap.yml
-  - config/hpa.yml
+# resources:
+  # - config/cert.yml
+
+# Uncomment the following if you have made changes
+# to any of the commented out files. Also, make sure to
+# uncomment only the files you have modified.
+
+# patchesStrategicMerge:
+  {{#if app.exposed}}
+  # - ingress.yml
+  {{/if}}
+  # - config/configmap.yml
+  # - config/hpa.yml
