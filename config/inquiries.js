@@ -92,13 +92,13 @@ const inquiries = [
   // app - resource limits
   {
     name: 'cpulimit',
-    message: `CPU Limit(per pod, in 1 vCPU = 1000m format):`,
+    message: `CPU Limit(per pod, in 1000m = 1vCPU format):`,
     default: '500m',
     validate: isValidCPU,
   },
   {
     name: 'initialcpu',
-    message: `Initial CPU(per pod, in 1 vCPU = 1000m format):`,
+    message: `CPU Request(per pod, in 1000m = 1vCPU format):`,
     default: '150m',
     validate: isValidCPU,
   },
@@ -110,7 +110,7 @@ const inquiries = [
   },
   {
     name: 'initialmemory',
-    message: `Initial Memory(per pod, in Gi[GB] or Mi[MB]):`,
+    message: `Memory Request(per pod, in Gi[GB] or Mi[MB]):`,
     default: '512Mi',
     validate: isValidMem,
   },
@@ -122,7 +122,7 @@ const inquiries = [
     choices: ['yes', 'no'],
     default: 'no',
     filter: replaceWithBoolean,
-  }
+  },
 ];
 
 function isValidPort(input) {
