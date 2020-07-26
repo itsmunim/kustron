@@ -20,19 +20,6 @@ const inquiries = [
     message: `Healthcheck Path(default is /health):`,
     default: '/health',
   },
-  {
-    type: 'list',
-    name: 'language',
-    message: `Application Language(will generate respective dockerfile):`,
-    choices: ['java(with maven)', 'nodejs', 'go'],
-    default: 'java(with maven)',
-    filter: function (input) {
-      if (input.startsWith('java')) {
-        return 'java';
-      }
-      return input;
-    },
-  },
   // app - expose public or private?
   {
     type: 'list',

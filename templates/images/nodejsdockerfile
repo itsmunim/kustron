@@ -1,9 +1,0 @@
-FROM node:lts-alpine3.9
-EXPOSE {{app.port}}
-
-ENV APP_HOME /{{app.name}}
-RUN mkdir -p $APP_HOME
-WORKDIR $APP_HOME
-COPY . .
-RUN npm ci --production
-CMD ["npm", "start"]
