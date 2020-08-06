@@ -1,4 +1,5 @@
-![downloads](https://img.shields.io/npm/dm/kustron?style=flat-square)
+![downloads](https://img.shields.io/npm/dy/kustron?style=flat-square)
+![downloads](https://img.shields.io/npm/dw/kustron?style=flat-square)
 ![version](https://img.shields.io/npm/v/kustron?color=green&style=flat-square)
 
 <p align="center">
