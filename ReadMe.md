@@ -49,7 +49,7 @@ A few of the things `kustron` can do for you:
 
 - It will ask you a few questions regarding your application; the questions are pretty straight-forward and self-explanatory
 
-- Once you have provided all the answers, a `deployment` folder will be generated with all the necessary files
+- Once you have provided all the answers, a `k8s` folder will be generated with all the necessary files
 
 - If you have chosen the option to generate pipeline, it will also generate a `Makefile` and `gitlab` pipeline for you
 
@@ -59,10 +59,10 @@ A few of the things `kustron` can do for you:
 
 ## Next Steps
 
-- The generated `deployment` folder will have following structure
+- The generated `k8s` folder will have following structure
 
 ```
-- deployment
+- k8s
   - base
     - config
       - configmap.yml
