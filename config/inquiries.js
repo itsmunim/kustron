@@ -40,6 +40,32 @@ const inquiries = [
       return answers.exposed;
     },
   },
+
+  // app - resource limits
+  {
+    name: 'cpulimit',
+    message: `CPU Limit(per pod, in 1000m = 1vCPU format):`,
+    default: '500m',
+    validate: isValidCPU,
+  },
+  {
+    name: 'initialcpu',
+    message: `CPU Request(per pod, in 1000m = 1vCPU format):`,
+    default: '150m',
+    validate: isValidCPU,
+  },
+  {
+    name: 'memorylimit',
+    message: `Memory Limit(per pod, in Gi[GB] or Mi[MB]):`,
+    default: '1Gi',
+    validate: isValidMem,
+  },
+  {
+    name: 'initialmemory',
+    message: `Memory Request(per pod, in Gi[GB] or Mi[MB]):`,
+    default: '512Mi',
+    validate: isValidMem,
+  },
   // app - autoscaling setup
   {
     type: 'list',
@@ -72,7 +98,7 @@ const inquiries = [
   {
     type: 'number',
     name: 'cputhreshold',
-    message: `Max CPU Usage(per pod, if usage is more; autoscaling kicks in):`,
+    message: `Max CPU Usage % of Limit(per pod, if usage is more; autoscaling kicks in):`,
     default: 75,
     filter: replaceNaN(75),
     when: function (answers) {
@@ -82,37 +108,12 @@ const inquiries = [
   {
     type: 'number',
     name: 'memthreshold',
-    message: `Max Memory Usage(per pod, if usage is more; autoscaling kicks in):`,
+    message: `Max Memory Usage % of Limit(per pod, if usage is more; autoscaling kicks in):`,
     default: 70,
     filter: replaceNaN(70),
     when: function (answers) {
       return Boolean(answers.enableautoscale);
     },
-  },
-  // app - resource limits
-  {
-    name: 'cpulimit',
-    message: `CPU Limit(per pod, in 1000m = 1vCPU format):`,
-    default: '500m',
-    validate: isValidCPU,
-  },
-  {
-    name: 'initialcpu',
-    message: `CPU Request(per pod, in 1000m = 1vCPU format):`,
-    default: '150m',
-    validate: isValidCPU,
-  },
-  {
-    name: 'memorylimit',
-    message: `Memory Limit(per pod, in Gi[GB] or Mi[MB]):`,
-    default: '1Gi',
-    validate: isValidMem,
-  },
-  {
-    name: 'initialmemory',
-    message: `Memory Request(per pod, in Gi[GB] or Mi[MB]):`,
-    default: '512Mi',
-    validate: isValidMem,
   },
   // app - ci/cd
   {
