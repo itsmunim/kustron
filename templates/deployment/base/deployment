@@ -45,7 +45,8 @@ spec:
               cpu: {{app.initialcpu}}
           imagePullPolicy: Always
           ports:
-            - containerPort: {{app.port}}
+            - name: http-web
+              containerPort: {{app.port}}
           {{#if app.healthcheck}}
           readinessProbe:
             httpGet:
