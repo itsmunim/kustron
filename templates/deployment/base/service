@@ -7,7 +7,5 @@ spec:
   type: NodePort
   {{/if}}
   ports:
-    - name: http
-      port: 80
-      protocol: TCP
-      targetPort: {{app.port}}
+    - port: 80
+      targetPort: http-web
