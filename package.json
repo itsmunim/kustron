@@ -42,6 +42,7 @@
     "commander": "^5.1.0",
     "figlet": "^1.4.0",
     "handlebars": "^4.7.6",
-    "inquirer": "^7.1.0"
+    "inquirer": "^7.1.0",
+    "js-yaml": "^3.14.0"
   }
 }
