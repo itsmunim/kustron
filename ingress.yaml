@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: format-webapp-ingress
+  annotations:
+    kubernetes.io/ingress.allow-http: "false"
+    kubernetes.io/ingress.global-static-ip-name: ingress-ip-dev-aj7x
+    networking.gke.io/managed-certificates: format-webapp-dev-cert
+spec:
+  tls:
+  - secretName: first-secret-name
+  rules:
+  - http:
+      paths:
+      - path: /
+        backend:
+          serviceName: my-products
+          servicePort: 60000
+      - path: /discounted
+        backend:
+          serviceName: my-discounted-products
+          servicePort: 80
