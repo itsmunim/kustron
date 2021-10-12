@@ -1,0 +1,131 @@
+#
+# This is an application definition that can be used with `kube-app`, to
+# deploy your service into GKE.
+#
+
+#
+# Name of the application. Will be used for naming all resources. e.g. deployment, service etc.
+#
+name: myservice
+#
+# Define a namespace to deploy the service into, if not provided a namespace will
+# be auto-created with name: `myservice`.
+#
+namespace: default
+
+#
+# Service port.
+#
+port: 8080
+
+#
+# Healthcheck for the application. Needed by different probes like liveness and readiness.
+#
+healthCheck:
+  #
+  # Type can be either `http` or `tcp`. Default is `http`. If `tcp`, the `path` will be ignored,
+  # and the probes will simply try to establish a socket connection to relevant port.
+  #
+  type: http
+  path: /health
+  #
+  # Define a different port if health check is in a different port than the
+  # service port itself.
+  #
+  # port: 8080
+
+#
+# Default autoscaling setup; can be overriden in deployment targets.
+#
+autoScaling:
+  min: 1
+  max: 3
+#
+# Requested resource per instance of the application.
+#
+resourcePerInstance:
+  cpu: 0.1 # cpu it requests for, 1 means 1 whole vCPU
+  memory: 128 # memory it requests for in MB
+#
+# Common env variables. Can be different in different deployment targets.
+# The common and target specific ones(if any) will be merged together.
+#
+env:
+  MAX_RETRIES: 5
+
+#
+# Any credentials that should be protected as secret, can be bundled in one or multiple secrets.
+# But the secret has to have keys the same way your application would expect it to be injected
+# into environment.
+#
+# Example:
+# 
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: db-credentials
+# type: Opaque
+# data:
+#   MYSQL_USER: YWRtaW4=
+#   MYSQL_PASSWORD: MWYyZDFlMmU2N2Rm
+# 
+# Application will get `MYSQL_USER` & `MYSQL_PASSWORD` available in the environment. In different
+# deployment targets e.g. development, production etc., you must maintain the same secret names.
+#
+# The secrets have to be pre-created in the same namespace where this application is deployed.
+# Secrets: https://kubernetes.io/docs/tasks/configmap-secret/managing-secret-using-config-file/
+#
+secrets:
+ - db-credentials
+
+#
+# If the application should be exposed publicly using a GKE ingress. If not provided,
+# the application will remain internally accessible at {app-name}.{namespace}.svc.cluster.local
+#
+expose:
+  #
+  # A reserved global static IP. If not provided, the ingress will reserve an IP,
+  # but it will not be static. Next time the ingress is recreated, that IP
+  # will be gone.
+  #
+  globalIPName: myservice-ip
+  #
+  # If not provided, `allowHttp` is considered as true, and providing cert is optional.
+  #
+  allowHttp: false
+  #
+  # A TLS secret name.
+  # Here's how to create one: https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets
+  #
+  cert: TLS_CERT_NAME
+  #
+  # In which path, this application will be served. If not provided, `/` will be used.
+  #
+  path: /myservice
+
+#
+# If you have different deployment setup for production, development etc., you should
+# use `targets` to specify `target` specific overrides.
+#
+targets:
+  - name: staging
+    env:
+      MAX_RETRIES: 1
+    autoScaling:
+      min: 1
+      max: 5
+    resourcePerInstance:
+      cpu: 0.5
+      memory: 512
+    expose:
+      globalIPName: myservice-staging-ip
+
+  - name: production
+    env:
+      MAX_RETRIES: 9
+      SECRET_VAL: secrets.SECRET_NAME
+    resourcePerInstance:
+      cpu: 0.7
+      memory: 1024
+    expose:
+      globalIPName: myservice-production-ip
