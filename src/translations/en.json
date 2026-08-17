@@ -1,6 +1,7 @@
 {
   "cli": {
     "description": "A CLI tool that gives anyone a fully working local Kubernetes setup in minutes",
+    "initEnvDescription": "Check and auto-install missing dependencies",
     "clusterDescription": "Manage the local k3d cluster",
     "upDescription": "Spin up k3d + local registry + set kubectl context",
     "downDescription": "Tear down the cluster",
@@ -15,6 +16,7 @@
     "exposeOption": "Expose via NodePort",
     "nsOption": "Target namespace",
     "keepSourceOption": "Keep cloned repo (only for git sources)",
+    "healthcheckOption": "HTTP health check path (e.g. /health)",
     "cpuRequestOption": "CPU request",
     "cpuLimitOption": "CPU limit",
     "memoryRequestOption": "Memory request",
@@ -88,6 +90,21 @@
     "deploymentCreated": "Deployment '{{name}}' created",
     "serviceCreated": "Service '{{name}}' created",
     "hpaCreated": "HPA '{{name}}' created"
+  },
+  "initEnv": {
+    "checking": "Checking dependencies...",
+    "alreadyInstalled": "{{name}} is already installed",
+    "installing": "Installing {{name}}...",
+    "installed": "{{name}} installed successfully",
+    "failed": "Failed to install {{name}}",
+    "manualInstall": "Please install {{name}} manually: {{hint}}",
+    "summaryHeader": "Installation summary",
+    "newlyInstalled": "Installed {{count}} tool(s): {{names}}",
+    "requiredFailed": "Required tools failed to install: {{names}}",
+    "optionalFailed": "Optional tools failed to install: {{names}}",
+    "allInstalled": "All dependencies are installed and ready!",
+    "pathWarning": "{{dir}} is not in your PATH. Add it to your shell profile.",
+    "pathReminder": "Add {{dir}} to your PATH to use the installed tools: export PATH=\"{{dir}}:$PATH\""
   },
   "checks": {
     "header": "Checking dependencies...",
