@@ -2,33 +2,39 @@ import { getClusterInfo } from '../../core/cluster.js'
 import { getCurrentContext } from '../../core/context.js'
 import { exec } from '../../utils/exec.js'
 import { info, warn } from '../../utils/logger.js'
+import { t } from '../../utils/i18n.js'
 import chalk from 'chalk'
 
-const DEFAULT_CLUSTER_NAME = 'kustron-k3d'
+const DEFAULT_CLUSTER_NAME = 'kustron'
 
 export async function clusterStatus(): Promise<void> {
   const cluster = await getClusterInfo()
 
   if (!cluster) {
-    warn(`Cluster '${DEFAULT_CLUSTER_NAME}' is not running.`)
+    warn(t('cluster.status.notRunning', { name: DEFAULT_CLUSTER_NAME }))
     return
   }
 
   console.log()
-  console.log(chalk.bold(`Cluster: ${cluster.name}`))
+  console.log(chalk.bold(t('cluster.status.header', { name: cluster.name })))
   console.log(
-    `Nodes: ${cluster.serversRunning}/${cluster.serversCount} servers, ${cluster.agentsRunning}/${cluster.agentsCount} agents`,
+    t('cluster.status.nodes', {
+      serversRunning: String(cluster.serversRunning),
+      serversCount: String(cluster.serversCount),
+      agentsRunning: String(cluster.agentsRunning),
+      agentsCount: String(cluster.agentsCount),
+    }),
   )
 
   const context = await getCurrentContext()
   if (context) {
-    console.log(`Kubectl context: ${context}`)
+    console.log(t('cluster.status.context', { context }))
   } else {
-    console.log('Kubectl context: none set')
+    console.log(t('cluster.status.noContext'))
   }
 
   console.log()
-  info('Deployed apps:')
+  info(t('cluster.status.appsHeader'))
 
   try {
     const { stdout } = await exec('kubectl', [
@@ -41,12 +47,12 @@ export async function clusterStatus(): Promise<void> {
     ])
 
     if (stdout.trim()) {
-      console.log(chalk.bold('NAMESPACE  NAME  READY  REPLICAS'))
+      console.log(chalk.bold(t('cluster.status.tableHeader')))
       console.log(stdout)
     } else {
-      console.log('  (none)')
+      console.log(t('cluster.status.appsNone'))
     }
   } catch {
-    console.log('  (unable to fetch deployments)')
+    console.log(t('cluster.status.appsError'))
   }
 }

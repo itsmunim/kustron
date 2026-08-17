@@ -1,6 +1,6 @@
 import { exec } from '../utils/exec.js'
 
-const DEFAULT_CLUSTER_NAME = 'kustron-k3d'
+const DEFAULT_CLUSTER_NAME = 'kustron'
 
 export async function importKubeconfig(clusterName?: string): Promise<void> {
   const name = clusterName ?? DEFAULT_CLUSTER_NAME

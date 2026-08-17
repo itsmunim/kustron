@@ -1,9 +1,30 @@
 {
   "cli": {
-    "description": "A CLI tool that gives anyone a fully working local Kubernetes setup in minutes"
+    "description": "A CLI tool that gives anyone a fully working local Kubernetes setup in minutes",
+    "clusterDescription": "Manage the local k3d cluster",
+    "upDescription": "Spin up k3d + local registry + set kubectl context",
+    "downDescription": "Tear down the cluster",
+    "statusDescription": "Show cluster info + deployed apps",
+    "deployDescription": "Deploy an app from a local source directory",
+    "verboseOption": "stream all shell command output",
+    "nameOption": "App name",
+    "portOption": "Container port",
+    "replicasOption": "Number of replicas",
+    "haOption": "Enable horizontal pod autoscaling",
+    "envOption": "Environment variables (KEY=VALUE)",
+    "exposeOption": "Expose via NodePort",
+    "nsOption": "Target namespace",
+    "keepSourceOption": "Keep cloned repo (only for git sources)",
+    "cpuRequestOption": "CPU request",
+    "cpuLimitOption": "CPU limit",
+    "memoryRequestOption": "Memory request",
+    "memoryLimitOption": "Memory limit"
   },
   "cluster": {
     "up": {
+      "creating": "Creating cluster {{name}}...",
+      "importingKubeconfig": "Importing kubeconfig...",
+      "settingContext": "Setting kubectl context...",
       "success": "Cluster '{{name}}' is up and running!",
       "nextSteps": [
         "Run 'kubectl get nodes' to verify",
@@ -21,22 +42,66 @@
       "noRegistry": "Registry: not configured",
       "context": "Kubectl context: {{context}}",
       "noContext": "Kubectl context: none set",
-      "appsHeader": "Deployed apps:"
+      "appsHeader": "Deployed apps:",
+      "appsNone": "  (none)",
+      "tableHeader": "NAMESPACE  NAME  READY  REPLICAS",
+      "notRunning": "Cluster '{{name}}' is not running."
     }
   },
+  "deploy": {
+    "resolvingSource": "Resolving source...",
+    "checkingCluster": "Checking cluster...",
+    "detectingStrategy": "Detecting build strategy...",
+    "strategyDockerfile": "Dockerfile found — using Docker build",
+    "strategyRailpack": "No Dockerfile — using Railpack",
+    "building": "Building image {{tag}}...",
+    "pushing": "Pushing image to local registry...",
+    "generatingManifests": "Generating Kubernetes manifests...",
+    "applyingManifests": "Applying manifests...",
+    "waitingRollout": "Waiting for rollout...",
+    "success": "App '{{name}}' deployed successfully!",
+    "successExposed": "App '{{name}}' deployed and exposed on port {{port}}",
+    "nextSteps": [
+      "Run 'kubectl get pods -n {{namespace}}' to check status",
+      "Run 'kubectl logs -n {{namespace}} deployment/{{name}}' for logs"
+    ],
+    "sourceNotFound": "Source path '{{path}}' not found.",
+    "invalidGitUrl": "Invalid Git URL: '{{url}}'",
+    "clusterNotUp": "Run 'kustron cluster up' first",
+    "missingRequiredOptions": "Missing required options: {{options}}"
+  },
+  "build": {
+    "dockerfileFound": "Dockerfile found",
+    "dockerfileNotFound": "No Dockerfile found",
+    "dockerBuild": "Building with Docker...",
+    "railpackBuild": "Building with Railpack...",
+    "imageTagged": "Tagged: {{tag}}",
+    "imagePush": "Pushing {{tag}}..."
+  },
+  "manifest": {
+    "namespaceCreated": "Namespace '{{name}}' created",
+    "deploymentCreated": "Deployment '{{name}}' created",
+    "serviceCreated": "Service '{{name}}' created",
+    "hpaCreated": "HPA '{{name}}' created"
+  },
   "checks": {
-    "header": "Dependency check",
-    "required": "Required",
-    "optional": "Optional",
-    "missing": "Missing",
+    "header": "Checking dependencies...",
+    "dependencyColumn": "Dependency",
+    "statusColumn": "Status",
+    "installHintColumn": "Install hint",
+    "divider": "-",
     "installed": "Installed",
-    "installHint": "Install: {{hint}}",
-    "error": "Missing required dependencies. Please install them and try again."
+    "missingRequired": "Missing ✖",
+    "missingOptional": "Missing ⚠",
+    "allRequiredInstalled": "All required dependencies are installed.",
+    "missingRequiredError": "Missing required dependencies. Please install them and try again.",
+    "optionalMissing": "Optional dependencies missing: {{deps}}. Some features may be unavailable."
   },
   "errors": {
     "commandFailed": "Command failed: {{command}}\n{{message}}",
     "clusterNotUp": "Run 'kustron cluster up' first",
-    "registryUnreachable": "Check /etc/hosts for k3d-kustron-registry",
-    "dockerNotRunning": "Docker does not appear to be running. Start Docker/OrbStack and try again."
+    "dockerNotRunning": "Docker does not appear to be running. Start Docker/OrbStack and try again.",
+    "unknownError": "Unknown error",
+    "registryUnreachable": "Check /etc/hosts for k3d-kustron-registry"
   }
 }

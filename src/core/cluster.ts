@@ -1,7 +1,7 @@
 import { exec } from '../utils/exec.js'
 import type { ClusterInfo } from '../types/index.js'
 
-const DEFAULT_CLUSTER_NAME = 'kustron-k3d'
+const DEFAULT_CLUSTER_NAME = 'kustron'
 const DEFAULT_AGENTS = 2
 const REGISTRY_NAME = 'kustron-registry'
 const REGISTRY_PORT = 5000

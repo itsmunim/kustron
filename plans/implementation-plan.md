@@ -99,7 +99,7 @@ src/
 5. `src/core/cluster.ts`:
    - `createCluster(opts)` — runs:
      ```
-     k3d cluster create kustron-k3d \
+     k3d cluster create kustron \
        --agents 2 \
        --registry-create kustron-registry:0.0.0.0:5000 \
        --port "8080:80@loadbalancer" \
