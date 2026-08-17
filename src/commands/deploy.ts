@@ -1,10 +1,10 @@
-import { resolveLocalSource, isGitUrl } from '../core/source.js'
+import { resolveLocalSource, isGitUrl, verifyGitAccess, resolveGitSource, cleanupSource } from '../core/source.js'
 import { detectBuildStrategy, buildImage } from '../core/build.js'
 import { tagForLocalRegistry, imageReferenceForCluster, pushImage } from '../core/push.js'
 import { buildNamespace, buildDeployment, buildService, buildHPA } from '../core/manifest.js'
 import { applyManifests, waitForRollout, getServiceNodePort } from '../core/apply.js'
 import { exec } from '../utils/exec.js'
-import { success, info, error } from '../utils/logger.js'
+import { success, info, error, warn } from '../utils/logger.js'
 import { t } from '../utils/i18n.js'
 import { Listr } from 'listr2'
 import type { DeployOptions } from '../types/index.js'
@@ -29,10 +29,12 @@ export async function deploy(source: string, options: DeployOptions): Promise<vo
       title: t('deploy.resolvingSource'),
       task: async () => {
         if (isGitUrl(source)) {
-          error(t('deploy.invalidGitUrl', { url: source }))
-          throw new Error(t('deploy.invalidGitUrl', { url: source }))
+          await verifyGitAccess(source)
+          resolvedSource = await resolveGitSource(source)
+          shouldCleanup = true
+        } else {
+          resolvedSource = await resolveLocalSource(source)
         }
-        resolvedSource = await resolveLocalSource(source)
       },
     },
     {
@@ -125,7 +127,20 @@ export async function deploy(source: string, options: DeployOptions): Promise<vo
     },
   ])
 
-  await tasks.run()
+  let shouldCleanup = false
+
+  try {
+    await tasks.run()
+  } finally {
+    if (!options.keepSource && isGitUrl(source) && shouldCleanup) {
+      info(t('deploy.cleaningUp'))
+      try {
+        await cleanupSource(resolvedSource)
+      } catch {
+        warn(t('deploy.cleanupFailed'))
+      }
+    }
+  }
 
   if (options.expose && nodePort) {
     success(t('deploy.successExposed', { name: options.name, port: nodePort }))
