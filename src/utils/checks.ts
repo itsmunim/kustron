@@ -45,6 +45,12 @@ const dependencies: Dependency[] = [
     required: false,
     installHint: 'Usually pre-installed; otherwise brew install git',
   },
+  {
+    name: 'buildkit',
+    command: 'buildctl',
+    required: false,
+    installHint: 'docker run --rm --privileged -d --name buildkit moby/buildkit',
+  },
 ]
 
 async function isInstalled(command: string): Promise<boolean> {

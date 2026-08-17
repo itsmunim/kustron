@@ -53,7 +53,7 @@ program
   .option('--env <env...>', t('cli.envOption'))
   .option('--expose', t('cli.exposeOption'))
   .option('--ns <namespace>', t('cli.nsOption'))
-  .option('--keep-source', t('cli.keepSourceOption'))
+  .option('--healthcheck <path>', t('cli.healthcheckOption'))
   .option('--cpu-request <value>', t('cli.cpuRequestOption'))
   .option('--cpu-limit <value>', t('cli.cpuLimitOption'))
   .option('--memory-request <value>', t('cli.memoryRequestOption'))
@@ -69,15 +69,18 @@ program
       }
     }
 
+    const replicas = options.ha ? parseInt(options.replicas, 10) || 2 : parseInt(options.replicas, 10)
+
     await deploy(source, {
       name: options.name,
       port: options.port,
-      replicas: parseInt(options.replicas, 10),
+      replicas,
       ha: options.ha ?? false,
       env,
       expose: options.expose ?? false,
       ns: options.ns,
       keepSource: options.keepSource ?? false,
+      healthcheck: options.healthcheck,
       cpuRequest: options.cpuRequest,
       cpuLimit: options.cpuLimit,
       memoryRequest: options.memoryRequest,
