@@ -5,7 +5,7 @@
     "upDescription": "Spin up k3d + local registry + set kubectl context",
     "downDescription": "Tear down the cluster",
     "statusDescription": "Show cluster info + deployed apps",
-    "deployDescription": "Deploy an app from a local source directory",
+    "deployDescription": "Deploy an app from a local directory or Git repository",
     "verboseOption": "stream all shell command output",
     "nameOption": "App name",
     "portOption": "Container port",
@@ -67,6 +67,9 @@
     ],
     "sourceNotFound": "Source path '{{path}}' not found.",
     "invalidGitUrl": "Invalid Git URL: '{{url}}'",
+    "gitAccessDenied": "Cannot access '{{url}}'. Please set up SSH access to your Git provider and try again.",
+    "cleaningUp": "Cleaning up temporary files...",
+    "cleanupFailed": "Failed to clean up temporary files.",
     "clusterNotUp": "Run 'kustron cluster up' first",
     "missingRequiredOptions": "Missing required options: {{options}}"
   },
