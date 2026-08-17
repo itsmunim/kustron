@@ -1,13 +1,14 @@
 import { deleteCluster } from '../../core/cluster.js'
 import { success, warn } from '../../utils/logger.js'
+import { t } from '../../utils/i18n.js'
 
-const DEFAULT_CLUSTER_NAME = 'kustron-k3d'
+const DEFAULT_CLUSTER_NAME = 'kustron'
 
 export async function clusterDown(): Promise<void> {
   try {
     await deleteCluster()
-    success(`Cluster '${DEFAULT_CLUSTER_NAME}' has been torn down.`)
+    success(t('cluster.down.success', { name: DEFAULT_CLUSTER_NAME }))
   } catch {
-    warn(`Cluster '${DEFAULT_CLUSTER_NAME}' not found. Nothing to do.`)
+    warn(t('cluster.down.notFound', { name: DEFAULT_CLUSTER_NAME }))
   }
 }

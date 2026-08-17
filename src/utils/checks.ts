@@ -1,6 +1,7 @@
 import { execa } from 'execa'
 import chalk from 'chalk'
 import { error, warn, info, success } from './logger.js'
+import { t } from './i18n.js'
 
 export interface Dependency {
   name: string
@@ -56,7 +57,7 @@ async function isInstalled(command: string): Promise<boolean> {
 }
 
 export async function runChecks(): Promise<boolean> {
-  info('Checking dependencies...')
+  info(t('checks.header'))
 
   const results = await Promise.all(
     dependencies.map(async (dep) => {
@@ -70,18 +71,18 @@ export async function runChecks(): Promise<boolean> {
 
   console.log()
   console.log(
-    `${chalk.bold('Dependency'.padEnd(maxNameLen + 2))}${chalk.bold('Status'.padEnd(maxStatusLen + 2))}${chalk.bold('Install hint')}`,
+    `${chalk.bold(t('checks.dependencyColumn').padEnd(maxNameLen + 2))}${chalk.bold(t('checks.statusColumn').padEnd(maxStatusLen + 2))}${chalk.bold(t('checks.installHintColumn'))}`,
   )
-  console.log(chalk.dim('-'.repeat(80)))
+  console.log(chalk.dim(t('checks.divider').repeat(80)))
 
   let hasMissingRequired = false
 
   for (const { dep, installed } of results) {
     const status = installed
-      ? chalk.green('Installed'.padEnd(maxStatusLen))
+      ? chalk.green(t('checks.installed').padEnd(maxStatusLen))
       : dep.required
-        ? chalk.red('Missing ✖'.padEnd(maxStatusLen))
-        : chalk.yellow('Missing ⚠'.padEnd(maxStatusLen))
+        ? chalk.red(t('checks.missingRequired').padEnd(maxStatusLen))
+        : chalk.yellow(t('checks.missingOptional').padEnd(maxStatusLen))
 
     console.log(
       `${dep.name.padEnd(maxNameLen + 2)}${status.padEnd(maxStatusLen + 2)}${chalk.dim(dep.installHint)}`,
@@ -95,18 +96,20 @@ export async function runChecks(): Promise<boolean> {
   console.log()
 
   if (hasMissingRequired) {
-    error('Missing required dependencies. Please install them and try again.')
+    error(t('checks.missingRequiredError'))
     return false
   }
 
   const missingOptional = results.filter((r) => !r.installed && !r.dep.required)
   if (missingOptional.length > 0) {
     warn(
-      `Optional dependencies missing: ${missingOptional.map((r) => r.dep.name).join(', ')}. Some features may be unavailable.`,
+      t('checks.optionalMissing', {
+        deps: missingOptional.map((r) => r.dep.name).join(', '),
+      }),
     )
   }
 
-  success('All required dependencies are installed.')
+  success(t('checks.allRequiredInstalled'))
   return true
 }
 

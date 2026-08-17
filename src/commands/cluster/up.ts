@@ -2,8 +2,9 @@ import { runChecks, checkDockerRunning } from '../../utils/checks.js'
 import { createCluster } from '../../core/cluster.js'
 import { importKubeconfig, setCurrentContext } from '../../core/context.js'
 import { info, success, error, step } from '../../utils/logger.js'
+import { t } from '../../utils/i18n.js'
 
-const DEFAULT_CLUSTER_NAME = 'kustron-k3d'
+const DEFAULT_CLUSTER_NAME = 'kustron'
 
 export async function clusterUp(): Promise<void> {
   const checksPassed = await runChecks()
@@ -13,20 +14,20 @@ export async function clusterUp(): Promise<void> {
 
   const dockerRunning = await checkDockerRunning()
   if (!dockerRunning) {
-    error('Docker does not appear to be running. Start Docker/OrbStack and try again.')
+    error(t('errors.dockerNotRunning'))
     process.exit(1)
   }
 
-  step(`Creating cluster ${DEFAULT_CLUSTER_NAME}...`)
+  step(t('cluster.up.creating', { name: DEFAULT_CLUSTER_NAME }))
   await createCluster()
 
-  step('Importing kubeconfig...')
+  step(t('cluster.up.importingKubeconfig'))
   await importKubeconfig()
 
-  step('Setting kubectl context...')
+  step(t('cluster.up.settingContext'))
   await setCurrentContext()
 
-  success(`Cluster '${DEFAULT_CLUSTER_NAME}' is up and running!`)
-  info("Run 'kubectl get nodes' to verify")
-  info("Run 'kustron deploy <source> --name <app> --port <port>' to deploy an app")
+  success(t('cluster.up.success', { name: DEFAULT_CLUSTER_NAME }))
+  info(t('cluster.up.nextSteps.0'))
+  info(t('cluster.up.nextSteps.1'))
 }
