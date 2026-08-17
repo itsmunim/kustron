@@ -53,12 +53,20 @@ export function buildDeployment(opts: ManifestOptions): string {
   }
 
   if (opts.healthcheck) {
+    container.startupProbe = {
+      httpGet: {
+        path: opts.healthcheck,
+        port: opts.port,
+      },
+      periodSeconds: 1,
+      failureThreshold: 30,
+      timeoutSeconds: 3,
+    }
     container.livenessProbe = {
       httpGet: {
         path: opts.healthcheck,
         port: opts.port,
       },
-      initialDelaySeconds: 10,
       periodSeconds: 10,
     }
     container.readinessProbe = {
@@ -66,7 +74,6 @@ export function buildDeployment(opts: ManifestOptions): string {
         path: opts.healthcheck,
         port: opts.port,
       },
-      initialDelaySeconds: 5,
       periodSeconds: 5,
     }
   }

@@ -3,6 +3,7 @@ import { clusterUp } from '../commands/cluster/up.js'
 import { clusterDown } from '../commands/cluster/down.js'
 import { clusterStatus } from '../commands/cluster/status.js'
 import { deploy } from '../commands/deploy.js'
+import { initEnv } from '../commands/init-env.js'
 import { setVerbose } from '../utils/exec.js'
 import { t } from '../utils/i18n.js'
 
@@ -18,6 +19,13 @@ program
     if (opts.verbose) {
       setVerbose(true)
     }
+  })
+
+program
+  .command('init-env')
+  .description(t('cli.initEnvDescription'))
+  .action(async () => {
+    await initEnv()
   })
 
 const cluster = program.command('cluster').description(t('cli.clusterDescription'))
