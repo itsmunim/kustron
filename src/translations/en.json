@@ -1,0 +1,42 @@
+{
+  "cli": {
+    "description": "A CLI tool that gives anyone a fully working local Kubernetes setup in minutes"
+  },
+  "cluster": {
+    "up": {
+      "success": "Cluster '{{name}}' is up and running!",
+      "nextSteps": [
+        "Run 'kubectl get nodes' to verify",
+        "Run 'kustron deploy <source> --name <app> --port <port>' to deploy an app"
+      ]
+    },
+    "down": {
+      "success": "Cluster '{{name}}' has been torn down.",
+      "notFound": "Cluster '{{name}}' not found. Nothing to do."
+    },
+    "status": {
+      "header": "Cluster: {{name}}",
+      "nodes": "Nodes: {{serversRunning}}/{{serversCount}} servers, {{agentsRunning}}/{{agentsCount}} agents",
+      "registry": "Registry: {{registry}}",
+      "noRegistry": "Registry: not configured",
+      "context": "Kubectl context: {{context}}",
+      "noContext": "Kubectl context: none set",
+      "appsHeader": "Deployed apps:"
+    }
+  },
+  "checks": {
+    "header": "Dependency check",
+    "required": "Required",
+    "optional": "Optional",
+    "missing": "Missing",
+    "installed": "Installed",
+    "installHint": "Install: {{hint}}",
+    "error": "Missing required dependencies. Please install them and try again."
+  },
+  "errors": {
+    "commandFailed": "Command failed: {{command}}\n{{message}}",
+    "clusterNotUp": "Run 'kustron cluster up' first",
+    "registryUnreachable": "Check /etc/hosts for k3d-kustron-registry",
+    "dockerNotRunning": "Docker does not appear to be running. Start Docker/OrbStack and try again."
+  }
+}

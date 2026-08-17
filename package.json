@@ -1,35 +1,33 @@
 {
   "name": "kustron",
-  "version": "1.2.3",
-  "description": "kustomize based kubernetes manifest generator for your services with GKE friendly pipeline commands",
-  "main": "bin/kustron.js",
+  "version": "2.0.0",
+  "description": "A CLI tool that gives anyone a fully working local Kubernetes setup in minutes",
+  "type": "module",
+  "main": "dist/bin/kustron.js",
   "bin": {
-    "kustron": "./bin/kustron.js"
+    "kustron": "dist/bin/kustron.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "up": "npm publish && git push --follow-tags",
-    "patch-up": "npm version patch && npm run up",
-    "minor-up": "npm version minor && npm run up",
-    "major-up": "npm version major && npm run up"
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublishOnly": "npm run build",
+    "postinstall": "node dist/scripts/postinstall.js || true",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/dibosh/kustron.git"
   },
   "keywords": [
-    "kustomize",
     "kubernetes",
     "k8s",
-    "gke",
-    "manifest",
-    "config",
-    "service",
-    "app",
-    "golang",
-    "java",
-    "nodejs",
-    "python"
+    "k3d",
+    "local",
+    "deploy",
+    "cli"
   ],
   "author": "Munim Dibosh",
   "license": "MIT",
@@ -37,11 +35,20 @@
     "url": "https://github.com/dibosh/kustron/issues"
   },
   "homepage": "https://github.com/dibosh/kustron#readme",
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
-    "chalk": "^4.0.0",
-    "commander": "^5.1.0",
-    "figlet": "^1.4.0",
-    "handlebars": "^4.7.6",
-    "inquirer": "^7.1.0"
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0",
+    "execa": "^9.5.2",
+    "js-yaml": "^4.1.0",
+    "listr2": "^8.2.5"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.13.10",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.2"
   }
 }
