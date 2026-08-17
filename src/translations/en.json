@@ -25,6 +25,7 @@
       "creating": "Creating cluster {{name}}...",
       "importingKubeconfig": "Importing kubeconfig...",
       "settingContext": "Setting kubectl context...",
+      "installingMetricsServer": "Installing metrics-server...",
       "success": "Cluster '{{name}}' is up and running!",
       "nextSteps": [
         "Run 'kubectl get nodes' to verify",
@@ -79,7 +80,8 @@
     "dockerBuild": "Building with Docker...",
     "railpackBuild": "Building with Railpack...",
     "imageTagged": "Tagged: {{tag}}",
-    "imagePush": "Pushing {{tag}}..."
+    "imagePush": "Pushing {{tag}}...",
+    "startingBuildKit": "Starting BuildKit daemon..."
   },
   "manifest": {
     "namespaceCreated": "Namespace '{{name}}' created",

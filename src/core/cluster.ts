@@ -35,6 +35,26 @@ export async function createCluster(opts?: CreateClusterOptions): Promise<void> 
   await exec('k3d', args)
 }
 
+export async function installMetricsServer(): Promise<void> {
+  await exec('kubectl', [
+    'apply',
+    '-f',
+    'https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml',
+  ])
+
+  await exec('kubectl', [
+    'patch',
+    'deployment',
+    'metrics-server',
+    '-n',
+    'kube-system',
+    '--type',
+    'json',
+    '-p',
+    '[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]',
+  ])
+}
+
 export async function deleteCluster(name?: string): Promise<void> {
   const clusterName = name ?? DEFAULT_CLUSTER_NAME
   await exec('k3d', ['cluster', 'delete', clusterName])

@@ -33,6 +33,7 @@ export interface DeployOptions {
   cpuLimit?: string
   memoryRequest?: string
   memoryLimit?: string
+  healthcheck?: string
 }
 
 export interface DependencyCheck {

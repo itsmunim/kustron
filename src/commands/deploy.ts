@@ -31,7 +31,6 @@ export async function deploy(source: string, options: DeployOptions): Promise<vo
         if (isGitUrl(source)) {
           await verifyGitAccess(source)
           resolvedSource = await resolveGitSource(source)
-          shouldCleanup = true
         } else {
           resolvedSource = await resolveLocalSource(source)
         }
@@ -77,20 +76,21 @@ export async function deploy(source: string, options: DeployOptions): Promise<vo
             namespace,
             image: clusterImage,
             port: options.port,
-            replicas: options.replicas ?? 1,
+            replicas: options.replicas,
             env: options.env ?? {},
             expose: options.expose ?? false,
             cpuRequest: options.cpuRequest,
             cpuLimit: options.cpuLimit,
             memoryRequest: options.memoryRequest,
             memoryLimit: options.memoryLimit,
+            healthcheck: options.healthcheck,
           }),
           buildService({
             name: options.name,
             namespace,
             image: clusterImage,
             port: options.port,
-            replicas: options.replicas ?? 1,
+            replicas: options.replicas,
             env: options.env ?? {},
             expose: options.expose ?? false,
             cpuRequest: options.cpuRequest,
@@ -105,7 +105,7 @@ export async function deploy(source: string, options: DeployOptions): Promise<vo
                   namespace,
                   image: clusterImage,
                   port: options.port,
-                  replicas: options.replicas ?? 1,
+                  replicas: options.replicas,
                   env: options.env ?? {},
                   expose: options.expose ?? false,
                 }),
@@ -127,12 +127,12 @@ export async function deploy(source: string, options: DeployOptions): Promise<vo
     },
   ])
 
-  let shouldCleanup = false
+  const isGit = isGitUrl(source)
 
   try {
     await tasks.run()
   } finally {
-    if (!options.keepSource && isGitUrl(source) && shouldCleanup) {
+    if (!options.keepSource && isGit) {
       info(t('deploy.cleaningUp'))
       try {
         await cleanupSource(resolvedSource)
