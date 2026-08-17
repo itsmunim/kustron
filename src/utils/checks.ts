@@ -54,12 +54,8 @@ const dependencies: Dependency[] = [
 ]
 
 async function isInstalled(command: string): Promise<boolean> {
-  try {
-    await execa('which', [command], { reject: false })
-    return true
-  } catch {
-    return false
-  }
+  const result = await execa('which', [command], { reject: false })
+  return result.exitCode === 0
 }
 
 export async function runChecks(): Promise<boolean> {
