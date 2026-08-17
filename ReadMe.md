@@ -1,6 +1,5 @@
-![downloads](https://img.shields.io/npm/dy/kustron?style=flat-square)
-![downloads](https://img.shields.io/npm/dw/kustron?style=flat-square)
 ![version](https://img.shields.io/npm/v/kustron?color=green&style=flat-square)
+![downloads](https://img.shields.io/npm/dw/kustron?style=flat-square)
 
 <p align="center">
   <a href="https://github.com/dibosh/kustron">
@@ -9,141 +8,126 @@
 </p>
 
 <p align="center">
-  Kustomize based kubernetes manifest generator. Simple but glorified!
+  Local dev environment, done in minutes.
 </p>
 
-## Table of Contents
+## What is Kustron?
 
-- [Introduction](#introduction)
-- [Features](#features)
-- [Usage](#usage)
-- [Structure](#structure)
-- [Release Flow](#release-flow)
-- [Feedback](#feedback)
+Kustron is a CLI tool that gives you a fully working local Kubernetes cluster and lets you deploy any application to it — from a local folder or a git repo — with a single command.
 
-## Introduction
+It handles everything: spinning up [k3d](https://k3d.io), configuring `kubectl`, building your container image (using your `Dockerfile` or [Railpack](https://railpack.io) as a fallback), pushing to a local registry, and deploying to the cluster. Optional HA mode adds autoscaling out of the box.
 
-If you have started moving your services to `kubernetes` cluster and was looking for a way to know how to write manifest files in a manageable and idiomatic way- `kustron` is for you. `kustron` is a simple cli tool that helps you generate manifest files for your service. `kustron` uses [kustomization](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/) for dynamic templating, to keep things simple and understandable.
+It's designed for local development or even running on a VM.
 
-**Few of the manifest files are relevant(e.g. cert.yml) only if you are using GKE, but with some basic tweaking you can make the manifests work for any provider like AWS or Azure. Eventually kustron will be extended to support all the major providers out of the box.**
+---
 
-## Features
+## Prerequisites
 
-A few of the things `kustron` can do for you:
+Kustron will check for these when you install it and tell you exactly what to do if anything is missing.
 
-* Generate k8s manifests with different env specific overrides
+### Required
 
-* Generate a `Makefile` with helper commands that you can utilise in your CI/CD pipelines
+- **Docker runtime** — [OrbStack](https://orbstack.dev) is strongly recommended over Docker Desktop. It starts in ~2 seconds, uses a fraction of the memory, and has native Apple Silicon support. Docker Desktop works too.
+- **k3d** — `brew install k3d` or see [k3d.io/installation](https://k3d.io/installation)
+- **kubectl** — `brew install kubectl`
 
-* Generate a gitlab pipeline with GCP integration format(more cloud providers and other pipeline runners will be available soon)
+### Optional - but keep installed
 
-## Prerequisite
+- **Railpack** — only needed if your app has no `Dockerfile`. See [railpack.io](https://railpack.io) for install instructions.
+- **git** — only needed when deploying from a git URL. Usually pre-installed.
 
-- Install via [npm](https://www.npmjs.com/)- `npm i -g kustron`
+---
 
-- Your application must have been dockerized already, meaning a `Dockerfile` exists at application root dir
+## Installation
 
-## Usage
-
-- In your application root dir, you can run this- `kustron -g` e.g. `cd projects/checkout-service && kustron -g`
-
-- It will ask you a few questions regarding your application; the questions are pretty straight-forward and self-explanatory
-
-- Once you have provided all the answers, a `k8s` folder will be generated with all the necessary files
-
-- If you have chosen the option to generate pipeline, it will also generate a `Makefile` and `gitlab` pipeline for you
-
-- You can also do- `kustron -g -p /absolute/path/of/your/application/folder` to generate all the mentioned files and folders in the path you specified. e.g. `kustron -g /users/lbm/projects/gaan-recorder/`
-
-- You can always do `kustron -h` if you need
-
-## Next Steps
-
-- The generated `k8s` folder will have following structure
-
-```
-- k8s
-  - base
-    - config
-      - configmap.yml
-      - hpa.yml (only if you have told kustron that your application needs autoscaling)
-    - deployment.yml
-    - ... (other files like service.yml, ingress.yml etc.)
-    - kustomization.yml
-  - overrides (all the env specific overrides to base manifests reside here in proper folders)
-    - dev
-      - ...
-    - stg
-      - ...
-    - prd
-      - ...
+```sh
+npm i -g kustron
 ```
 
-- `base` folder contains base configurations
+After install, Kustron checks your environment and tells you what's missing and how to fix it.
 
-- `overrides` folder has specific overrides, it considers you will deploy your service at least into 3 envs(e.g. `dev`, `stg`, `prd`)
+---
 
-- All the files have necessary comments to help you out with any modifications you want
+## Quickstart
 
-- Adding another `env` override should be as simple as creating a dir under `overrides` and copying the files from any of the existing `env` and doing necessary amendments
+```sh
+# 1. Spin up a local cluster (1 server + 2 agents + local registry)
+kustron cluster up
 
-- If you have asked `kustron` to generate pipeline as well, it will generate a `Makefile` as well as a `.gitlab-ci.yml` file(right now only gitlab pipeline with GCP integration is supported, more options with different providers will come in future)
+# 2. Deploy an app from a local folder
+kustron deploy ./my-app --name myapp --port 3000
 
-Apart from these, you should know about few particular files to make things work for your application the right way-
+# 3. Deploy an app from a git repo (SSH access must already be configured)
+kustron deploy git@github.com:user/repo.git --name myapp --port 3000
 
-### configmap.yml
+# 4. Check status
+kustron cluster status
 
-- This is the place where you should put all the env vars that your application need at runtime. For example, in case of a nodejs application, you should put proper `NODE_ENV` in this file
+# 5. Tear down a deployment
+kustron undeploy myapp
 
-- Check the given comments in the file to understand what you can do with it or check official [documentation](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/)
+# 6. Tear down the cluster
+kustron cluster down
+```
 
-### deployment.yml
+---
 
-- Apart from the env variables that get loaded from configmap(and which is hard coded), there are some sensitive env variables(like api key for a third party service) that you can load via `kubernetes` [secrets](https://kubernetes.io/docs/concepts/configuration/secret/)
+## Commands
 
-- These sensitive env variables can be loaded in `deployment.yml` during runtime, an example is given as comments in the file itself
+### `kustron cluster up`
 
-### cert.yml
+Spins up a k3d cluster with:
+- 1 server node + 2 agent nodes
+- A local container registry at `k3d-kustron-registry:5000`
+- Ports `8080` and `8443` mapped to the load balancer
+- `kubectl` context set automatically — `kubectl get nodes` works immediately
 
-- Only relevant if you have defined your application to be https only
+### `kustron cluster down`
 
-- The certificate created by this `yml` is a GCP managed certificate resource
+Tears down the cluster and cleans up the kubeconfig entry.
 
-- This is already tied to the `ingress` given in env specific overrides(as every env will have different url like dev.myapp.com, stg.myapp.com etc. and hence difference certificates)
+### `kustron cluster status`
 
-- If you are not using GCP, you might check how to add other certificates to your ingress. Here's one with [let's encrypt](https://runnable.com/blog/how-to-use-lets-encrypt-on-kubernetes)
+Shows cluster nodes, registry address, current kubectl context, and all deployed applications.
 
+### `kustron deploy <source> [options]`
 
-### ingress.yml
+Deploys an application to the running cluster.
 
-- It's a good practice to have `ingress` if you want to expose your service, this necessarily works as a load balancer and creates a public ip
+`<source>` is either a local path (e.g. `./my-app`) or a git SSH URL (e.g. `git@github.com:user/repo.git`).
 
-- If your answer to `Is Public` was `No` while creating manifests by `kustron`, this file won't be generated and your service will only be privately accessible by your other services in the cluster
+| Option | Description |
+|---|---|
+| `--name <name>` | Application name (used as the image name and, unless `--ns` is given, as the namespace) |
+| `--port <port>` | Port your application listens on |
+| `--ns <namespace>` | Deploy into an existing namespace instead of creating one named after `--name` |
+| `--replicas <n>` | Number of replicas (default: 1) |
+| `--ha` | Enable HA mode: 2 replicas minimum + HPA (auto-scales based on CPU/memory) |
+| `--env KEY=VALUE` | Set environment variables (repeatable) |
 
-### Makefile & .gitlab-ci.yml
+**Build strategy:** Kustron uses your `Dockerfile` if one exists. If not, it falls back to Railpack to automatically build and containerize your app.
 
-- If your answer to `Generate Pipeline` was `Yes`, `kustron` will generate these files for you
+### `kustron undeploy <name>`
 
-- These files give you the building blocks for your automated build and deployment pipeline
+Removes a deployed application (deletes its namespace and all associated resources).
 
-- Check both the files, as they have lots of comments to make things self-explanatory
+---
 
-- None of these files will require much changes when you use a different provider like Azure or AWS- but you should check the comments and understand what has to be changed
+## HA Mode
 
-## Release Flow
+Passing `--ha` enables:
+- Minimum 2 replicas
+- A `HorizontalPodAutoscaler` that scales up to 10 replicas based on CPU (70%) and memory (80%) utilization
+- Sensible default resource requests/limits so the HPA can function correctly
 
-The default generated gitlab pipeline respects the following release flow-
+```sh
+kustron deploy ./my-app --name myapp --port 3000 --ha
+```
 
-<p align="center">
-  <img alt="kustron release flow" title="kustron release flow"
-  src="https://i.imgur.com/gsKDi0a.jpg" width="500">
-</p>
+---
 
 ## Feedback
 
-Feel free to [file an issue](https://github.com/dibosh/kustron/issues/new).
+File an issue: [github.com/dibosh/kustron/issues](https://github.com/dibosh/kustron/issues)
 
-Would love to extend this for other cloud providers. Please create a [pull request](https://github.com/dibosh/kustron/pulls) with one, if you want to add.
-
-
-
+Pull requests are welcome.
