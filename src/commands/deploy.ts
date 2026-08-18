@@ -6,6 +6,7 @@ import { applyManifests, waitForRollout, getServiceNodePort } from '../core/appl
 import { exec } from '../utils/exec.js'
 import { success, info, error, warn } from '../utils/logger.js'
 import { t } from '../utils/i18n.js'
+import { KUSTON_CONTEXT } from '../core/context.js'
 import { Listr } from 'listr2'
 import type { DeployOptions } from '../types/index.js'
 
@@ -40,7 +41,7 @@ export async function deploy(source: string, options: DeployOptions): Promise<vo
       title: t('deploy.checkingCluster'),
       task: async () => {
         try {
-          await exec('kubectl', ['config', 'current-context'])
+          await exec('kubectl', ['--context', KUSTON_CONTEXT, 'get', 'nodes'])
         } catch {
           error(t('deploy.clusterNotUp'))
           throw new Error(t('deploy.clusterNotUp'))

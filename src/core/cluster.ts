@@ -1,5 +1,6 @@
 import { exec } from '../utils/exec.js'
 import type { ClusterInfo } from '../types/index.js'
+import { KUSTON_CONTEXT } from './context.js'
 
 const DEFAULT_CLUSTER_NAME = 'kustron'
 const DEFAULT_AGENTS = 2
@@ -37,12 +38,16 @@ export async function createCluster(opts?: CreateClusterOptions): Promise<void> 
 
 export async function installMetricsServer(): Promise<void> {
   await exec('kubectl', [
+    '--context',
+    KUSTON_CONTEXT,
     'apply',
     '-f',
     'https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml',
   ])
 
   await exec('kubectl', [
+    '--context',
+    KUSTON_CONTEXT,
     'patch',
     'deployment',
     'metrics-server',

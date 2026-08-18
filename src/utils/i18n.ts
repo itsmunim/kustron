@@ -1,26 +1,4 @@
-import { readFileSync, accessSync } from 'fs'
-import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
-function findPackageRoot(startDir: string): string {
-  let current = startDir
-  while (current !== dirname(current)) {
-    try {
-      accessSync(join(current, 'package.json'))
-      return current
-    } catch {
-      current = dirname(current)
-    }
-  }
-  throw new Error('Could not find package.json')
-}
-
-const pkgRoot = findPackageRoot(__dirname)
-const translationsPath = join(pkgRoot, 'src', 'translations', 'en.json')
-const translations = JSON.parse(readFileSync(translationsPath, 'utf-8')) as Record<string, unknown>
+import translations from '../translations/en.json'
 
 function getValue(obj: Record<string, unknown>, path: string): unknown {
   const parts = path.split('.')
@@ -33,7 +11,7 @@ function getValue(obj: Record<string, unknown>, path: string): unknown {
 }
 
 export function t(key: string, vars?: Record<string, string>): string {
-  const value = getValue(translations, key)
+  const value = getValue(translations as Record<string, unknown>, key)
   let text: string
 
   if (typeof value === 'string') {

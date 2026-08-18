@@ -4,6 +4,8 @@ import { clusterDown } from '../commands/cluster/down.js'
 import { clusterStatus } from '../commands/cluster/status.js'
 import { deploy } from '../commands/deploy.js'
 import { initEnv } from '../commands/init-env.js'
+import { appsList } from '../commands/apps/list.js'
+import { appsDelete } from '../commands/apps/delete.js'
 import { setVerbose } from '../utils/exec.js'
 import { t } from '../utils/i18n.js'
 
@@ -49,6 +51,22 @@ cluster
   .description(t('cli.statusDescription'))
   .action(async () => {
     await clusterStatus()
+  })
+
+const apps = program.command('apps').description(t('cli.appsDescription'))
+
+apps
+  .command('list')
+  .description(t('cli.appsListDescription'))
+  .action(async () => {
+    await appsList()
+  })
+
+apps
+  .command('delete <name>')
+  .description(t('cli.appsDeleteDescription'))
+  .action(async (name) => {
+    await appsDelete(name)
   })
 
 program

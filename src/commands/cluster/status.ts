@@ -1,5 +1,5 @@
 import { getClusterInfo } from '../../core/cluster.js'
-import { getCurrentContext } from '../../core/context.js'
+import { getCurrentContext, KUSTON_CONTEXT } from '../../core/context.js'
 import { exec } from '../../utils/exec.js'
 import { info, warn } from '../../utils/logger.js'
 import { t } from '../../utils/i18n.js'
@@ -26,9 +26,13 @@ export async function clusterStatus(): Promise<void> {
     }),
   )
 
+  console.log(t('cluster.status.registry', { registry: 'k3d-kustron-registry:5000' }))
+
   const context = await getCurrentContext()
-  if (context) {
+  if (context === KUSTON_CONTEXT) {
     console.log(t('cluster.status.context', { context }))
+  } else if (context) {
+    console.log(t('cluster.status.contextWarning', { context, expected: KUSTON_CONTEXT }))
   } else {
     console.log(t('cluster.status.noContext'))
   }
@@ -38,6 +42,8 @@ export async function clusterStatus(): Promise<void> {
 
   try {
     const { stdout } = await exec('kubectl', [
+      '--context',
+      KUSTON_CONTEXT,
       'get',
       'deployments',
       '--all-namespaces',
