@@ -20,7 +20,10 @@
     "cpuRequestOption": "CPU request",
     "cpuLimitOption": "CPU limit",
     "memoryRequestOption": "Memory request",
-    "memoryLimitOption": "Memory limit"
+    "memoryLimitOption": "Memory limit",
+    "appsDescription": "List and manage deployed apps",
+    "appsListDescription": "List all deployed applications",
+    "appsDeleteDescription": "Delete a deployed application"
   },
   "cluster": {
     "up": {
@@ -44,6 +47,7 @@
       "registry": "Registry: {{registry}}",
       "noRegistry": "Registry: not configured",
       "context": "Kubectl context: {{context}}",
+      "contextWarning": "Kubectl context: {{context}} (expected {{expected}} — run 'kustron cluster up')",
       "noContext": "Kubectl context: none set",
       "appsHeader": "Deployed apps:",
       "appsNone": "  (none)",
@@ -90,6 +94,15 @@
     "deploymentCreated": "Deployment '{{name}}' created",
     "serviceCreated": "Service '{{name}}' created",
     "hpaCreated": "HPA '{{name}}' created"
+  },
+  "apps": {
+    "listHeader": "Deployed apps",
+    "listNone": "No deployed apps found.",
+    "listError": "Unable to list deployed apps.",
+    "deleteConfirm": "Are you sure you want to delete '{{name}}'? (yes/no): ",
+    "deleteCancelled": "Delete cancelled.",
+    "deleteSuccess": "App '{{name}}' deleted.",
+    "deleteFailed": "Failed to delete app '{{name}}'."
   },
   "initEnv": {
     "checking": "Checking dependencies...",

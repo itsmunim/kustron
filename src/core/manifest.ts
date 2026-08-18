@@ -25,7 +25,10 @@ export function buildNamespace(name: string): string {
   return dump({
     apiVersion: 'v1',
     kind: 'Namespace',
-    metadata: { name },
+    metadata: {
+      name,
+      labels: { 'kustron.io/managed': 'true' },
+    },
   })
 }
 
