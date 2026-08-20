@@ -1,11 +1,11 @@
 import { Command } from 'commander'
-import { clusterUp } from '../commands/cluster/up.js'
-import { clusterDown } from '../commands/cluster/down.js'
-import { clusterStatus } from '../commands/cluster/status.js'
-import { deploy } from '../commands/deploy.js'
-import { initEnv } from '../commands/init-env.js'
-import { appsList } from '../commands/apps/list.js'
-import { appsDelete } from '../commands/apps/delete.js'
+import { envInit } from '../commands/env/init.js'
+import { envUp } from '../commands/env/up.js'
+import { envDown } from '../commands/env/down.js'
+import { envReload } from '../commands/env/reload.js'
+import { envShowSpec } from '../commands/env/show-spec.js'
+import { appsAdd } from '../commands/apps/add.js'
+import { appsRemove } from '../commands/apps/remove.js'
 import { setVerbose } from '../utils/exec.js'
 import { t } from '../utils/i18n.js'
 
@@ -23,95 +23,83 @@ program
     }
   })
 
-program
-  .command('init-env')
-  .description(t('cli.initEnvDescription'))
+const env = program.command('env').description(t('cli.envDescription'))
+
+env
+  .command('init')
+  .description(t('cli.initDescription'))
   .action(async () => {
-    await initEnv()
+    await envInit()
   })
 
-const cluster = program.command('cluster').description(t('cli.clusterDescription'))
-
-cluster
+env
   .command('up')
   .description(t('cli.upDescription'))
   .action(async () => {
-    await clusterUp()
+    await envUp()
   })
 
-cluster
+env
   .command('down')
   .description(t('cli.downDescription'))
-  .action(async () => {
-    await clusterDown()
+  .option('--yes', t('cli.yesOption'))
+  .action(async (options) => {
+    await envDown(options)
   })
 
-cluster
-  .command('status')
-  .description(t('cli.statusDescription'))
+env
+  .command('reload')
+  .description(t('cli.reloadDescription'))
   .action(async () => {
-    await clusterStatus()
+    await envReload()
+  })
+
+env
+  .command('show-spec')
+  .description(t('cli.showSpecDescription'))
+  .action(async () => {
+    await envShowSpec()
   })
 
 const apps = program.command('apps').description(t('cli.appsDescription'))
 
 apps
-  .command('list')
-  .description(t('cli.appsListDescription'))
-  .action(async () => {
-    await appsList()
+  .command('add')
+  .description(t('cli.addDescription'))
+  .requiredOption('--name <name>', t('cli.nameOption'))
+  .option('--source <path>', t('cli.sourceOption'))
+  .option('--image <image>', t('cli.imageOption'))
+  .option('--helm-chart <name>', t('cli.helmChartOption'))
+  .option('--helm-repo <url>', t('cli.helmRepoOption'))
+  .option('--helm-version <ver>', t('cli.helmVersionOption'))
+  .option('--port <n>', t('cli.portOption'), parseInt)
+  .option('--healthcheck <path>', t('cli.healthcheckOption'))
+  .option('--exposed', t('cli.exposedOption'))
+  .option('--replicas <n>', t('cli.replicasOption'), parseInt)
+  .option('--ha', t('cli.haOption'))
+  .option('--env <env...>', t('cli.envOption'))
+  .action(async (options) => {
+    await appsAdd({
+      name: options.name,
+      source: options.source,
+      image: options.image,
+      helmChart: options.helmChart,
+      helmRepo: options.helmRepo,
+      helmVersion: options.helmVersion,
+      port: options.port,
+      healthcheck: options.healthcheck,
+      exposed: options.exposed ?? false,
+      replicas: options.replicas,
+      ha: options.ha ?? false,
+      env: options.env,
+    })
   })
 
 apps
-  .command('delete <name>')
-  .description(t('cli.appsDeleteDescription'))
+  .command('remove <name>')
+  .description(t('cli.removeDescription'))
   .action(async (name) => {
-    await appsDelete(name)
-  })
-
-program
-  .command('deploy <source>')
-  .description(t('cli.deployDescription'))
-  .requiredOption('--name <name>', t('cli.nameOption'))
-  .requiredOption('--port <port>', t('cli.portOption'), parseInt)
-  .option('--replicas <n>', t('cli.replicasOption'), '1')
-  .option('--ha', t('cli.haOption'))
-  .option('--env <env...>', t('cli.envOption'))
-  .option('--expose', t('cli.exposeOption'))
-  .option('--ns <namespace>', t('cli.nsOption'))
-  .option('--healthcheck <path>', t('cli.healthcheckOption'))
-  .option('--cpu-request <value>', t('cli.cpuRequestOption'))
-  .option('--cpu-limit <value>', t('cli.cpuLimitOption'))
-  .option('--memory-request <value>', t('cli.memoryRequestOption'))
-  .option('--memory-limit <value>', t('cli.memoryLimitOption'))
-  .action(async (source, options) => {
-    const env: Record<string, string> = {}
-    if (options.env) {
-      for (const e of options.env) {
-        const [key, value] = e.split('=')
-        if (key && value !== undefined) {
-          env[key] = value
-        }
-      }
-    }
-
-    const replicas = options.ha ? parseInt(options.replicas, 10) || 2 : parseInt(options.replicas, 10)
-
-    await deploy(source, {
-      name: options.name,
-      port: options.port,
-      replicas,
-      ha: options.ha ?? false,
-      env,
-      expose: options.expose ?? false,
-      ns: options.ns,
-      keepSource: options.keepSource ?? false,
-      healthcheck: options.healthcheck,
-      cpuRequest: options.cpuRequest,
-      cpuLimit: options.cpuLimit,
-      memoryRequest: options.memoryRequest,
-      memoryLimit: options.memoryLimit,
-    })
+    await appsRemove(name)
   })
 
 program.parse()

@@ -1,4 +1,4 @@
-import translations from '../translations/en.json'
+import translations from '../translations/en.json' with { type: 'json' }
 
 function getValue(obj: Record<string, unknown>, path: string): unknown {
   const parts = path.split('.')

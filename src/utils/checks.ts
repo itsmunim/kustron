@@ -33,6 +33,12 @@ const dependencies: Dependency[] = [
     installHint: 'brew install kubectl',
   },
   {
+    name: 'helm',
+    command: 'helm',
+    required: false,
+    installHint: 'brew install helm',
+  },
+  {
     name: 'railpack',
     command: 'railpack',
     required: false,
@@ -45,12 +51,6 @@ const dependencies: Dependency[] = [
     required: false,
     installHint: 'Usually pre-installed; otherwise brew install git',
   },
-  {
-    name: 'buildkit',
-    command: 'buildctl',
-    required: false,
-    installHint: 'docker run --rm --privileged -d --name buildkit moby/buildkit',
-  },
 ]
 
 async function isInstalled(command: string): Promise<boolean> {
@@ -58,17 +58,29 @@ async function isInstalled(command: string): Promise<boolean> {
   return result.exitCode === 0
 }
 
-export async function runChecks(): Promise<boolean> {
+export async function checkDependency(name: string): Promise<{ present: boolean; path?: string }> {
+  const dep = dependencies.find((d) => d.name === name)
+  if (!dep) {
+    return { present: false }
+  }
+  const installed = await isInstalled(dep.command)
+  return { present: installed }
+}
+
+export async function checkAll(required: string[], optional: string[]): Promise<void> {
   info(t('checks.header'))
 
+  const names = [...required, ...optional]
+  const deps = dependencies.filter((d) => names.includes(d.name))
+
   const results = await Promise.all(
-    dependencies.map(async (dep) => {
+    deps.map(async (dep) => {
       const installed = await isInstalled(dep.command)
       return { dep, installed }
     }),
   )
 
-  const maxNameLen = Math.max(...dependencies.map((d) => d.name.length))
+  const maxNameLen = Math.max(...deps.map((d) => d.name.length))
   const maxStatusLen = 10
 
   console.log()
@@ -80,17 +92,16 @@ export async function runChecks(): Promise<boolean> {
   let hasMissingRequired = false
 
   for (const { dep, installed } of results) {
+    const isReq = required.includes(dep.name)
     const status = installed
       ? chalk.green(t('checks.installed').padEnd(maxStatusLen))
-      : dep.required
+      : isReq
         ? chalk.red(t('checks.missingRequired').padEnd(maxStatusLen))
         : chalk.yellow(t('checks.missingOptional').padEnd(maxStatusLen))
 
-    console.log(
-      `${dep.name.padEnd(maxNameLen + 2)}${status.padEnd(maxStatusLen + 2)}${chalk.dim(dep.installHint)}`,
-    )
+    console.log(`${dep.name.padEnd(maxNameLen + 2)}${status.padEnd(maxStatusLen + 2)}${chalk.dim(dep.installHint)}`)
 
-    if (!installed && dep.required) {
+    if (!installed && isReq) {
       hasMissingRequired = true
     }
   }
@@ -98,25 +109,15 @@ export async function runChecks(): Promise<boolean> {
   console.log()
 
   if (hasMissingRequired) {
-    error(t('checks.missingRequiredError'))
-    return false
+    throw new Error(t('checks.missingRequiredError'))
   }
 
-  const missingOptional = results.filter((r) => !r.installed && !r.dep.required)
+  const missingOptional = results.filter((r) => !r.installed && optional.includes(r.dep.name))
   if (missingOptional.length > 0) {
-    warn(
-      t('checks.optionalMissing', {
-        deps: missingOptional.map((r) => r.dep.name).join(', '),
-      }),
-    )
+    warn(t('checks.optionalMissing', { deps: missingOptional.map((r) => r.dep.name).join(', ') }))
   }
 
   success(t('checks.allRequiredInstalled'))
-  return true
-}
-
-export async function checkCommandAvailable(command: string): Promise<boolean> {
-  return isInstalled(command)
 }
 
 export async function checkDockerRunning(): Promise<boolean> {

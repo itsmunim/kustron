@@ -13,34 +13,40 @@ export interface ManifestOptions {
   replicas: number
   env: Record<string, string>
   expose: boolean
-  serviceType?: 'ClusterIP' | 'NodePort'
-  cpuRequest?: string
-  cpuLimit?: string
-  memoryRequest?: string
-  memoryLimit?: string
   healthcheck?: string
 }
 
-export function buildNamespace(name: string): string {
+function managedLabels(name: string): Record<string, string> {
+  return {
+    'app.kubernetes.io/name': name,
+    'app.kubernetes.io/managed-by': 'kustron',
+  }
+}
+
+export function buildConfigMap(appName: string, namespace: string, env: Record<string, string>): string | null {
+  if (Object.keys(env).length === 0) return null
+
   return dump({
     apiVersion: 'v1',
-    kind: 'Namespace',
+    kind: 'ConfigMap',
     metadata: {
-      name,
-      labels: { 'kustron.io/managed': 'true' },
+      name: appName,
+      namespace,
+      labels: managedLabels(appName),
     },
+    data: env,
   })
 }
 
 export function buildDeployment(opts: ManifestOptions): string {
   const resources: Record<string, unknown> = {
     requests: {
-      cpu: opts.cpuRequest || DEFAULT_CPU_REQUEST,
-      memory: opts.memoryRequest || DEFAULT_MEMORY_REQUEST,
+      cpu: DEFAULT_CPU_REQUEST,
+      memory: DEFAULT_MEMORY_REQUEST,
     },
     limits: {
-      cpu: opts.cpuLimit || DEFAULT_CPU_LIMIT,
-      memory: opts.memoryLimit || DEFAULT_MEMORY_LIMIT,
+      cpu: DEFAULT_CPU_LIMIT,
+      memory: DEFAULT_MEMORY_LIMIT,
     },
   }
 
@@ -48,37 +54,22 @@ export function buildDeployment(opts: ManifestOptions): string {
     name: opts.name,
     image: opts.image,
     ports: [{ containerPort: opts.port }],
-    env: Object.entries(opts.env).map(([name, value]) => ({
-      name,
-      value,
-    })),
     resources,
   }
 
-  if (opts.healthcheck) {
-    container.startupProbe = {
-      httpGet: {
-        path: opts.healthcheck,
-        port: opts.port,
-      },
-      periodSeconds: 1,
-      failureThreshold: 30,
-      timeoutSeconds: 3,
-    }
-    container.livenessProbe = {
-      httpGet: {
-        path: opts.healthcheck,
-        port: opts.port,
-      },
-      periodSeconds: 10,
-    }
-    container.readinessProbe = {
-      httpGet: {
-        path: opts.healthcheck,
-        port: opts.port,
-      },
-      periodSeconds: 5,
-    }
+  if (Object.keys(opts.env).length > 0) {
+    container.envFrom = [{ configMapRef: { name: opts.name } }]
+  }
+
+  // Readiness probe: healthcheck path (default /), on app port
+  const readinessPath = opts.healthcheck ?? '/'
+  container.readinessProbe = {
+    httpGet: {
+      path: readinessPath,
+      port: opts.port,
+    },
+    initialDelaySeconds: 3,
+    periodSeconds: 5,
   }
 
   const deployment = {
@@ -87,15 +78,16 @@ export function buildDeployment(opts: ManifestOptions): string {
     metadata: {
       name: opts.name,
       namespace: opts.namespace,
+      labels: managedLabels(opts.name),
     },
     spec: {
       replicas: opts.replicas,
       selector: {
-        matchLabels: { app: opts.name },
+        matchLabels: { 'app.kubernetes.io/name': opts.name },
       },
       template: {
         metadata: {
-          labels: { app: opts.name },
+          labels: managedLabels(opts.name),
         },
         spec: {
           containers: [container],
@@ -114,15 +106,15 @@ export function buildService(opts: ManifestOptions): string {
     metadata: {
       name: opts.name,
       namespace: opts.namespace,
+      labels: managedLabels(opts.name),
     },
     spec: {
-      type: opts.expose ? 'NodePort' : 'ClusterIP',
-      selector: { app: opts.name },
+      type: opts.expose ? 'LoadBalancer' : 'ClusterIP',
+      selector: { 'app.kubernetes.io/name': opts.name },
       ports: [
         {
           port: opts.port,
           targetPort: opts.port,
-          ...(opts.expose ? { nodePort: 30000 + (opts.port % 2768) } : {}),
         },
       ],
     },
@@ -138,6 +130,7 @@ export function buildHPA(opts: ManifestOptions): string {
     metadata: {
       name: opts.name,
       namespace: opts.namespace,
+      labels: managedLabels(opts.name),
     },
     spec: {
       scaleTargetRef: {
@@ -145,8 +138,8 @@ export function buildHPA(opts: ManifestOptions): string {
         kind: 'Deployment',
         name: opts.name,
       },
-      minReplicas: opts.replicas,
-      maxReplicas: 10,
+      minReplicas: 2,
+      maxReplicas: 5,
       metrics: [
         {
           type: 'Resource',
@@ -154,7 +147,7 @@ export function buildHPA(opts: ManifestOptions): string {
             name: 'cpu',
             target: {
               type: 'Utilization',
-              averageUtilization: 70,
+              averageUtilization: 90,
             },
           },
         },
@@ -173,4 +166,8 @@ export function buildHPA(opts: ManifestOptions): string {
   }
 
   return dump(hpa)
+}
+
+export function assembleManifests(resources: (string | null)[]): string {
+  return resources.filter((r): r is string => r !== null).join('---\n')
 }

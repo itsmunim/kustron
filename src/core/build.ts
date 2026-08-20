@@ -27,26 +27,6 @@ export async function buildImage(
     await exec('docker', ['build', '-t', imageTag, sourcePath])
   } else {
     info(t('build.railpackBuild'))
-    await ensureBuildKit()
-    await exec('railpack', ['build', sourcePath, '--name', imageTag], {
-      env: { ...process.env, BUILDKIT_HOST: 'docker-container://buildkit' },
-    })
-  }
-}
-
-async function ensureBuildKit(): Promise<void> {
-  try {
-    await exec('docker', ['inspect', 'buildkit', '--format={{.State.Running}}'])
-  } catch {
-    info(t('build.startingBuildKit'))
-    await exec('docker', [
-      'run',
-      '--rm',
-      '--privileged',
-      '-d',
-      '--name',
-      'buildkit',
-      'moby/buildkit',
-    ])
+    await exec('railpack', ['build', sourcePath, '--name', imageTag])
   }
 }

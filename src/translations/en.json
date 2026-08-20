@@ -1,123 +1,66 @@
 {
   "cli": {
-    "description": "A CLI tool that gives anyone a fully working local Kubernetes setup in minutes",
-    "initEnvDescription": "Check and auto-install missing dependencies",
-    "clusterDescription": "Manage the local k3d cluster",
-    "upDescription": "Spin up k3d + local registry + set kubectl context",
-    "downDescription": "Tear down the cluster",
-    "statusDescription": "Show cluster info + deployed apps",
-    "deployDescription": "Deploy an app from a local directory or Git repository",
+    "description": "A CLI tool that takes you from source code to a fully running local Kubernetes environment",
     "verboseOption": "stream all shell command output",
+    "envDescription": "Manage the kustron environment",
+    "initDescription": "Create kustron-env.yaml in the current folder",
+    "upDescription": "Bring up the environment and deploy all apps",
+    "downDescription": "Tear everything down",
+    "reloadDescription": "Down + up (pick up any yaml changes)",
+    "showSpecDescription": "Pretty-print the kustron-env.yaml schema",
+    "yesOption": "skip confirmation prompt",
+    "appsDescription": "Manage apps in kustron-env.yaml",
+    "addDescription": "Add a new app entry to kustron-env.yaml",
+    "removeDescription": "Remove an app entry from kustron-env.yaml",
     "nameOption": "App name",
-    "portOption": "Container port",
-    "replicasOption": "Number of replicas",
-    "haOption": "Enable horizontal pod autoscaling",
-    "envOption": "Environment variables (KEY=VALUE)",
-    "exposeOption": "Expose via NodePort",
-    "nsOption": "Target namespace",
-    "keepSourceOption": "Keep cloned repo (only for git sources)",
-    "healthcheckOption": "HTTP health check path (e.g. /health)",
-    "cpuRequestOption": "CPU request",
-    "cpuLimitOption": "CPU limit",
-    "memoryRequestOption": "Memory request",
-    "memoryLimitOption": "Memory limit",
-    "appsDescription": "List and manage deployed apps",
-    "appsListDescription": "List all deployed applications",
-    "appsDeleteDescription": "Delete a deployed application"
+    "sourceOption": "Local path or git SSH/HTTPS URL",
+    "imageOption": "Existing container image (e.g. postgres:15)",
+    "helmChartOption": "Helm chart name",
+    "helmRepoOption": "Helm chart repository URL",
+    "helmVersionOption": "Helm chart version",
+    "portOption": "Port the app listens on",
+    "healthcheckOption": "Healthcheck path (default: /)",
+    "exposedOption": "Make app accessible at localhost:<port>",
+    "replicasOption": "Replica count (default: 1)",
+    "haOption": "HA mode: min 2, max 5 replicas, CPU 90%, mem 80%",
+    "envOption": "Environment variable (KEY=VALUE, repeatable)"
   },
-  "cluster": {
+  "env": {
+    "init": {
+      "alreadyExists": "kustron-env.yaml already exists. Edit it directly or use `kustron apps add` to add apps.",
+      "created": "Created {{file}}.",
+      "nextStep": "Open it, set the port, and run `kustron env up`."
+    },
     "up": {
-      "creating": "Creating cluster {{name}}...",
+      "noEnvFile": "No kustron-env.yaml found. Run `kustron env init` to create one.",
+      "creatingCluster": "Creating cluster {{name}}...",
       "importingKubeconfig": "Importing kubeconfig...",
       "settingContext": "Setting kubectl context...",
       "installingMetricsServer": "Installing metrics-server...",
-      "success": "Cluster '{{name}}' is up and running!",
-      "nextSteps": [
-        "Run 'kubectl get nodes' to verify",
-        "Run 'kustron deploy <source> --name <app> --port <port>' to deploy an app"
-      ]
+      "clusterExists": "Cluster '{{name}}' already exists. Skipping creation.",
+      "deployingApps": "Deploying apps...",
+      "success": "Environment '{{name}}' is up and running!"
     },
     "down": {
+      "confirm": "Are you sure you want to tear down cluster '{{name}}'?",
+      "cancelled": "Teardown cancelled.",
       "success": "Cluster '{{name}}' has been torn down.",
       "notFound": "Cluster '{{name}}' not found. Nothing to do."
-    },
-    "status": {
-      "header": "Cluster: {{name}}",
-      "nodes": "Nodes: {{serversRunning}}/{{serversCount}} servers, {{agentsRunning}}/{{agentsCount}} agents",
-      "registry": "Registry: {{registry}}",
-      "noRegistry": "Registry: not configured",
-      "context": "Kubectl context: {{context}}",
-      "contextWarning": "Kubectl context: {{context}} (expected {{expected}} — run 'kustron cluster up')",
-      "noContext": "Kubectl context: none set",
-      "appsHeader": "Deployed apps:",
-      "appsNone": "  (none)",
-      "tableHeader": "NAMESPACE  NAME  READY  REPLICAS",
-      "notRunning": "Cluster '{{name}}' is not running."
     }
   },
-  "deploy": {
-    "resolvingSource": "Resolving source...",
-    "checkingCluster": "Checking cluster...",
-    "detectingStrategy": "Detecting build strategy...",
-    "strategyDockerfile": "Dockerfile found — using Docker build",
-    "strategyRailpack": "No Dockerfile — using Railpack",
-    "building": "Building image {{tag}}...",
-    "pushing": "Pushing image to local registry...",
-    "generatingManifests": "Generating Kubernetes manifests...",
-    "applyingManifests": "Applying manifests...",
-    "waitingRollout": "Waiting for rollout...",
-    "success": "App '{{name}}' deployed successfully!",
-    "successExposed": "App '{{name}}' deployed and exposed on port {{port}}",
-    "nextSteps": [
-      "Run 'kubectl get pods -n {{namespace}}' to check status",
-      "Run 'kubectl logs -n {{namespace}} deployment/{{name}}' for logs"
-    ],
-    "sourceNotFound": "Source path '{{path}}' not found.",
-    "invalidGitUrl": "Invalid Git URL: '{{url}}'",
-    "gitAccessDenied": "Cannot access '{{url}}'. Please set up SSH access to your Git provider and try again.",
-    "cleaningUp": "Cleaning up temporary files...",
-    "cleanupFailed": "Failed to clean up temporary files.",
-    "clusterNotUp": "Run 'kustron cluster up' first",
-    "missingRequiredOptions": "Missing required options: {{options}}"
-  },
-  "build": {
-    "dockerfileFound": "Dockerfile found",
-    "dockerfileNotFound": "No Dockerfile found",
-    "dockerBuild": "Building with Docker...",
-    "railpackBuild": "Building with Railpack...",
-    "imageTagged": "Tagged: {{tag}}",
-    "imagePush": "Pushing {{tag}}...",
-    "startingBuildKit": "Starting BuildKit daemon..."
-  },
-  "manifest": {
-    "namespaceCreated": "Namespace '{{name}}' created",
-    "deploymentCreated": "Deployment '{{name}}' created",
-    "serviceCreated": "Service '{{name}}' created",
-    "hpaCreated": "HPA '{{name}}' created"
-  },
   "apps": {
-    "listHeader": "Deployed apps",
-    "listNone": "No deployed apps found.",
-    "listError": "Unable to list deployed apps.",
-    "deleteConfirm": "Are you sure you want to delete '{{name}}'? (yes/no): ",
-    "deleteCancelled": "Delete cancelled.",
-    "deleteSuccess": "App '{{name}}' deleted.",
-    "deleteFailed": "Failed to delete app '{{name}}'."
-  },
-  "initEnv": {
-    "checking": "Checking dependencies...",
-    "alreadyInstalled": "{{name}} is already installed",
-    "installing": "Installing {{name}}...",
-    "installed": "{{name}} installed successfully",
-    "failed": "Failed to install {{name}}",
-    "manualInstall": "Please install {{name}} manually: {{hint}}",
-    "summaryHeader": "Installation summary",
-    "newlyInstalled": "Installed {{count}} tool(s): {{names}}",
-    "requiredFailed": "Required tools failed to install: {{names}}",
-    "optionalFailed": "Optional tools failed to install: {{names}}",
-    "allInstalled": "All dependencies are installed and ready!",
-    "pathWarning": "{{dir}} is not in your PATH. Add it to your shell profile.",
-    "pathReminder": "Add {{dir}} to your PATH to use the installed tools: export PATH=\"{{dir}}:$PATH\""
+    "add": {
+      "exactlyOneSource": "Exactly one of --source, --image, or --helm-chart is required.",
+      "portRequired": "--port is required for source and image apps.",
+      "duplicateName": "App '{{name}}' already exists in kustron-env.yaml.",
+      "success": "App '{{name}}' added to kustron-env.yaml.",
+      "reloadHint": "Run `kustron env reload` to apply changes."
+    },
+    "remove": {
+      "notFound": "App '{{name}}' not found in kustron-env.yaml.",
+      "success": "App '{{name}}' removed from kustron-env.yaml.",
+      "reloadHint": "Run `kustron env reload` to apply changes."
+    }
   },
   "checks": {
     "header": "Checking dependencies...",
@@ -132,11 +75,46 @@
     "missingRequiredError": "Missing required dependencies. Please install them and try again.",
     "optionalMissing": "Optional dependencies missing: {{deps}}. Some features may be unavailable."
   },
+  "deploy": {
+    "starting": "Deploying {{name}}...",
+    "resolvingSource": "Resolving source...",
+    "sourceResolved": "Source resolved",
+    "cloningRepo": "Cloning repository...",
+    "repoCloned": "Repository cloned",
+    "detectingStrategy": "Detecting build strategy...",
+    "strategyDetected": "Using {{strategy}}",
+    "buildingImage": "Building image...",
+    "imageBuilt": "Image built",
+    "pushingImage": "Pushing to local registry...",
+    "imagePushed": "Image pushed",
+    "generatingManifests": "Generating manifests...",
+    "manifestsGenerated": "Manifests generated",
+    "applyingManifests": "Applying manifests...",
+    "manifestsApplied": "Manifests applied",
+    "waitingRollout": "Waiting for rollout...",
+    "rolloutComplete": "Rollout complete",
+    "rolloutFailed": "Rollout failed — see pod describe / logs below for details.",
+    "installingHelm": "Installing Helm chart...",
+    "helmInstalled": "Helm chart installed",
+    "creatingExposureService": "Creating exposure service...",
+    "exposureServiceCreated": "Exposure service created",
+    "helmExposureWarning": "Cannot expose helm app '{{name}}' without a selector. Add `helm.selector` to kustron-env.yaml and run `kustron env reload`.",
+    "failed": "Failed to deploy {{name}}",
+    "summaryHeader": "Deployment summary:",
+    "sourceNotFound": "Source path '{{path}}' not found.",
+    "gitAccessDenied": "Cannot access '{{url}}'. Please set up SSH access to your Git provider and try again."
+  },
+  "build": {
+    "dockerfileFound": "Dockerfile found",
+    "dockerfileNotFound": "No Dockerfile found",
+    "dockerBuild": "Building with Docker...",
+    "railpackBuild": "Building with Railpack...",
+    "imagePush": "Pushing {{tag}}..."
+  },
   "errors": {
     "commandFailed": "Command failed: {{command}}\n{{message}}",
-    "clusterNotUp": "Run 'kustron cluster up' first",
     "dockerNotRunning": "Docker does not appear to be running. Start Docker/OrbStack and try again.",
-    "unknownError": "Unknown error",
-    "registryUnreachable": "Check /etc/hosts for k3d-kustron-registry"
+    "railpackMissing": "Railpack is required to build this app but is not installed. Install it from https://railpack.io or add a Dockerfile to your project.",
+    "unknownError": "Unknown error"
   }
 }
