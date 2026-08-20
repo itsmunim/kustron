@@ -172,6 +172,33 @@ Exposed apps bind `0.0.0.0:<port>` on the host, so the VM's public IP works dire
 
 ---
 
+## Contributing / Running from Source
+
+Clone the repo and install dependencies:
+
+```bash
+git clone git@github.com:dibosh/kustron.git
+cd kustron
+npm install
+```
+
+Build and link globally so the `kustron` command points to your local build:
+
+```bash
+npm run build
+npm link
+```
+
+Now any `kustron` command on your machine runs the code in `dist/`. After making changes, re-run `npm run build` (or keep `npm run dev` running in a terminal to rebuild on save) and the linked binary picks up the latest output automatically.
+
+To unlink when you're done:
+
+```bash
+npm unlink -g kustron
+```
+
+---
+
 ## License
 
 MIT
