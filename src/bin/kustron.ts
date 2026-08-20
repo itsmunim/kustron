@@ -1,15 +1,15 @@
-import { Command } from 'commander'
-import { envInit } from '../commands/env/init.js'
-import { envUp } from '../commands/env/up.js'
-import { envDown } from '../commands/env/down.js'
-import { envReload } from '../commands/env/reload.js'
-import { envShowSpec } from '../commands/env/show-spec.js'
-import { appsAdd } from '../commands/apps/add.js'
-import { appsRemove } from '../commands/apps/remove.js'
-import { setVerbose } from '../utils/exec.js'
-import { t } from '../utils/i18n.js'
+import {Command} from 'commander';
+import {envInit} from '../commands/env/init.js';
+import {envUp} from '../commands/env/up.js';
+import {envDown} from '../commands/env/down.js';
+import {envReload} from '../commands/env/reload.js';
+import {envShowSpec} from '../commands/env/show-spec.js';
+import {appsAdd} from '../commands/apps/add.js';
+import {appsRemove} from '../commands/apps/remove.js';
+import {setVerbose} from '../utils/exec.js';
+import {t} from '../utils/i18n.js';
 
-const program = new Command()
+const program = new Command();
 
 program
   .name('kustron')
@@ -17,51 +17,51 @@ program
   .version('2.0.0')
   .option('--verbose', t('cli.verboseOption'))
   .hook('preAction', (thisCommand) => {
-    const opts = thisCommand.opts()
+    const opts = thisCommand.opts();
     if (opts.verbose) {
-      setVerbose(true)
+      setVerbose(true);
     }
-  })
+  });
 
-const env = program.command('env').description(t('cli.envDescription'))
+const env = program.command('env').description(t('cli.envDescription'));
 
 env
   .command('init')
   .description(t('cli.initDescription'))
   .action(async () => {
-    await envInit()
-  })
+    await envInit();
+  });
 
 env
   .command('up')
   .description(t('cli.upDescription'))
   .action(async () => {
-    await envUp()
-  })
+    await envUp();
+  });
 
 env
   .command('down')
   .description(t('cli.downDescription'))
   .option('--yes', t('cli.yesOption'))
   .action(async (options) => {
-    await envDown(options)
-  })
+    await envDown(options);
+  });
 
 env
   .command('reload')
   .description(t('cli.reloadDescription'))
   .action(async () => {
-    await envReload()
-  })
+    await envReload();
+  });
 
 env
   .command('show-spec')
   .description(t('cli.showSpecDescription'))
   .action(async () => {
-    await envShowSpec()
-  })
+    await envShowSpec();
+  });
 
-const apps = program.command('apps').description(t('cli.appsDescription'))
+const apps = program.command('apps').description(t('cli.appsDescription'));
 
 apps
   .command('add')
@@ -92,14 +92,14 @@ apps
       replicas: options.replicas,
       ha: options.ha ?? false,
       env: options.env,
-    })
-  })
+    });
+  });
 
 apps
   .command('remove <name>')
   .description(t('cli.removeDescription'))
   .action(async (name) => {
-    await appsRemove(name)
-  })
+    await appsRemove(name);
+  });
 
-program.parse()
+program.parse();

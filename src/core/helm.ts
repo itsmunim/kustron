@@ -1,9 +1,12 @@
-import { exec } from '../utils/exec.js'
-import { dump } from 'js-yaml'
-import type { AppEntry } from '../types/index.js'
+import {exec} from '../utils/exec.js';
+import {dump} from 'js-yaml';
+import type {AppEntry} from '../types/index.js';
 
-export async function helmInstall(app: AppEntry, namespace: string): Promise<void> {
-  if (!app.helm) throw new Error('App has no helm configuration')
+export async function helmInstall(
+  app: AppEntry,
+  namespace: string,
+): Promise<void> {
+  if (!app.helm) throw new Error('App has no helm configuration');
 
   const args = [
     'upgrade',
@@ -14,41 +17,53 @@ export async function helmInstall(app: AppEntry, namespace: string): Promise<voi
     namespace,
     '--create-namespace',
     '--wait',
-  ]
+  ];
 
   if (app.helm.repo) {
-    await exec('helm', ['repo', 'add', `kustron-${app.name}`, app.helm.repo])
-    await exec('helm', ['repo', 'update'])
+    await exec('helm', ['repo', 'add', `kustron-${app.name}`, app.helm.repo]);
+    await exec('helm', ['repo', 'update']);
   }
 
   if (app.helm.version) {
-    args.push('--version', app.helm.version)
+    args.push('--version', app.helm.version);
   }
 
   if (app.helm.values) {
     for (const [key, value] of Object.entries(app.helm.values)) {
-      args.push('--set', `${key}=${value}`)
+      args.push('--set', `${key}=${value}`);
     }
   }
 
-  await exec('helm', args)
+  await exec('helm', args);
 }
 
-export async function helmUninstall(appName: string, namespace: string): Promise<void> {
+export async function helmUninstall(
+  appName: string,
+  namespace: string,
+): Promise<void> {
   try {
-    await exec('helm', ['uninstall', appName, '--namespace', namespace])
+    await exec('helm', ['uninstall', appName, '--namespace', namespace]);
   } catch {
     // ignore if not installed
   }
 }
 
-export async function isHelmRelease(appName: string, namespace: string): Promise<boolean> {
+export async function isHelmRelease(
+  appName: string,
+  namespace: string,
+): Promise<boolean> {
   try {
-    const { stdout } = await exec('helm', ['list', '-n', namespace, '-o', 'json'])
-    const releases = JSON.parse(stdout) as Array<{ name: string }>
-    return releases.some((r) => r.name === appName)
+    const {stdout} = await exec('helm', [
+      'list',
+      '-n',
+      namespace,
+      '-o',
+      'json',
+    ]);
+    const releases = JSON.parse(stdout) as Array<{name: string}>;
+    return releases.some((r) => r.name === appName);
   } catch {
-    return false
+    return false;
   }
 }
 
@@ -79,5 +94,5 @@ export function createHelmExposureService(
         },
       ],
     },
-  })
+  });
 }

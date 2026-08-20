@@ -1,4 +1,4 @@
-import chalk from 'chalk'
+import chalk from 'chalk';
 
 const prefix = {
   info: chalk.blue('ℹ'),
@@ -6,24 +6,24 @@ const prefix = {
   warn: chalk.yellow('⚠'),
   error: chalk.red('✖'),
   step: chalk.cyan('→'),
-}
+};
 
 export function info(message: string): void {
-  console.log(`${prefix.info} ${message}`)
+  console.log(`${prefix.info} ${message}`);
 }
 
 export function success(message: string): void {
-  console.log(`${prefix.success} ${message}`)
+  console.log(`${prefix.success} ${message}`);
 }
 
 export function warn(message: string): void {
-  console.warn(`${prefix.warn} ${message}`)
+  console.warn(`${prefix.warn} ${message}`);
 }
 
 export function error(message: string): void {
-  console.error(`${prefix.error} ${message}`)
+  console.error(`${prefix.error} ${message}`);
 }
 
 export function step(message: string): void {
-  console.log(`${prefix.step} ${message}`)
+  console.log(`${prefix.step} ${message}`);
 }
