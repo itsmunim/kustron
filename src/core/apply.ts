@@ -1,5 +1,5 @@
 import {exec} from '../utils/exec.js';
-import {error, info} from '../utils/logger.js';
+import {error, info, warn} from '../utils/logger.js';
 import {t} from '../utils/i18n.js';
 
 export async function ensureNamespace(namespace: string): Promise<void> {
@@ -62,16 +62,59 @@ export async function waitForRollout(
     attempts++;
   }
 
-  await exec('kubectl', [
-    'wait',
-    '--for=condition=ready',
-    'pod',
-    '-l',
-    `app.kubernetes.io/name=${appName}`,
-    '-n',
-    namespace,
-    '--timeout=120s',
-  ]);
+  try {
+    await exec('kubectl', [
+      'wait',
+      '--for=condition=ready',
+      'pod',
+      '-l',
+      `app.kubernetes.io/name=${appName}`,
+      '-n',
+      namespace,
+      '--timeout=180s',
+    ]);
+    info(t('deploy.rolloutComplete'));
+  } catch {
+    // kubectl wait timed out — check if pods are at least Running
+    const {stdout: podStatus} = await exec(
+      'kubectl',
+      [
+        'get',
+        'pods',
+        '-l',
+        `app.kubernetes.io/name=${appName}`,
+        '-n',
+        namespace,
+        '-o',
+        'jsonpath={range .items[*]}{.metadata.name}{"\t"}{.status.phase}{"\n"}{end}',
+      ],
+      {reject: false} as Record<string, unknown>,
+    );
+
+    const hasRunningPod = podStatus
+      .split('\n')
+      .some((line) => line.includes('Running'));
+
+    if (hasRunningPod) {
+      warn(t('deploy.rolloutTimeoutButRunning'));
+      // Continue — app is running, just not marked ready yet
+    } else {
+      error(t('deploy.rolloutFailed'));
+      const debugInfo = await getPodDebugInfo(appName, namespace);
+      const logs = await getPodLogs(appName, namespace);
+      if (debugInfo) {
+        console.log();
+        info('--- Pod describe ---');
+        console.log(debugInfo);
+      }
+      if (logs) {
+        console.log();
+        info('--- Pod logs ---');
+        console.log(logs);
+      }
+      throw new Error(t('deploy.rolloutFailed'));
+    }
+  }
 }
 
 export async function getPodDebugInfo(

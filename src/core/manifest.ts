@@ -66,14 +66,17 @@ export function buildDeployment(opts: ManifestOptions): string {
   }
 
   // Readiness probe: healthcheck path (default /), on app port
+  // Generous defaults: 10s initial delay, 10 failures at 5s intervals = ~60s to become ready
   const readinessPath = opts.healthcheck ?? '/';
   container.readinessProbe = {
     httpGet: {
       path: readinessPath,
       port: opts.port,
     },
-    initialDelaySeconds: 3,
+    initialDelaySeconds: 10,
     periodSeconds: 5,
+    failureThreshold: 10,
+    successThreshold: 1,
   };
 
   const deployment = {
