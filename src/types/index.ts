@@ -1,39 +1,40 @@
-export interface ClusterOptions {
-  name: string
-  agents: number
-  registryPort: number
-  loadBalancerPorts: { host: number; container: number }[]
-  wait: boolean
+export interface HelmConfig {
+  chart: string
+  repo?: string
+  version?: string
+  values?: Record<string, string>
+  selector?: Record<string, string>
 }
 
-export interface ClusterInfo {
+export interface AppEntry {
   name: string
-  serversRunning: number
-  serversCount: number
-  agentsRunning: number
-  agentsCount: number
-  hasLoadBalancer: boolean
-  registry?: {
-    host: string
-    port: string
-  }
-}
-
-export interface DeployOptions {
-  source: string
-  name: string
-  port: number
-  replicas: number
-  ha: boolean
-  env: Record<string, string>
-  expose: boolean
-  ns?: string
-  keepSource: boolean
-  cpuRequest?: string
-  cpuLimit?: string
-  memoryRequest?: string
-  memoryLimit?: string
+  source?: string
+  image?: string
+  helm?: HelmConfig
+  port?: number | string
   healthcheck?: string
+  exposed?: boolean
+  replicas?: number
+  ha?: boolean
+  env?: Record<string, string>
+}
+
+export interface EnvFile {
+  config?: { namespace?: string }
+  apps: AppEntry[]
+}
+
+export interface ClusterConfig {
+  name: string
+  namespace: string
+  exposedPorts: number[]
+}
+
+export interface DeployContext {
+  namespace: string
+  registryHost: string
+  clusterName: string
+  verbose: boolean
 }
 
 export interface DependencyCheck {

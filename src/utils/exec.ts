@@ -12,6 +12,17 @@ export function isVerbose(): boolean {
   return verboseMode
 }
 
+export class KustronExecError extends Error {
+  constructor(
+    message: string,
+    public readonly command: string,
+    public readonly exitCode?: number,
+  ) {
+    super(message)
+    this.name = 'KustronExecError'
+  }
+}
+
 export interface ExecResult {
   stdout: string
   stderr: string
@@ -23,9 +34,9 @@ export async function exec(
   args: string[],
   options?: { input?: string } & Omit<ExecaOptions, 'input'>,
 ): Promise<ExecResult> {
-  const opts: ExecaOptions = {
-    ...options,
+  const opts: Record<string, unknown> = {
     all: true,
+    ...(options ?? {}),
   }
 
   if (options?.input) {
@@ -38,21 +49,21 @@ export async function exec(
   }
 
   try {
-    const result = await execa(command, args, opts)
+    const result = await execa(command, args, opts as ExecaOptions)
     return {
-      stdout: result.stdout ?? '',
-      stderr: result.stderr ?? '',
+      stdout: String(result.stdout ?? ''),
+      stderr: String(result.stderr ?? ''),
       exitCode: result.exitCode ?? 0,
     }
   } catch (err) {
-    const ex = err as { stdout?: string; stderr?: string; message: string; command?: string }
-    const message = ex.stderr || ex.stdout || ex.message || t('errors.unknownError')
+    const ex = err as { stdout?: unknown; stderr?: unknown; message: string; command?: string; exitCode?: number }
+    const message = String(ex.stderr ?? ex.stdout ?? ex.message ?? t('errors.unknownError'))
     error(
       t('errors.commandFailed', {
         command: `${command} ${args.join(' ')}`,
         message,
       }),
     )
-    throw new Error(message)
+    throw new KustronExecError(message, `${command} ${args.join(' ')}`, ex.exitCode)
   }
 }

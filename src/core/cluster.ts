@@ -1,22 +1,15 @@
 import { exec } from '../utils/exec.js'
-import type { ClusterInfo } from '../types/index.js'
-import { KUSTON_CONTEXT } from './context.js'
+import type { ClusterConfig } from '../types/index.js'
 
 const DEFAULT_CLUSTER_NAME = 'kustron'
 const DEFAULT_AGENTS = 2
 const REGISTRY_NAME = 'kustron-registry'
 const REGISTRY_PORT = 5000
 
-export interface CreateClusterOptions {
-  name?: string
-  agents?: number
-  registryPort?: number
-}
-
-export async function createCluster(opts?: CreateClusterOptions): Promise<void> {
-  const name = opts?.name ?? DEFAULT_CLUSTER_NAME
-  const agents = opts?.agents ?? DEFAULT_AGENTS
-  const registryPort = opts?.registryPort ?? REGISTRY_PORT
+export async function createCluster(config: ClusterConfig): Promise<void> {
+  const name = config.name
+  const agents = DEFAULT_AGENTS
+  const registryPort = REGISTRY_PORT
 
   const args = [
     'cluster',
@@ -26,28 +19,31 @@ export async function createCluster(opts?: CreateClusterOptions): Promise<void> 
     String(agents),
     '--registry-create',
     `${REGISTRY_NAME}:0.0.0.0:${registryPort}`,
-    '--port',
-    '9080:80@loadbalancer',
-    '--port',
-    '9443:443@loadbalancer',
     '--wait',
   ]
+
+  for (const port of config.exposedPorts) {
+    args.push('--port', `${port}:${port}@loadbalancer`)
+  }
 
   await exec('k3d', args)
 }
 
 export async function installMetricsServer(): Promise<void> {
+  try {
+    await exec('kubectl', ['get', 'deployment', 'metrics-server', '-n', 'kube-system'])
+    return
+  } catch {
+    // not installed, proceed
+  }
+
   await exec('kubectl', [
-    '--context',
-    KUSTON_CONTEXT,
     'apply',
     '-f',
     'https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml',
   ])
 
   await exec('kubectl', [
-    '--context',
-    KUSTON_CONTEXT,
     'patch',
     'deployment',
     'metrics-server',
@@ -56,7 +52,7 @@ export async function installMetricsServer(): Promise<void> {
     '--type',
     'json',
     '-p',
-    '[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]',
+    '[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]',
   ])
 }
 
@@ -65,32 +61,13 @@ export async function deleteCluster(name?: string): Promise<void> {
   await exec('k3d', ['cluster', 'delete', clusterName])
 }
 
-export async function getClusterInfo(name?: string): Promise<ClusterInfo | null> {
+export async function clusterExists(name?: string): Promise<boolean> {
   const clusterName = name ?? DEFAULT_CLUSTER_NAME
-
   try {
     const { stdout } = await exec('k3d', ['cluster', 'list', '-o', 'json'])
-    const clusters = JSON.parse(stdout) as Array<{
-      name: string
-      serversRunning: number
-      serversCount: number
-      agentsRunning: number
-      agentsCount: number
-      hasLoadBalancer: boolean
-    }>
-
-    const cluster = clusters.find((c) => c.name === clusterName)
-    if (!cluster) return null
-
-    return {
-      name: cluster.name,
-      serversRunning: cluster.serversRunning,
-      serversCount: cluster.serversCount,
-      agentsRunning: cluster.agentsRunning,
-      agentsCount: cluster.agentsCount,
-      hasLoadBalancer: cluster.hasLoadBalancer,
-    }
+    const clusters = JSON.parse(stdout) as Array<{ name: string }>
+    return clusters.some((c) => c.name === clusterName)
   } catch {
-    return null
+    return false
   }
 }

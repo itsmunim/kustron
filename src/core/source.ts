@@ -1,6 +1,7 @@
 import { access, realpath, rm } from 'fs/promises'
 import { resolve } from 'path'
 import { tmpdir } from 'os'
+import { createHash } from 'crypto'
 import { error } from '../utils/logger.js'
 import { t } from '../utils/i18n.js'
 import { exec } from '../utils/exec.js'
@@ -31,11 +32,15 @@ export async function verifyGitAccess(url: string): Promise<void> {
   }
 }
 
-export async function resolveGitSource(url: string): Promise<string> {
-  const timestamp = Date.now()
-  const targetDir = resolve(tmpdir(), `kustron-${timestamp}`)
-
+export async function cloneRepo(url: string, targetDir: string): Promise<void> {
   await exec('git', ['clone', url, targetDir])
+}
+
+export async function resolveGitSource(url: string): Promise<string> {
+  const hash = createHash('sha256').update(url).digest('hex').slice(0, 16)
+  const targetDir = resolve(tmpdir(), `kustron-${hash}`)
+
+  await cloneRepo(url, targetDir)
 
   return targetDir
 }

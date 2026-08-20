@@ -1,434 +1,177 @@
-![version](https://img.shields.io/npm/v/kustron?color=green&style=flat-square)
-![downloads](https://img.shields.io/npm/dw/kustron?style=flat-square)
-
-<p align="center">
-  <a href="https://github.com/dibosh/kustron">
-    <img alt="Kustron" title="Kustron" src="https://i.imgur.com/Nndv5Vv.png" width="300">
-  </a>
-</p>
-
-<p align="center">
-  <strong>Go from source code to a working local environment in minutes.</strong>
-</p>
-
 # Kustron
 
-Building an application is getting easier.
+A single CLI tool that takes you from "I have some applications" to a fully running, locally-accessible Kubernetes environment — with no Kubernetes knowledge required.
 
-Getting an application **running locally in a realistic environment** is still surprisingly painful.
-
-You clone a repository. Install dependencies. Figure out the right runtime versions. Set environment variables. Start a database. Start Redis. Configure networking. Build a container. Figure out Kubernetes. Configure `kubectl`. Create namespaces. Deal with images. Then, after all of that, you finally get to the part you actually wanted to do:
-
-**run and test your application.**
-
-Kustron is built to remove that friction.
-
-Give Kustron an application — from a local directory or a Git repository — and it creates a complete local Kubernetes environment, builds the application, and deploys it for you.
-
-```sh
-kustron deploy ./my-app --name myapp --port 3000
-```
-
-That's it.
-
----
-
-## A little history
-
-I originally built Kustron around **2020**, with a very different goal.
-
-At the time, the idea was simple: provide a CLI that could take a bunch of application parameters and generate Kubernetes manifests that could then be used to deploy an application into Kubernetes.
-
-It was mostly a developer convenience tool.
-
-Fast-forward several years.
-
-Someone reached out to me recently with a question about Kustron. That conversation made me realise something I hadn't really considered:
-
-**People were still using it.**
-
-And more interestingly, some of them were trying to use it in ways that were quite different from what I originally had in mind.
-
-That got me thinking about what Kustron could look like today.
-
-The world of software development has changed dramatically since 2020. AI coding assistants and coding agents can now generate an enormous amount of code in a very short time. Creating a prototype is becoming almost trivial.
-
-But there is an interesting problem:
-
-> **Writing the code is increasingly cheap. Creating the environment in which that code can actually run is not.**
-
-You still need somewhere to run it.
-
-You still need the runtime.
-
-You still need dependencies.
-
-You still need networking.
-
-You still need databases and supporting services.
-
-You still need containers and infrastructure.
-
-And you still need a reasonably realistic environment in which to test what you just built.
-
-So I decided to rebuild Kustron — this time with the help of AI — around that problem.
-
----
-
-## The problem Kustron solves
-
-Modern development often looks something like this:
-
-```text
-Idea
-  ↓
-AI / Developer writes code
-  ↓
-"It works on my machine"
-  ↓
-...now what?
-  ↓
-Install runtime
-Configure dependencies
-Set environment variables
-Start databases
-Configure networking
-Build containers
-Configure Kubernetes
-Deploy
-Debug environment
-  ↓
-Finally test the application
-```
-
-Kustron tries to collapse most of that into:
-
-```text
-Application
-    ↓
-  Kustron
-    ↓
-Complete local environment
-    ↓
-Run & test
-```
-
-Instead of spending your first hour configuring the environment, you can spend it actually building the application.
-
----
-
-## What is Kustron?
-
-Kustron is a CLI that creates a **fully working local Kubernetes environment** and deploys applications into it.
-
-It takes care of:
-
-- Creating a local [k3d](https://k3d.io) Kubernetes cluster
-- Configuring `kubectl`
-- Creating a local container registry
-- Building your application
-- Using your `Dockerfile` when available
-- Automatically containerizing applications with [Railpack](https://railpack.io) when a `Dockerfile` isn't available
-- Pushing the image to the local registry
-- Creating the Kubernetes resources required to run the application
-- Deploying the application
-- Optionally enabling HA and autoscaling
-
-The application can come from:
-
-- A local directory
-- A Git repository
-
-The goal is simple:
-
-**Make the distance between "I have an application" and "I can run and test it" as small as possible.**
-
----
-
-## Quickstart
-
-Install Kustron:
-
-```sh
-npm i -g kustron
-```
-
-Then deploy an application:
-
-```sh
-kustron deploy ./my-app --name myapp --port 3000
-```
-
-Kustron will take care of the environment and deployment.
-
-If you want to explicitly manage the cluster yourself:
-
-```sh
-# Create the local Kubernetes environment
-kustron cluster up
-
-# Deploy an application
-kustron deploy ./my-app --name myapp --port 3000
-
-# Check what's running
-kustron cluster status
-
-# Remove an application
-kustron undeploy myapp
-
-# Tear everything down
-kustron cluster down
-```
-
-You can also deploy directly from Git:
-
-```sh
-kustron deploy git@github.com:user/repo.git --name myapp --port 3000
-```
-
----
-
-## What does Kustron actually create?
-
-When you run:
-
-```sh
-kustron cluster up
-```
-
-Kustron creates a local Kubernetes environment consisting of:
-
-- 1 server node
-- 2 agent nodes
-- A local container registry
-- Load balancer port mappings
-- An automatically configured `kubectl` context
-
-Your local environment is therefore much closer to the Kubernetes environment your application may eventually run in, without requiring a remote cluster.
-
-The registry is available at:
-
-```text
-k3d-kustron-registry:5000
-```
-
-Ports `8080` and `8443` are mapped to the cluster load balancer.
-
-Once the cluster is running:
-
-```sh
-kubectl get nodes
-```
-
-works immediately.
-
----
-
-## Deploying an application
-
-```sh
-kustron deploy <source> [options]
-```
-
-`<source>` can be either a local path:
-
-```sh
-kustron deploy ./my-app --name myapp --port 3000
-```
-
-or a Git SSH URL:
-
-```sh
-kustron deploy git@github.com:user/repo.git --name myapp --port 3000
-```
-
-### Options
-
-| Option | Description |
-|---|---|
-| `--name <name>` | Application name. Used as the image name and, unless `--ns` is supplied, the namespace |
-| `--port <port>` | Port your application listens on |
-| `--ns <namespace>` | Deploy into an existing namespace |
-| `--replicas <n>` | Number of replicas. Defaults to 1 |
-| `--ha` | Enable HA mode with multiple replicas and autoscaling |
-| `--env KEY=VALUE` | Set environment variables. Repeatable |
-
-### Build strategy
-
-Kustron follows a simple strategy:
-
-**1. Dockerfile exists**
-
-Use it.
-
-**2. No Dockerfile**
-
-Use [Railpack](https://railpack.io) to detect the application and build a container automatically.
-
-This means many applications can go directly from source code to a running container without requiring you to first write container configuration.
-
----
-
-## HA mode
-
-For applications where you want something closer to a production-style deployment:
-
-```sh
-kustron deploy ./my-app --name myapp --port 3000 --ha
-```
-
-HA mode enables:
-
-- A minimum of 2 replicas
-- A `HorizontalPodAutoscaler`
-- Scaling up to 10 replicas
-- CPU-based scaling at 70%
-- Memory-based scaling at 80%
-- Sensible resource requests and limits
-
-It's still a local environment, but it gives you an easy way to experiment with Kubernetes behaviours that normally require a more involved setup.
-
----
-
-## Why Kubernetes?
-
-You could run applications directly on your laptop.
-
-And for many applications, that's perfectly fine.
-
-But modern applications increasingly depend on infrastructure concepts such as:
-
-- Containers
-- Services
-- Service discovery
-- Networking
-- Namespaces
-- Resource limits
-- Replicas
-- Autoscaling
-- Kubernetes configuration
-
-Kustron uses a lightweight local Kubernetes cluster so that your development environment can exercise many of these concepts without requiring a more involved remote environment.
-
-You get the convenience of local development with an environment that looks much more like the infrastructure your application is eventually going to live in.
-
----
-
-## Local today. VM tomorrow.
-
-Kustron is designed for local development, but there is nothing fundamentally tying the idea to a laptop.
-
-The same setup can run inside a VM.
-
-That opens up another interesting possibility:
-
-```text
-AI-generated application
-        ↓
-     Kustron
-        ↓
-   Kubernetes VM
-        ↓
- Running application
-```
-
-Instead of spending time building infrastructure for a prototype, you could potentially provision a VM, install Kustron, point it at your application, and have a working environment very quickly.
-
-That makes Kustron useful not only for local development, but potentially for:
-
-- MVPs
-- Prototypes
-- Demos
-- Temporary environments
-- Experiments
-- AI-generated applications
-- Quick proof-of-concepts
-
-The idea is not to replace proper production infrastructure.
-
-It's to make the **first working environment ridiculously easy to create.**
+Think of it as `docker-compose` for Kubernetes. You define your apps in a `kustron-env.yaml` file, run `kustron env up`, and everything is built, deployed, and made available on `localhost`.
 
 ---
 
 ## Prerequisites
 
-Kustron checks your environment when you install it and tells you exactly what's missing.
-
-### Required
-
-- **Docker runtime** — [OrbStack](https://orbstack.dev) is strongly recommended over Docker Desktop. It starts quickly, uses less memory, and has native Apple Silicon support. Docker Desktop works too.
-- **k3d** — `brew install k3d` or see [k3d.io/installation](https://k3d.io/installation)
+- **Docker** — [OrbStack](https://orbstack.dev) (recommended) or Docker Desktop
+- **k3d** — `brew install k3d`
 - **kubectl** — `brew install kubectl`
 
-### Optional
+Optional:
+- **Helm** — `brew install helm` (only if you use Helm charts)
+- **Railpack** — see [railpack.io](https://railpack.io) (fallback build tool when no Dockerfile exists)
+- **Git** — usually pre-installed
 
-- **Railpack** — only required when your application doesn't have a `Dockerfile`. See [railpack.io](https://railpack.io).
-- **git** — only required when deploying from a Git URL. Usually already installed.
+---
+
+## Installation
+
+```bash
+npm i -g kustron
+```
+
+After installation, a dependency check runs automatically to verify everything is in place.
+
+---
+
+## Quickstart
+
+```bash
+# Create a kustron-env.yaml in your project
+cd my-project
+kustron env init
+
+# Edit kustron-env.yaml and set the port
+# Then bring up the environment
+kustron env up
+```
+
+Your app will be built, pushed to a local registry, and deployed into a k3d Kubernetes cluster. If you set `exposed: true`, it's accessible at `localhost:<port>`.
+
+---
+
+## kustron-env.yaml
+
+The central primitive. Works like `docker-compose.yml` but targets a real local Kubernetes cluster.
+
+```yaml
+config:
+  namespace: kustron-env   # default; all apps share this namespace
+
+apps:
+  # --- Type 1: Source build ---
+  - name: api
+    source: ./services/api              # local path OR git@github.com:user/repo.git
+    port: 3000
+    healthcheck: /health
+    exposed: true                       # accessible at localhost:3000
+    replicas: 1
+    ha: false                           # min 2 / max 5 / cpu 90% / mem 80%
+    env:
+      NODE_ENV: production
+      DB_HOST: postgres                 # 'postgres' resolves to the postgres app's service
+
+  # --- Type 2: Existing container image ---
+  - name: postgres
+    image: postgres:15
+    port: 5432
+    exposed: false
+    env:
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: myapp
+
+  # --- Type 3: Helm chart ---
+  - name: prometheus
+    helm:
+      chart: kube-prometheus-stack
+      repo: https://prometheus-community.github.io/helm-charts
+      version: "45.0.0"
+      values:
+        grafana.enabled: "true"
+      selector:
+        app.kubernetes.io/name: grafana
+    exposed: false
+```
+
+Run `kustron env show-spec` for a full annotated schema reference.
+
+### Schema rules
+
+| Rule | Detail |
+|---|---|
+| Exactly one of `source`, `image`, `helm` | Required per app entry |
+| `port` | Required for `source` and `image`; optional for `helm` |
+| `healthcheck` | Optional for `source` and `image`; ignored for `helm` |
+| `ha: true` | Overrides `replicas`; sets min 2 / max 5 / CPU 90% / mem 80% |
+| `env` | Creates a ConfigMap for `source` and `image`; for `helm` values are passed as `--set` |
+| `exposed: true` | Service becomes `LoadBalancer` type; requires `port` |
+| `helm.selector` | Required when `helm` app has `exposed: true`; must match the chart's pod labels |
+| `name` | Becomes the Kubernetes Service name — other apps reach it at `http://<name>:<port>` |
+| `port: PORT` | The string `PORT` is treated as an unset placeholder; validation fails with a clear message |
 
 ---
 
 ## Commands
 
-### `kustron cluster up`
+| Command | Description |
+|---|---|
+| `kustron env init` | Create `kustron-env.yaml` in the current folder |
+| `kustron env up` | Bring up the environment and deploy all apps |
+| `kustron env down` | Tear everything down |
+| `kustron env reload` | Down + up (pick up any yaml changes) |
+| `kustron env show-spec` | Pretty-print the `kustron-env.yaml` schema |
+| `kustron apps add [flags]` | Add a new app entry to `kustron-env.yaml` |
+| `kustron apps remove <name>` | Remove an app entry from `kustron-env.yaml` |
 
-Creates the local Kubernetes environment.
-
-Includes:
-
-- 1 server node
-- 2 agent nodes
-- Local container registry
-- Load balancer
-- Port mappings
-- Automatic `kubectl` configuration
-
-### `kustron cluster down`
-
-Tears down the Kustron cluster and cleans up the kubeconfig entry.
-
-### `kustron cluster status`
-
-Shows:
-
-- Cluster nodes
-- Registry address
-- Current `kubectl` context
-- Deployed applications
-
-### `kustron deploy <source>`
-
-Builds and deploys an application from a local directory or Git repository.
-
-### `kustron undeploy <name>`
-
-Removes an application and its associated Kubernetes resources.
+**Tip:** After editing `kustron-env.yaml` (manually or via `apps add/remove`), run `kustron env reload` to apply changes.
 
 ---
 
-## The idea behind Kustron
+## Service Discovery
 
-Kustron started as a Kubernetes manifest generator.
+All apps deploy into a single namespace. Apps can reach each other directly by name:
 
-It has now evolved into something slightly different:
+```
+http://api:3000
+http://postgres:5432
+```
 
-> **An environment generator.**
-
-The goal is to make infrastructure less of a prerequisite for experimentation.
-
-Especially in a world where an idea can turn into hundreds of lines of working code in minutes, the bottleneck increasingly isn't writing the code.
-
-**It's getting the code somewhere useful to run.**
-
-That's the problem Kustron is trying to solve.
+No extra configuration needed.
 
 ---
 
-## Feedback
+## HA Mode
 
-Kustron is still evolving.
+Set `ha: true` on any app to enable horizontal autoscaling:
 
-If you use it, break it, have an idea, or simply have a different way you think it should work, I'd love to hear about it.
+- **Min replicas:** 2
+- **Max replicas:** 5
+- **CPU target:** 90% average utilization
+- **Memory target:** 80% average utilization
 
-File an issue: [github.com/dibosh/kustron/issues](https://github.com/dibosh/kustron/issues)
+The HPA requires the metrics-server, which Kustron installs automatically during `env up`.
 
-Pull requests are welcome.
+---
+
+## Deploying from a VM
+
+Exposed apps bind `0.0.0.0:<port>` on the host, so the VM's public IP works directly.
+
+---
+
+## Global Flags
+
+| Flag | Description |
+|---|---|
+| `--verbose` | Stream all shell command output live |
+
+---
+
+## How It Works
+
+1. **Cluster:** k3d creates a lightweight local Kubernetes cluster with a built-in container registry
+2. **Build:** Source apps are built with Docker (if `Dockerfile` exists) or Railpack (fallback)
+3. **Push:** Images are pushed to the local `k3d-kustron-registry:5000`
+4. **Deploy:** Kubernetes manifests (ConfigMap, Deployment, Service, HPA) are generated and applied
+5. **Expose:** Apps with `exposed: true` get a `LoadBalancer` service mapped to `localhost:<port>` via k3d's load balancer
+
+---
+
+## License
+
+MIT

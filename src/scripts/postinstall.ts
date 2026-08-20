@@ -1,11 +1,10 @@
-import { runChecks } from '../utils/checks.js'
+import { checkAll } from '../utils/checks.js'
 
 async function main(): Promise<void> {
   try {
-    await runChecks()
+    await checkAll(['docker', 'k3d', 'kubectl'], ['railpack', 'git', 'helm'])
   } catch {
-    // Never hard-crash npm install; just print the table
-    process.exit(0)
+    // postinstall should never hard-crash npm install
   }
 }
 
