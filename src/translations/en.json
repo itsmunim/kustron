@@ -33,7 +33,7 @@
     },
     "up": {
       "noEnvFile": "No kustron-env.yaml found. Run `kustron env init` to create one.",
-      "creatingCluster": "Creating cluster {{name}}...",
+      "creatingCluster": "Creating cluster...",
       "importingKubeconfig": "Importing kubeconfig...",
       "settingContext": "Setting kubectl context...",
       "installingMetricsServer": "Installing metrics-server...",
