@@ -400,6 +400,145 @@
     .footer-right a { color: var(--muted); }
     .footer-right a:hover { color: var(--accent); text-decoration: none; }
 
+    /* ── Star button ── */
+    .star-btn {
+      gap: 8px;
+    }
+    .star-btn svg { flex-shrink: 0; }
+    .star-count {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0px 6px;
+      font-size: 12px;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      min-width: 24px;
+      text-align: center;
+    }
+
+    /* ── VM section ── */
+    .vm-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+    @media (max-width: 720px) { .vm-layout { grid-template-columns: 1fr; gap: 32px; } }
+    .vm-steps { display: flex; flex-direction: column; gap: 0; }
+    .vm-step {
+      display: flex;
+      gap: 16px;
+      padding-bottom: 28px;
+      position: relative;
+    }
+    .vm-step:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 32px;
+      bottom: 0;
+      width: 1px;
+      background: var(--border);
+    }
+    .vm-step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      border: 1px solid rgba(129,140,248,.3);
+      color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+    .vm-step-body h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; padding-top: 4px; }
+    .vm-step-body p  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .vm-diagram {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+    }
+    .vm-diagram-title {
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+    .vm-box {
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .vm-box-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 12px;
+      letter-spacing: .5px;
+    }
+    .vm-services {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .vm-svc {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+    .vm-svc .svc-name { color: var(--text); }
+    .vm-svc .svc-port { color: var(--accent); }
+    .vm-svc .svc-badge {
+      font-size: 10px;
+      background: rgba(74,222,128,.1);
+      color: var(--green);
+      border: 1px solid rgba(74,222,128,.2);
+      border-radius: 3px;
+      padding: 1px 5px;
+      margin-left: 6px;
+    }
+    .vm-arrow {
+      text-align: center;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1;
+      margin: 4px 0;
+    }
+    .vm-internet {
+      text-align: center;
+      padding: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .vm-internet strong { color: var(--green); }
+    .vm-callout {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: rgba(251,191,36,.06);
+      border: 1px solid rgba(251,191,36,.2);
+      border-radius: 7px;
+      padding: 12px 14px;
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .vm-callout-icon { flex-shrink: 0; }
+
     /* ── Responsive ── */
     @media (max-width: 600px) {
       .hero { padding: 64px 16px 56px; }
@@ -416,6 +555,11 @@
   <div class="nav-inner">
     <div class="nav-logo"><span>k</span>ustron</div>
     <div class="nav-links">
+      <a href="https://github.com/dibosh/kustron/stargazers" class="btn btn-outline star-btn" id="star-btn" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Star
+        <span class="star-count" id="star-count">—</span>
+      </a>
       <a href="https://github.com/dibosh/kustron" class="btn btn-outline" target="_blank" rel="noopener">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
         GitHub
@@ -430,8 +574,8 @@
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
     From zero to running in minutes
   </div>
-  <h1>Local Kubernetes,<br>done in minutes.</h1>
-  <p>Describe your apps in one file. Kustron handles the rest — cluster, registry, build, deploy.</p>
+  <h1>Local dev environment,<br>up in minutes.</h1>
+  <p>Describe single or multiple apps in one file. Kustron handles the rest — local k8s cluster, registry, build, deploy.</p>
 
   <div>
     <div class="install-block">
@@ -684,6 +828,95 @@ apps:
   </div>
 </section>
 
+<hr class="divider">
+
+<!-- VM section -->
+<section>
+  <div class="section-inner">
+    <div class="section-label">Beyond localhost</div>
+    <h2>One VM. A real live environment.</h2>
+    <p class="section-sub">Kustron isn't just for local development. Spin it up on any cloud VM and expose your whole stack — APIs, frontends, databases — to the real internet. No cluster management. No cloud-native complexity.</p>
+
+    <div class="vm-layout">
+      <div class="vm-steps">
+        <div class="vm-step">
+          <div class="vm-step-num">1</div>
+          <div class="vm-step-body">
+            <h4>Get a VM</h4>
+            <p>Any Linux instance works — EC2, DigitalOcean Droplet, Hetzner Cloud, Linode. Even a $6/month box is enough for a real multi-service stack.</p>
+          </div>
+        </div>
+        <div class="vm-step">
+          <div class="vm-step-num">2</div>
+          <div class="vm-step-body">
+            <h4>Install prereqs &amp; add your SSH key</h4>
+            <p>Install Docker, k3d, kubectl, and kustron. Add your GitHub (or GitLab) SSH key so kustron can pull private repos directly on the instance.</p>
+          </div>
+        </div>
+        <div class="vm-step">
+          <div class="vm-step-num">3</div>
+          <div class="vm-step-body">
+            <h4>Write your <code style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">kustron-env.yaml</code></h4>
+            <p>List your apps with <code style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">exposed: true</code> for anything that needs to be public. Kustron maps each port to the VM's network interface.</p>
+          </div>
+        </div>
+        <div class="vm-step">
+          <div class="vm-step-num">4</div>
+          <div class="vm-step-body">
+            <h4>Bring it up</h4>
+            <p>One command. Cluster, registry, images, deployments — all at once.</p>
+          </div>
+        </div>
+        <div class="vm-step">
+          <div class="vm-step-num">5</div>
+          <div class="vm-step-body">
+            <h4>Open the firewall &amp; share the URL</h4>
+            <p>Allow the exposed ports in your security group (AWS) or firewall rules. That's it — your stack is live at <code style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent)">&lt;vm-ip&gt;:&lt;port&gt;</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="vm-diagram">
+          <div class="vm-diagram-title">Your VM — 1.2.3.4</div>
+          <div class="vm-box">
+            <div class="vm-box-label">kustron environment</div>
+            <div class="vm-services">
+              <div class="vm-svc">
+                <span class="svc-name">frontend</span>
+                <span class="svc-port">:8080</span>
+                <span class="svc-badge">live</span>
+              </div>
+              <div class="vm-svc">
+                <span class="svc-name">api</span>
+                <span class="svc-port">:3000</span>
+                <span class="svc-badge">live</span>
+              </div>
+              <div class="vm-svc">
+                <span class="svc-name">postgres</span>
+                <span class="svc-port">:5432</span>
+              </div>
+              <div class="vm-svc">
+                <span class="svc-name">redis</span>
+                <span class="svc-port">:6379</span>
+              </div>
+            </div>
+          </div>
+          <div class="vm-arrow">↓</div>
+          <div class="vm-internet">
+            <strong>1.2.3.4:8080</strong>&nbsp; · &nbsp;<strong>1.2.3.4:3000</strong><br>
+            <span style="font-size: 11px; margin-top: 4px; display: block;">accessible from anywhere</span>
+          </div>
+        </div>
+        <div class="vm-callout">
+          <span class="vm-callout-icon">🔒</span>
+          <span>Only open ports you intend to expose. Internal services like <code style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">postgres</code> and <code style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">redis</code> stay internal — never set <code style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">exposed: true</code> on them.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- Footer -->
 <footer>
   <div class="footer-inner">
@@ -700,6 +933,17 @@ apps:
 
 <script>
   hljs.highlightAll();
+
+  // Fetch live star count from GitHub API
+  fetch('https://api.github.com/repos/dibosh/kustron')
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if (!data) return;
+      const n = data.stargazers_count;
+      document.getElementById('star-count').textContent =
+        n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);
+    })
+    .catch(() => {});
 
   function copyInstall(btn) {
     const text = document.getElementById('install-cmd').textContent;
