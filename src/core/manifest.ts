@@ -65,18 +65,37 @@ export function buildDeployment(opts: ManifestOptions): string {
     container.envFrom = [{configMapRef: {name: opts.name}}];
   }
 
-  // Readiness probe: healthcheck path (default /), on app port
-  // Generous defaults: 10s initial delay, 10 failures at 5s intervals = ~60s to become ready
-  const readinessPath = opts.healthcheck ?? '/';
-  container.readinessProbe = {
+  // Startup probe: gives slow-starting apps up to 150s to become responsive
+  // readiness/liveness are disabled until startup succeeds
+  const probePath = opts.healthcheck ?? '/';
+  container.startupProbe = {
     httpGet: {
-      path: readinessPath,
+      path: probePath,
       port: opts.port,
     },
-    initialDelaySeconds: 10,
     periodSeconds: 5,
-    failureThreshold: 10,
+    failureThreshold: 30,
+  };
+
+  // Readiness probe: starts after startup succeeds
+  container.readinessProbe = {
+    httpGet: {
+      path: probePath,
+      port: opts.port,
+    },
+    periodSeconds: 5,
+    failureThreshold: 3,
     successThreshold: 1,
+  };
+
+  // Liveness probe: starts after startup succeeds, restarts dead containers
+  container.livenessProbe = {
+    httpGet: {
+      path: probePath,
+      port: opts.port,
+    },
+    periodSeconds: 10,
+    failureThreshold: 3,
   };
 
   const deployment = {
