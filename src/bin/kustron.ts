@@ -8,6 +8,7 @@ import {appsAdd} from '../commands/apps/add.js';
 import {appsRemove} from '../commands/apps/remove.js';
 import {setVerbose} from '../utils/exec.js';
 import {t} from '../utils/i18n.js';
+import {printBanner} from '../utils/banner.js';
 
 const program = new Command();
 
@@ -16,6 +17,9 @@ program
   .description(t('cli.description'))
   .version('2.0.0')
   .option('--verbose', t('cli.verboseOption'))
+  .configureHelp({
+    showGlobalOptions: true,
+  })
   .hook('preAction', (thisCommand) => {
     const opts = thisCommand.opts();
     if (opts.verbose) {
@@ -101,5 +105,22 @@ apps
   .action(async (name) => {
     await appsRemove(name);
   });
+
+// Show banner for help output
+const originalOutputHelp = program.outputHelp.bind(program);
+(program as any).outputHelp = function (options?: { error?: boolean; exitCode?: number }) {
+  printBanner();
+  return originalOutputHelp(options as any);
+};
+
+// Show banner at startup for non-help commands
+const args = process.argv.slice(2);
+const isHelp =
+  args.length === 0 ||
+  args.some((a) => a === '-h' || a === '--help' || a === '-V' || a === '--version');
+
+if (!isHelp) {
+  printBanner();
+}
 
 program.parse();
