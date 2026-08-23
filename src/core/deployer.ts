@@ -16,8 +16,7 @@ import {
 import {
   applyManifests,
   waitForRollout,
-  getPodDebugInfo,
-  getPodLogs,
+  getServiceNodePort,
 } from './apply.js';
 import {helmInstall, createHelmExposureService} from './helm.js';
 import {checkDependency} from '../utils/checks.js';
@@ -28,6 +27,13 @@ import type {AppEntry, DeployContext} from '../types/index.js';
 export interface DeployResult {
   name: string;
   url: string | null;
+}
+
+function buildExposureUrl(nodeIp: string | undefined, nodePort: number): string {
+  if (nodeIp) {
+    return `http://${nodeIp}:${nodePort}`;
+  }
+  return `NodePort ${nodePort} (run: kubectl port-forward svc/<name> ${nodePort}:${nodePort} -n <namespace>)`;
 }
 
 async function deployFromImage(
@@ -69,23 +75,17 @@ async function deployFromImage(
     await waitForRollout(app.name, ctx.namespace);
     info(`[${app.name}] ${t('deploy.rolloutComplete')}`);
   } catch (rolloutErr) {
-    error(`[${app.name}] ${t('deploy.rolloutFailed')}`);
-    const debugInfo = await getPodDebugInfo(app.name, ctx.namespace);
-    const logs = await getPodLogs(app.name, ctx.namespace);
-    if (debugInfo) {
-      console.log();
-      info('--- Pod describe ---');
-      console.log(debugInfo);
-    }
-    if (logs) {
-      console.log();
-      info('--- Pod logs ---');
-      console.log(logs);
-    }
     throw rolloutErr;
   }
 
-  return {name: app.name, url};
+  let finalUrl = url;
+  if (app.exposed) {
+    const nodePort = await getServiceNodePort(app.name, ctx.namespace);
+    if (nodePort) {
+      finalUrl = buildExposureUrl(ctx.nodeIp, nodePort);
+    }
+  }
+  return {name: app.name, url: finalUrl};
 }
 
 async function deploySourceApp(
@@ -156,6 +156,7 @@ async function deployHelmApp(
   await helmInstall(app, ctx.namespace);
   info(`[${app.name}] ${t('deploy.helmInstalled')}`);
 
+  let finalUrl = url;
   if (app.exposed && typeof app.port === 'number' && app.helm?.selector) {
     info(`[${app.name}] ${t('deploy.creatingExposureService')}`);
     const serviceYaml = createHelmExposureService(
@@ -166,11 +167,17 @@ async function deployHelmApp(
     );
     await applyManifests(serviceYaml);
     info(`[${app.name}] ${t('deploy.exposureServiceCreated')}`);
+
+    const nodePort = await getServiceNodePort(app.name, ctx.namespace);
+    if (nodePort) {
+      finalUrl = buildExposureUrl(ctx.nodeIp, nodePort);
+    }
   } else if (app.exposed) {
     warn(t('deploy.helmExposureWarning', {name: app.name}));
   }
 
-  return {name: app.name, url};
+  return {name: app.name, url: finalUrl};
+
 }
 
 export async function deployApp(
@@ -179,10 +186,7 @@ export async function deployApp(
 ): Promise<DeployResult> {
   step(t('deploy.starting', {name: app.name}));
 
-  const url =
-    app.exposed && typeof app.port === 'number'
-      ? `http://localhost:${app.port}`
-      : null;
+  const url = null;
 
   try {
     if (app.helm) {
@@ -217,7 +221,6 @@ export async function deployAll(
     results.push(result);
   }
 
-  console.log();
   success(t('deploy.summaryHeader'));
   for (const r of results) {
     const status = r.url ? `${r.name}  →  ${r.url}` : `${r.name}  →  internal`;

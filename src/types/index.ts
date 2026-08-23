@@ -27,7 +27,6 @@ export interface EnvFile {
 export interface ClusterConfig {
   name: string;
   namespace: string;
-  exposedPorts: number[];
 }
 
 export interface DeployContext {
@@ -35,6 +34,7 @@ export interface DeployContext {
   registryHost: string;
   clusterName: string;
   verbose: boolean;
+  nodeIp?: string;
 }
 
 export interface DependencyCheck {

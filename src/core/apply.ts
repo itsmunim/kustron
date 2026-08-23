@@ -154,3 +154,28 @@ export async function getPodLogs(
     return '';
   }
 }
+
+export async function getServiceNodePort(
+  appName: string,
+  namespace: string,
+): Promise<number | null> {
+  try {
+    const {stdout} = await exec(
+      'kubectl',
+      [
+        'get',
+        'service',
+        appName,
+        '-n',
+        namespace,
+        '-o',
+        'jsonpath={.spec.ports[0].nodePort}',
+      ],
+      {silent: true},
+    );
+    const nodePort = parseInt(stdout.trim(), 10);
+    return isNaN(nodePort) ? null : nodePort;
+  } catch {
+    return null;
+  }
+}

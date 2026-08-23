@@ -4,9 +4,10 @@ import {
   createCluster,
   clusterExists,
   installMetricsServer,
+  getK3dNodeIp,
 } from '../../core/cluster.js';
 import {mergeKubeconfig, setContext} from '../../core/context.js';
-import {readAndParseEnvFile, getExposedPorts} from '../../core/env-file.js';
+import {readAndParseEnvFile} from '../../core/env-file.js';
 import {deployAll} from '../../core/deployer.js';
 import {ensureNamespace} from '../../core/apply.js';
 import {error, success, step, warn} from '../../utils/logger.js';
@@ -26,7 +27,6 @@ export async function envUp(): Promise<void> {
 
   const envFile = await readAndParseEnvFile(filePath);
   const namespace = envFile.config?.namespace ?? 'kustron-env';
-  const exposedPorts = getExposedPorts(envFile);
 
   const hasHelmApps = envFile.apps.some((a) => a.helm);
   if (hasHelmApps) {
@@ -49,7 +49,6 @@ export async function envUp(): Promise<void> {
     await createCluster({
       name: clusterName,
       namespace,
-      exposedPorts,
     });
 
     step(t('env.up.importingKubeconfig'));
@@ -64,11 +63,14 @@ export async function envUp(): Promise<void> {
     warn(t('env.up.clusterExists', {name: clusterName}));
   }
 
+  const nodeIp = await getK3dNodeIp(clusterName);
+
   const ctx: DeployContext = {
     namespace,
-    registryHost: 'k3d-kustron-registry:5000',
+    registryHost: 'kustron-registry:5000',
     clusterName,
     verbose: false,
+    nodeIp: nodeIp ?? undefined,
   };
 
   step(t('env.up.deployingApps'));

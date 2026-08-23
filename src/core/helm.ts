@@ -85,12 +85,13 @@ export function createHelmExposureService(
       },
     },
     spec: {
-      type: 'LoadBalancer',
+      type: 'NodePort',
       selector,
       ports: [
         {
           port,
           targetPort: port,
+          protocol: 'TCP',
         },
       ],
     },

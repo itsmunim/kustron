@@ -32,7 +32,7 @@ export interface ExecResult {
 export async function exec(
   command: string,
   args: string[],
-  options?: {input?: string} & Omit<ExecaOptions, 'input'>,
+  options?: {input?: string; silent?: boolean} & Omit<ExecaOptions, 'input'>,
 ): Promise<ExecResult> {
   const opts: Record<string, unknown> = {
     all: true,

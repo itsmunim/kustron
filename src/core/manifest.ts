@@ -126,6 +126,14 @@ export function buildDeployment(opts: ManifestOptions): string {
 }
 
 export function buildService(opts: ManifestOptions): string {
+  const ports: Array<Record<string, unknown>> = [
+    {
+      port: opts.port,
+      targetPort: opts.port,
+      protocol: 'TCP',
+    },
+  ];
+
   const service = {
     apiVersion: 'v1',
     kind: 'Service',
@@ -135,14 +143,9 @@ export function buildService(opts: ManifestOptions): string {
       labels: managedLabels(opts.name),
     },
     spec: {
-      type: opts.expose ? 'LoadBalancer' : 'ClusterIP',
+      type: opts.expose ? 'NodePort' : 'ClusterIP',
       selector: {'app.kubernetes.io/name': opts.name},
-      ports: [
-        {
-          port: opts.port,
-          targetPort: opts.port,
-        },
-      ],
+      ports,
     },
   };
 

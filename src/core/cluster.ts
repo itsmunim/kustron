@@ -22,10 +22,6 @@ export async function createCluster(config: ClusterConfig): Promise<void> {
     '--wait',
   ];
 
-  for (const port of config.exposedPorts) {
-    args.push('--port', `${port}:${port}@loadbalancer`);
-  }
-
   await exec('k3d', args);
 }
 
@@ -37,7 +33,7 @@ export async function installMetricsServer(): Promise<void> {
       'metrics-server',
       '-n',
       'kube-system',
-    ]);
+    ], {silent: true});
     return;
   } catch {
     // not installed, proceed
@@ -70,10 +66,25 @@ export async function deleteCluster(name?: string): Promise<void> {
 export async function clusterExists(name?: string): Promise<boolean> {
   const clusterName = name ?? DEFAULT_CLUSTER_NAME;
   try {
-    const {stdout} = await exec('k3d', ['cluster', 'list', '-o', 'json']);
+    const {stdout} = await exec('k3d', ['cluster', 'list', '-o', 'json'], {silent: true});
     const clusters = JSON.parse(stdout) as Array<{name: string}>;
     return clusters.some((c) => c.name === clusterName);
   } catch {
     return false;
+  }
+}
+
+export async function getK3dNodeIp(clusterName: string): Promise<string | null> {
+  try {
+    const {stdout} = await exec('docker', [
+      'inspect',
+      `k3d-${clusterName}-server-0`,
+      '-f',
+      '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}',
+    ]);
+    const ip = stdout.trim();
+    return ip || null;
+  } catch {
+    return null;
   }
 }
