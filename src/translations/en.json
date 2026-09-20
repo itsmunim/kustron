@@ -1,6 +1,6 @@
 {
   "cli": {
-    "description": "A CLI tool that takes you from source code to a fully running local Kubernetes environment",
+    "description": "A CLI tool that takes you from source code to a fully running local environment powered by k3d",
     "verboseOption": "stream all shell command output",
     "envDescription": "Manage the kustron environment",
     "initDescription": "Create kustron-env.yaml in the current folder",
@@ -19,7 +19,7 @@
     "helmRepoOption": "Helm chart repository URL",
     "helmVersionOption": "Helm chart version",
     "portOption": "Port the app listens on",
-    "healthcheckOption": "Healthcheck path (default: /)",
+    "healthcheckOption": "Healthcheck: /path (HTTP GET), tcp (port check), none (default: no probes)",
     "exposedOption": "Make app accessible at localhost:<port>",
     "replicasOption": "Replica count (default: 1)",
     "haOption": "HA mode: min 2, max 5 replicas, CPU 90%, mem 80%",
@@ -27,9 +27,10 @@
   },
   "env": {
     "init": {
-      "alreadyExists": "kustron-env.yaml already exists. Edit it directly or use `kustron apps add` to add apps.",
+      "alreadyExists": "kustron-env.yaml already exists. Skipping creation.",
       "created": "Created {{file}}.",
-      "nextStep": "Open it, set the port, and run `kustron env up`."
+      "nextStep": "Open it, set the port, and run `kustron env up`.",
+      "missingDependencies": "Some required dependencies are missing. Install them before running `kustron env up`."
     },
     "up": {
       "noEnvFile": "No kustron-env.yaml found. Run `kustron env init` to create one.",
@@ -37,9 +38,12 @@
       "importingKubeconfig": "Importing kubeconfig...",
       "settingContext": "Setting kubectl context...",
       "installingMetricsServer": "Installing metrics-server...",
-      "clusterExists": "Cluster '{{name}}' already exists. Skipping creation.",
+      "clusterExists": "Cluster '{{name}}' already exists and is running. Skipping creation.",
+      "startingCluster": "Cluster '{{name}}' exists but is stopped. Starting it...",
+      "ensuringRegistry": "Ensuring registry...",
       "deployingApps": "Deploying apps...",
-      "success": "Environment '{{name}}' is up and running!"
+      "success": "Environment '{{name}}' is up and running!",
+      "missingDepsHint": "Missing dependencies. Run `kustron env init` first to install them."
     },
     "down": {
       "confirm": "Are you sure you want to tear down cluster '{{name}}'?",
@@ -85,7 +89,7 @@
     "strategyDetected": "Using {{strategy}}",
     "buildingImage": "Building image...",
     "imageBuilt": "Image built",
-    "pushingImage": "Pushing image...",
+    "pushingImage": "Pushing image to registry...",
     "imagePushed": "Image pushed",
     "generatingManifests": "Generating manifests...",
     "manifestsGenerated": "Manifests generated",
@@ -93,8 +97,12 @@
     "manifestsApplied": "Manifests applied",
     "waitingRollout": "Waiting for rollout...",
     "rolloutComplete": "Rollout complete",
-    "rolloutFailed": "Rollout failed — see pod describe / logs below for details.",
-    "rolloutTimeoutButRunning": "Rollout check timed out, but pod is running. The app may still be starting up.",
+    "rolloutFailed": "Rollout failed — see details below.",
+    "rolloutTimeout": "Rollout timed out after {{timeout}}s — pods are running, continuing.",
+    "imagePullFailed": "Image could not be pulled (ImagePullBackOff). Check the image name and that it exists in the registry.",
+    "crashLoop": "Container keeps crashing (CrashLoopBackOff). See pod details below.",
+    "sourceHash": "source hash {{ref}}",
+    "upToDate": "image {{ref}} already deployed — skipping build",
     "installingHelm": "Installing Helm chart...",
     "helmInstalled": "Helm chart installed",
     "creatingExposureService": "Creating exposure service...",
@@ -108,13 +116,14 @@
   "build": {
     "dockerfileFound": "Dockerfile found",
     "dockerfileNotFound": "No Dockerfile found",
-    "dockerBuild": "Building with Docker...",
+    "dockerBuild": "Building image...",
     "railpackBuild": "Building with Railpack...",
     "imagePush": "Pushing {{tag}}..."
   },
   "errors": {
     "commandFailed": "Command failed: {{command}}\n{{message}}",
-    "dockerNotRunning": "Docker does not appear to be running. Start Docker/OrbStack and try again.",
+    "containerRuntimeNotRunning": "Container runtime (Podman/Docker) does not appear to be running. Start it and try again.",
+    "podmanSocketNotFound": "Podman socket not found. Run `podman machine init` followed by `podman machine start`, then try again.",
     "railpackMissing": "Railpack is required to build this app but is not installed. Install it from https://railpack.io or add a Dockerfile to your project.",
     "unknownError": "Unknown error"
   }

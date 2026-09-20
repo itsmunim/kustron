@@ -8,7 +8,7 @@ Think of it as `docker-compose` for Kubernetes. You define your apps in a `kustr
 
 ## Prerequisites
 
-- **Docker** — [OrbStack](https://orbstack.dev) (recommended) or Docker Desktop
+- **Container runtime** — [Podman](https://podman.io) or Docker ([OrbStack](https://orbstack.dev) / Docker Desktop). Kustron auto-detects whichever you have and uses it for the k3d cluster and image builds.
 - **k3d** — `brew install k3d`
 - **kubectl** — `brew install kubectl`
 
@@ -41,7 +41,7 @@ kustron env init
 kustron env up
 ```
 
-Your app will be built, pushed to a local registry, and deployed into a k3d Kubernetes cluster. If you set `exposed: true`, it's accessible at `localhost:<port>`.
+Your app will be built, pushed to a local registry, and deployed into a k3d Kubernetes cluster. If you set `exposed: true`, it's reachable at the k3d node IP (printed in the deployment summary).
 
 ---
 
@@ -96,10 +96,10 @@ Run `kustron env show-spec` for a full annotated schema reference.
 |---|---|
 | Exactly one of `source`, `image`, `helm` | Required per app entry |
 | `port` | Required for `source` and `image`; optional for `helm` |
-| `healthcheck` | Optional for `source` and `image`; ignored for `helm` |
+| `healthcheck` | Optional for `source` and `image`; ignored for `helm`. `/<path>` = HTTP GET, `tcp` = port check, omit / `none` = no probes |
 | `ha: true` | Overrides `replicas`; sets min 2 / max 5 / CPU 90% / mem 80% |
 | `env` | Creates a ConfigMap for `source` and `image`; for `helm` values are passed as `--set` |
-| `exposed: true` | Service becomes `LoadBalancer` type; requires `port` |
+| `exposed: true` | Service becomes `NodePort` type, reachable at the k3d node IP; requires `port` |
 | `helm.selector` | Required when `helm` app has `exposed: true`; must match the chart's pod labels |
 | `name` | Becomes the Kubernetes Service name — other apps reach it at `http://<name>:<port>` |
 | `port: PORT` | The string `PORT` is treated as an unset placeholder; validation fails with a clear message |
@@ -118,7 +118,41 @@ Run `kustron env show-spec` for a full annotated schema reference.
 | `kustron apps add [flags]` | Add a new app entry to `kustron-env.yaml` |
 | `kustron apps remove <name>` | Remove an app entry from `kustron-env.yaml` |
 
+### `env up` is deterministic
+
+`kustron env up` reconciles your local environment to the desired state in `kustron-env.yaml`. Running it repeatedly is a no-op when nothing changed:
+
+- **Cluster** — if `kustron` already exists and is running, it is not touched. If it exists but is stopped, it is started. If it does not exist, it is created.
+- **kubectl access** — the k3d kubeconfig and context are merged every run (idempotent), so `env up` never fails on a missing context.
+- **Registry** — the in-cluster registry is ensured every run; a pre-existing cluster without one is wired up automatically.
+- **Images** — source apps are tagged with a **content hash** (`<registry>/<app>:<sha>`), not a timestamp. Unchanged source produces the same tag, the build is skipped, and the deployment manifest applies as a no-op. Change the source and the next `env up` builds and rolls out a new version.
+- **YAML-only changes** (env vars, replicas, exposure) are picked up by `kubectl apply` even when the image tag is unchanged.
+
 **Tip:** After editing `kustron-env.yaml` (manually or via `apps add/remove`), run `kustron env reload` to apply changes.
+
+### Healthchecks & rollout
+
+`kustron env up` waits for each deployment to become **Ready**, then prunes old failed ReplicaSets so `kubectl get pods` stays clean.
+
+A pod becomes Ready when its containers are Running **and** its readiness probe passes (if one is declared). Healthchecks are opt-in to keep rollouts deterministic — no declared healthcheck means no probes, so anything that starts successfully is Ready immediately:
+
+| `healthcheck` value | Probe | Use for |
+|---|---|---|
+| *(omitted)* or `none` | none — Ready as soon as the container runs | everything, incl. services that don't speak HTTP |
+| `tcp` | TCP socket on `port` | **redis**, postgres, mysql, memcached, ... |
+| `/health` (any path) | HTTP GET on that path | web apps with a health endpoint |
+
+For example, a redis app:
+
+```yaml
+apps:
+  - name: kivo-redis
+    image: redis:7
+    port: 6379
+    healthcheck: tcp   # or omit entirely — redis doesn't speak HTTP, so an HTTP probe would never pass
+```
+
+A wrong healthcheck does not hang forever anymore: `env up` fails fast with the pod details on `ImagePullBackOff` / `CrashLoopBackOff`, and only warns when a rollout legitimately takes longer than 150s while pods are running.
 
 ---
 
@@ -150,7 +184,7 @@ The HPA requires the metrics-server, which Kustron installs automatically during
 
 ## Deploying from a VM
 
-Exposed apps bind `0.0.0.0:<port>` on the host, so the VM's public IP works directly.
+Exposed apps get a `NodePort` service on the k3d node, so the VM's public IP works directly (`http://<vm-public-ip>:<nodeport>`).
 
 ---
 
@@ -165,10 +199,10 @@ Exposed apps bind `0.0.0.0:<port>` on the host, so the VM's public IP works dire
 ## How It Works
 
 1. **Cluster:** k3d creates a lightweight local Kubernetes cluster with a built-in container registry
-2. **Build:** Source apps are built with Docker (if `Dockerfile` exists) or Railpack (fallback)
+2. **Build:** Source apps are built with the detected container runtime (if `Dockerfile` exists) or Railpack (fallback)
 3. **Push:** Images are pushed to the local `k3d-kustron-registry:5000`
 4. **Deploy:** Kubernetes manifests (ConfigMap, Deployment, Service, HPA) are generated and applied
-5. **Expose:** Apps with `exposed: true` get a `LoadBalancer` service mapped to `localhost:<port>` via k3d's load balancer
+5. **Expose:** Apps with `exposed: true` get a `NodePort` service reachable at the k3d node IP
 
 ---
 

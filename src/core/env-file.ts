@@ -139,8 +139,8 @@ apps:
   - name: api
     source: ./services/api              # local path OR git@github.com:user/repo.git
     port: 3000                          # required
-    healthcheck: /health                # optional, defaults to /
-    exposed: true                       # accessible at localhost:3000
+    healthcheck: /health                # optional: /path (HTTP), tcp, or omit for no probes
+    exposed: true                       # reachable at the k3d node IP
     replicas: 1                         # ignored when ha: true
     ha: false                           # min 2 / max 5 / cpu 90% / mem 80%
     env:
@@ -151,7 +151,7 @@ apps:
   - name: postgres
     image: postgres:15
     port: 5432                          # required
-    healthcheck: /                      # optional
+    healthcheck: tcp                    # optional: /path (HTTP), tcp, or omit for no probes
     exposed: false
     env:
       POSTGRES_PASSWORD: secret

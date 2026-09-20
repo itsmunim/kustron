@@ -1,8 +1,16 @@
 import {access} from 'fs/promises';
-import {checkAll, checkDockerRunning} from '../../utils/checks.js';
+import {checkAll} from '../../utils/checks.js';
+import {
+  checkContainerRuntimeRunning,
+  getContainerRuntimeSocket,
+  detectContainerRuntime,
+} from '../../utils/container-runtime.js';
 import {
   createCluster,
   clusterExists,
+  isClusterRunning,
+  startCluster,
+  ensureRegistry,
   installMetricsServer,
   getK3dNodeIp,
 } from '../../core/cluster.js';
@@ -28,17 +36,34 @@ export async function envUp(): Promise<void> {
   const envFile = await readAndParseEnvFile(filePath);
   const namespace = envFile.config?.namespace ?? 'kustron-env';
 
-  const hasHelmApps = envFile.apps.some((a) => a.helm);
-  if (hasHelmApps) {
-    await checkAll(['docker', 'k3d', 'kubectl', 'helm'], []);
-  } else {
-    await checkAll(['docker', 'k3d', 'kubectl'], []);
+  try {
+    const hasHelmApps = envFile.apps.some((a) => a.helm);
+    if (hasHelmApps) {
+      await checkAll(['container-runtime', 'k3d', 'kubectl', 'helm'], ['railpack', 'docker']);
+    } else {
+      await checkAll(['container-runtime', 'k3d', 'kubectl'], ['helm', 'railpack', 'docker']);
+    }
+  } catch {
+    error(t('env.up.missingDepsHint'));
+    process.exit(1);
   }
 
-  const dockerRunning = await checkDockerRunning();
-  if (!dockerRunning) {
-    error(t('errors.dockerNotRunning'));
+  const runtime = await detectContainerRuntime();
+  const runtimeRunning = await checkContainerRuntimeRunning();
+  if (!runtimeRunning) {
+    error(t('errors.containerRuntimeNotRunning'));
     process.exit(1);
+  }
+
+  // Only podman needs an explicit socket (for k3d via DOCKER_HOST).
+  // Docker/OrbStack daemons are reached through the Docker CLI's own context,
+  // so there is no socket path to resolve.
+  if (runtime === 'podman') {
+    const socket = await getContainerRuntimeSocket();
+    if (!socket) {
+      error(t('errors.podmanSocketNotFound'));
+      process.exit(1);
+    }
   }
 
   const clusterName = DEFAULT_CLUSTER_NAME;
@@ -50,18 +75,25 @@ export async function envUp(): Promise<void> {
       name: clusterName,
       namespace,
     });
-
-    step(t('env.up.importingKubeconfig'));
-    await mergeKubeconfig(clusterName);
-
-    step(t('env.up.settingContext'));
-    await setContext(clusterName);
-
-    step(t('env.up.installingMetricsServer'));
-    await installMetricsServer();
+  } else if (!(await isClusterRunning(clusterName))) {
+    step(t('env.up.startingCluster', {name: clusterName}));
+    await startCluster(clusterName);
   } else {
     warn(t('env.up.clusterExists', {name: clusterName}));
   }
+
+  // Idempotent convergence: every `env up` guarantees a usable kubectl
+  // context and a wired-in registry, whatever state it finds the cluster in.
+  // This is what makes repeated runs deterministic instead of "sometimes
+  // failing on a stray kubeconfig/registry".
+  step(t('env.up.importingKubeconfig'));
+  await mergeKubeconfig(clusterName);
+  step(t('env.up.settingContext'));
+  await setContext(clusterName);
+  step(t('env.up.ensuringRegistry'));
+  await ensureRegistry(clusterName);
+  step(t('env.up.installingMetricsServer'));
+  await installMetricsServer();
 
   const nodeIp = await getK3dNodeIp(clusterName);
 

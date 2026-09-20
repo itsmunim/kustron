@@ -6,6 +6,7 @@ import {
 } from './source.js';
 import {detectBuildStrategy, buildImage} from './build.js';
 import {buildTag, buildPushTag, pushImage, REGISTRY_HOST} from './push.js';
+import {hashSourceDir} from './hash.js';
 import {
   buildConfigMap,
   buildDeployment,
@@ -19,6 +20,7 @@ import {
   getServiceNodePort,
 } from './apply.js';
 import {helmInstall, createHelmExposureService} from './helm.js';
+import {getDeployedImage} from './apply.js';
 import {checkDependency} from '../utils/checks.js';
 import {info, success, warn, step, error} from '../utils/logger.js';
 import {t} from '../utils/i18n.js';
@@ -93,9 +95,6 @@ async function deploySourceApp(
   ctx: DeployContext,
   url: string | null,
 ): Promise<DeployResult> {
-  const timestamp = Math.floor(Date.now() / 1000);
-  const pushTag = buildPushTag(app.name, timestamp);
-  const manifestImage = buildTag(app.name, timestamp);
   let sourcePath: string | undefined;
   let cloned = false;
 
@@ -109,6 +108,22 @@ async function deploySourceApp(
       info(`[${app.name}] ${t('deploy.resolvingSource')}`);
       sourcePath = await resolveLocalSource(app.source!);
       info(`[${app.name}] ${t('deploy.sourceResolved')}`);
+    }
+
+    // Deterministic image ref: content hash of the source tree. Unchanged
+    // source -> same tag -> nothing to rebuild or redeploy.
+    const ref = await hashSourceDir(sourcePath);
+    info(`[${app.name}] ${t('deploy.sourceHash', {ref})}`);
+    const pushTag = buildPushTag(app.name, ref);
+    const manifestImage = buildTag(app.name, ref);
+
+    // Image already running: skip the build + push entirely. `kubectl apply`
+    // below is still a no-op for unchanged manifests, but picks up yaml-only
+    // changes (env, replicas, exposure) when they happen.
+    const deployedImage = await getDeployedImage(app.name, ctx.namespace);
+    if (deployedImage === manifestImage) {
+      info(`[${app.name}] ${t('deploy.upToDate', {ref})}`);
+      return await deployFromImage(app, ctx, manifestImage, url);
     }
 
     info(`[${app.name}] ${t('deploy.detectingStrategy')}`);
