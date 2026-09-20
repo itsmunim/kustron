@@ -1,4 +1,5 @@
 import {Command} from 'commander';
+import chalk from 'chalk';
 import {envInit} from '../commands/env/init.js';
 import {envUp} from '../commands/env/up.js';
 import {envDown} from '../commands/env/down.js';
@@ -123,4 +124,10 @@ if (!isHelp) {
   printBanner();
 }
 
-program.parse();
+try {
+  await program.parseAsync();
+} catch (err) {
+  const message = err instanceof Error ? err.message : String(err);
+  console.error(chalk.red(`✖ ${message}`));
+  process.exit(1);
+}

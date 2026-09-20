@@ -13,49 +13,65 @@ export interface Dependency {
 
 const dependencies: Dependency[] = [
   {
+    name: 'container-runtime',
+    command: 'podman',
+    required: true,
+    installHint: 'Podman (https://podman.io) or Docker',
+    url: 'https://podman.io/getting-started/installation',
+  },
+  {
     name: 'docker',
     command: 'docker',
-    required: true,
-    installHint: 'Install OrbStack (https://orbstack.dev) or Docker Desktop',
-    url: 'https://orbstack.dev',
+    required: false,
+    installHint: 'Used by k3d under the hood; install podman-docker if using Podman',
+    url: 'https://podman.io',
   },
   {
     name: 'k3d',
     command: 'k3d',
     required: true,
-    installHint: 'brew install k3d',
-    url: 'https://k3d.io/installation',
+    installHint: 'https://k3d.io/v5.7.4/#installation',
+    url: 'https://k3d.io/v5.7.4/#installation',
   },
   {
     name: 'kubectl',
     command: 'kubectl',
     required: true,
-    installHint: 'brew install kubectl',
+    installHint: 'https://kubernetes.io/docs/tasks/tools/',
+    url: 'https://kubernetes.io/docs/tasks/tools/',
   },
   {
     name: 'helm',
     command: 'helm',
     required: false,
-    installHint: 'brew install helm',
+    installHint: 'https://helm.sh/docs/intro/install/',
+    url: 'https://helm.sh/docs/intro/install/',
   },
   {
     name: 'railpack',
     command: 'railpack',
     required: false,
-    installHint: 'See https://railpack.io',
+    installHint: 'https://railpack.io',
     url: 'https://railpack.io',
   },
   {
     name: 'git',
     command: 'git',
     required: false,
-    installHint: 'Usually pre-installed; otherwise brew install git',
+    installHint: 'Usually pre-installed; otherwise https://git-scm.com/downloads',
+    url: 'https://git-scm.com/downloads',
   },
 ];
 
 async function isInstalled(command: string): Promise<boolean> {
   const result = await execa('which', [command], {reject: false});
   return result.exitCode === 0;
+}
+
+async function isRuntimeInstalled(): Promise<boolean> {
+  // container-runtime is satisfied by either podman or docker (or the
+  // podman-docker shim that provides a docker binary)
+  return isInstalled('podman') || isInstalled('docker');
 }
 
 export async function checkDependency(
@@ -65,7 +81,8 @@ export async function checkDependency(
   if (!dep) {
     return {present: false};
   }
-  const installed = await isInstalled(dep.command);
+  const installed =
+    name === 'container-runtime' ? await isRuntimeInstalled() : await isInstalled(dep.command);
   return {present: installed};
 }
 
@@ -80,7 +97,10 @@ export async function checkAll(
 
   const results = await Promise.all(
     deps.map(async (dep) => {
-      const installed = await isInstalled(dep.command);
+      const installed =
+        dep.name === 'container-runtime'
+          ? await isRuntimeInstalled()
+          : await isInstalled(dep.command);
       return {dep, installed};
     }),
   );
@@ -133,11 +153,3 @@ export async function checkAll(
   success(t('checks.allRequiredInstalled'));
 }
 
-export async function checkDockerRunning(): Promise<boolean> {
-  try {
-    await execa('docker', ['info'], {reject: false});
-    return true;
-  } catch {
-    return false;
-  }
-}

@@ -65,38 +65,28 @@ export function buildDeployment(opts: ManifestOptions): string {
     container.envFrom = [{configMapRef: {name: opts.name}}];
   }
 
-  // Startup probe: gives slow-starting apps up to 150s to become responsive
-  // readiness/liveness are disabled until startup succeeds
-  const probePath = opts.healthcheck ?? '/';
-  container.startupProbe = {
-    httpGet: {
-      path: probePath,
-      port: opts.port,
-    },
-    periodSeconds: 5,
-    failureThreshold: 30,
-  };
+  // Healthcheck is opt-in:
+  //   - absent / 'none'  -> no probes. Pod is Ready as soon as the container
+  //     is Running, so rollouts complete fast and never get stuck on services
+  //     that don't speak HTTP (redis, postgres, mysql, ...).
+  //   - 'tcp'            -> TCP socket probe on the port. Right choice for
+  //     plain TCP services: ready when the port accepts connections.
+  //   - otherwise        -> HTTP GET on the given path (e.g. '/health').
+  const healthcheck = (opts.healthcheck ?? '').trim();
+  if (healthcheck && healthcheck !== 'none') {
+    const probe: Record<string, unknown> =
+      healthcheck === 'tcp'
+        ? {tcpSocket: {port: opts.port}}
+        : {httpGet: {path: healthcheck, port: opts.port}};
 
-  // Readiness probe: starts after startup succeeds
-  container.readinessProbe = {
-    httpGet: {
-      path: probePath,
-      port: opts.port,
-    },
-    periodSeconds: 5,
-    failureThreshold: 3,
-    successThreshold: 1,
-  };
-
-  // Liveness probe: starts after startup succeeds, restarts dead containers
-  container.livenessProbe = {
-    httpGet: {
-      path: probePath,
-      port: opts.port,
-    },
-    periodSeconds: 10,
-    failureThreshold: 3,
-  };
+    // Startup probe: gives slow-starting apps up to 150s to become responsive;
+    // readiness/liveness stay disabled until startup succeeds.
+    container.startupProbe = {...probe, periodSeconds: 5, failureThreshold: 30};
+    // Readiness: gates Service traffic + rollout completion.
+    container.readinessProbe = {...probe, periodSeconds: 5, failureThreshold: 3, successThreshold: 1};
+    // Liveness: restarts dead containers once startup succeeded.
+    container.livenessProbe = {...probe, periodSeconds: 10, failureThreshold: 3};
+  }
 
   const deployment = {
     apiVersion: 'apps/v1',
