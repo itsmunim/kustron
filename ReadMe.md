@@ -6,9 +6,18 @@ Think of it as `docker-compose` for Kubernetes. You define your apps in a `kustr
 
 ---
 
+## Why kubernetes?
+
+`k3d` is pretty lightweight, also this is more like a sandbox where you can deploy as many applications as you need. Your full stack can be up and running inside this mini cluster, and once you are done testing, you can simply tear it down. For testing applications locally, that's really powerful.
+
+---
+
 ## Prerequisites
 
 - **Container runtime** — [Podman](https://podman.io) or Docker ([OrbStack](https://orbstack.dev) / Docker Desktop). Kustron auto-detects whichever you have and uses it for the k3d cluster and image builds.
+
+> **Note**: We strongly recommend using `Podman` or `Orbstack`(if you are on Mac), Docker desktop takes too much CPU for some random reasons while running `k3d`.
+
 - **k3d** — `brew install k3d`
 - **kubectl** — `brew install kubectl`
 
@@ -21,11 +30,34 @@ Optional:
 
 ## Installation
 
+Kustron is installed with a single script. It checks what you already have, asks before installing anything (podman / OrbStack / Docker Desktop, k3d, kubectl, railpack, helm, git), then builds Kustron and puts a `kustron` command on your PATH.
+
 ```bash
-npm i -g kustron
+# recommended: download the installer, review it, then run it
+curl -fsSL https://raw.githubusercontent.com/itsmunim/kustron/master/download.sh | bash
+./install.sh
+
+# same thing in two separate steps
+curl -fsSL -o install.sh https://raw.githubusercontent.com/itsmunim/kustron/master/install.sh
+chmod +x install.sh
+./install.sh
+
+# non-interactive: accept everything and install whatever is missing
+./install.sh -y
 ```
 
-After installation, a dependency check runs automatically to verify everything is in place.
+What it asks for, and what happens if you say no:
+
+| Prompt | Required? | If you say no |
+|---|---|---|
+| Install podman? (podman / OrbStack / Docker Desktop must be present) | yes | asks for OrbStack / Docker Desktop, then aborts if none installed |
+| Install k3d? (if not installed, kustron will not work) | yes | aborts — kustron cannot create a cluster without k3d |
+| Install kubectl? | yes | aborts |
+| Install railpack? (builds images when there's no Dockerfile) | no | apps with a Dockerfile still build fine |
+| Install helm? (Helm charts only) | no | helm apps are skipped |
+| Install git? (git-URL sources only) | no | `source: <git-url>` apps are skipped |
+
+The installer is idempotent — re-running it skips what's already installed and just rebuilds Kustron.
 
 ---
 
@@ -211,7 +243,7 @@ Exposed apps get a `NodePort` service on the k3d node, so the VM's public IP wor
 Clone the repo and install dependencies:
 
 ```bash
-git clone git@github.com:dibosh/kustron.git
+git clone git@github.com:itsmunim/kustron.git
 cd kustron
 npm install
 ```

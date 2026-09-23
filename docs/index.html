@@ -824,7 +824,7 @@
     <div class="nav-inner">
       <div class="nav-logo"><span>k</span>ustron</div>
       <div class="nav-links">
-        <a href="https://github.com/dibosh/kustron/stargazers" class="btn btn-outline star-btn" id="star-btn"
+        <a href="https://github.com/itsmunim/kustron/stargazers" class="btn btn-outline star-btn" id="star-btn"
           target="_blank" rel="noopener">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -834,7 +834,7 @@
           Star
           <span class="star-count" id="star-count">—</span>
         </a>
-        <a href="https://github.com/dibosh/kustron" class="btn btn-outline" target="_blank" rel="noopener">
+        <a href="https://github.com/itsmunim/kustron" class="btn btn-outline" target="_blank" rel="noopener">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
             <path
               d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
@@ -861,14 +861,17 @@
     <div>
       <div class="install-block">
         <span class="prompt">$</span>
-        <code id="install-cmd">npm install -g kustron</code>
+        <code id="install-cmd">curl -fsSL https://raw.githubusercontent.com/itsmunim/kustron/master/download.sh | bash</code>
         <button class="copy-btn" onclick="copyInstall(this)">Copy</button>
       </div>
     </div>
 
     <p class="hero-note">
-      Requires <a href="https://orbstack.dev" target="_blank" rel="noopener">OrbStack</a> or Docker Desktop,
-      <a href="https://k3d.io" target="_blank" rel="noopener">k3d</a>, and kubectl.
+      Downloads <code>install.sh</code> for you to review, then run <code>./install.sh</code> — it asks before installing anything:
+      container runtime (podman / OrbStack / Docker Desktop), <a href="https://k3d.io" target="_blank" rel="noopener">k3d</a>, kubectl,
+      railpack, helm, and git. No Kubernetes knowledge required.
+      The installer asks before installing anything — container runtime (podman / OrbStack / Docker Desktop),
+      <a href="https://k3d.io" target="_blank" rel="noopener">k3d</a>, kubectl, railpack, helm, and git.
       No Kubernetes knowledge required.
     </p>
   </div>
@@ -1251,8 +1254,8 @@
         <span>kustron</span> &nbsp;·&nbsp; MIT License &nbsp;·&nbsp; by Munim
       </div>
       <div class="footer-right">
-        <a href="https://github.com/dibosh/kustron" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://github.com/dibosh/kustron/issues" target="_blank" rel="noopener">Issues</a>
+        <a href="https://github.com/itsmunim/kustron" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/itsmunim/kustron/issues" target="_blank" rel="noopener">Issues</a>
         <a href="https://www.npmjs.com/package/kustron" target="_blank" rel="noopener">npm</a>
       </div>
     </div>
@@ -1262,7 +1265,7 @@
     hljs.highlightAll();
 
     // Fetch live star count from GitHub API
-    fetch('https://api.github.com/repos/dibosh/kustron')
+    fetch('https://api.github.com/repos/itsmunim/kustron')
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (!data) return;
