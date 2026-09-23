@@ -4,29 +4,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kustron — Local Kubernetes, done in minutes</title>
+  <title>Kustron | Local dev environment, up in minutes</title>
   <link rel="canonical" href="https://itsmunim.github.io/kustron/">
   <meta name="description"
-    content="Go from source code to a running local Kubernetes environment in minutes. No Kubernetes knowledge required.">
+    content="Define your apps in one file. Kustron spins up a local Kubernetes cluster, builds, and deploys them. No Kubernetes knowledge required.">
   <meta name="theme-color" content="#09090b">
 
   <!-- Open Graph (Facebook, LinkedIn, Discord, iMessage) -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Kustron">
   <meta property="og:url" content="https://itsmunim.github.io/kustron/">
-  <meta property="og:title" content="Kustron — Local Kubernetes, done in minutes">
-  <meta property="og:description" content="Go from source code to a running local Kubernetes environment in minutes. No Kubernetes knowledge required.">
+  <meta property="og:title" content="Kustron | Local dev environment, up in minutes">
+  <meta property="og:description" content="Define your apps in one file. Kustron spins up a local Kubernetes cluster, builds, and deploys them. No Kubernetes knowledge required.">
   <meta property="og:image" content="https://itsmunim.github.io/kustron/og-preview.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Kustron — Local Kubernetes, done in minutes">
+  <meta property="og:image:alt" content="Kustron | Local dev environment, up in minutes">
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Kustron — Local Kubernetes, done in minutes">
-  <meta name="twitter:description" content="Go from source code to a running local Kubernetes environment in minutes. No Kubernetes knowledge required.">
+  <meta name="twitter:title" content="Kustron | Local dev environment, up in minutes">
+  <meta name="twitter:description" content="Define your apps in one file. Kustron spins up a local Kubernetes cluster, builds, and deploys them. No Kubernetes knowledge required.">
   <meta name="twitter:image" content="https://itsmunim.github.io/kustron/og-preview.jpg">
-  <meta name="twitter:image:alt" content="Kustron — Local Kubernetes, done in minutes">
+  <meta name="twitter:image:alt" content="Kustron | Local dev environment, up in minutes">
 
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -40,7 +40,7 @@
     "name": "Kustron",
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "macOS, Linux",
-    "description": "Go from source code to a running local Kubernetes environment in minutes. No Kubernetes knowledge required.",
+    "description": "Define your apps in one file. Kustron spins up a local Kubernetes cluster, builds, and deploys them. No Kubernetes knowledge required.",
     "url": "https://itsmunim.github.io/kustron/",
     "image": "https://itsmunim.github.io/kustron/og-preview.jpg",
     "offers": {
@@ -264,19 +264,6 @@
       border-color: var(--green);
     }
 
-    .hero-note {
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .hero-note a {
-      color: var(--muted);
-      text-decoration: underline;
-    }
-
-    .hero-note a:hover {
-      color: var(--accent);
-    }
 
     /* ── Sections ── */
     section {
@@ -891,11 +878,10 @@
         <circle cx="12" cy="12" r="10" />
         <path d="M12 8v4l3 3" />
       </svg>
-      From zero to running in minutes
+      Works with Podman &amp; Docker
     </div>
     <h1>Local dev environment,<br>up in minutes.</h1>
-    <p>Describe single or multiple apps in one file. Kustron handles the rest — local k8s cluster, registry, build,
-      deploy.</p>
+    <p>Define your apps in one file. Kustron handles the rest: local cluster, registry, build, deploy.</p>
 
     <div>
       <div class="install-block">
@@ -905,11 +891,6 @@
       </div>
     </div>
 
-    <p class="hero-note">
-      Downloads <code>install.sh</code> for you to review, then run <code>./install.sh</code> — it asks before installing anything:
-      container runtime (podman / OrbStack / Docker Desktop), <a href="https://k3d.io" target="_blank" rel="noopener">k3d</a>, kubectl,
-      railpack, helm, and git. No Kubernetes knowledge required.
-    </p>
   </div>
 
   <hr class="divider">
@@ -918,9 +899,8 @@
   <section>
     <div class="section-inner">
       <div class="section-label">How it works</div>
-      <h2>Four commands. Real dev environment.</h2>
-      <p class="section-sub">Kustron manages a local k3d cluster with a built-in container registry. You define what to
-        run. It handles the rest.</p>
+      <h2>A real dev environment in four commands.</h2>
+      <p class="section-sub">Kustron runs a local k3d cluster with its own registry. You define what to run, it does the heavy lifting.</p>
 
       <div class="steps">
         <div class="step">
@@ -957,10 +937,8 @@
   <section>
     <div class="section-inner">
       <div class="section-label">kustron-env.yaml</div>
-      <h2>One file. Your whole environment.</h2>
-      <p class="section-sub">Apps discover each other by name. Exposed apps are available at <code
-          style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--accent)">localhost:&lt;port&gt;</code>.
-      </p>
+      <h2>Your whole environment in one file.</h2>
+      <p class="section-sub">Apps find each other by name. Exposed apps are reachable at the cluster node IP.</p>
 
       <div class="yaml-window">
         <div class="yaml-titlebar">
@@ -979,7 +957,7 @@
             - name: api
               source: ./services/api      # or: git@github.com:org/repo.git
               port: 3000
-              exposed: true               # reachable at localhost:3000
+              exposed: true               # reachable at the k3d node IP
               ha: true                    # min 2 replicas, autoscales to 5
               env:
                 NODE_ENV: production
@@ -1054,7 +1032,7 @@
   <section>
     <div class="section-inner">
       <div class="section-label">Commands</div>
-      <h2>Everything you need. Nothing you don't.</h2>
+      <h2>The commands you'll actually use.</h2>
 
       <table class="cmds-table">
         <tr>
@@ -1068,7 +1046,7 @@
         <tr>
           <td><code class="cmd-code"><span class="kw">kustron</span> env up</code></td>
           <td><span class="cmd-desc">Bring up the cluster and deploy all apps from <code>kustron-env.yaml</code>.
-              Idempotent — safe to re-run.</span></td>
+              Idempotent, safe to re-run.</span></td>
         </tr>
         <tr>
           <td><code class="cmd-code"><span class="kw">kustron</span> env reload</code></td>
@@ -1186,10 +1164,8 @@
   <section>
     <div class="section-inner">
       <div class="section-label">Beyond localhost</div>
-      <h2>One VM. A real live environment.</h2>
-      <p class="section-sub">Kustron isn't just for local development. Spin it up on any cloud VM and expose your whole
-        stack — APIs, frontends, databases — to the real internet. No cluster management. No cloud-native complexity.
-      </p>
+      <h2>Your whole stack, live on one VM.</h2>
+      <p class="section-sub">Not just for local dev. Run it on any cloud VM and your stack, APIs, frontends, databases, is on the real internet. No cluster management, no k8s babysitting.</p>
 
       <div class="vm-layout">
         <div class="vm-steps">
@@ -1197,7 +1173,7 @@
             <div class="vm-step-num">1</div>
             <div class="vm-step-body">
               <h4>Get a VM</h4>
-              <p>Any Linux instance works — EC2, DigitalOcean Droplet, Hetzner Cloud, Linode. Even a $6/month box is
+              <p>Any Linux instance works: EC2, DigitalOcean Droplet, Hetzner Cloud, Linode. Even a $6/month box is
                 enough for a real multi-service stack.</p>
             </div>
           </div>
@@ -1205,7 +1181,7 @@
             <div class="vm-step-num">2</div>
             <div class="vm-step-body">
               <h4>Install prereqs &amp; add your SSH key</h4>
-              <p>Install Docker, k3d, kubectl, and kustron. Add your GitHub (or GitLab) SSH key so kustron can pull
+              <p>Install the container runtime (Docker or podman), k3d, kubectl, and kustron. Add your GitHub (or GitLab) SSH key so kustron can pull
                 private repos directly on the instance.</p>
             </div>
           </div>
@@ -1223,14 +1199,14 @@
             <div class="vm-step-num">4</div>
             <div class="vm-step-body">
               <h4>Bring it up</h4>
-              <p>One command. Cluster, registry, images, deployments — all at once.</p>
+              <p>One command: cluster, registry, images, deployments, all at once.</p>
             </div>
           </div>
           <div class="vm-step">
             <div class="vm-step-num">5</div>
             <div class="vm-step-body">
               <h4>Open the firewall &amp; share the URL</h4>
-              <p>Allow the exposed ports in your security group (AWS) or firewall rules. That's it — your stack is live
+              <p>Allow the exposed ports in your security group (AWS) or firewall rules. That's it, your stack is live
                 at <code
                   style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent)">&lt;vm-ip&gt;:&lt;port&gt;</code>.
               </p>
@@ -1240,7 +1216,7 @@
 
         <div>
           <div class="vm-diagram">
-            <div class="vm-diagram-title">Your VM — 1.2.3.4</div>
+            <div class="vm-diagram-title">Your VM: 1.2.3.4</div>
             <div class="vm-box">
               <div class="vm-box-label">kustron environment</div>
               <div class="vm-services">
@@ -1274,8 +1250,7 @@
             <span class="vm-callout-icon">🔒</span>
             <span>Only open ports you intend to expose. Internal services like <code
                 style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">postgres</code> and <code
-                style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">redis</code> stay internal — never
-              set <code style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">exposed: true</code> on
+                style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">redis</code> stay internal. Never
               them.</span>
           </div>
         </div>
@@ -1292,7 +1267,7 @@
       <div class="footer-right">
         <a href="https://github.com/itsmunim/kustron" target="_blank" rel="noopener">GitHub</a>
         <a href="https://github.com/itsmunim/kustron/issues" target="_blank" rel="noopener">Issues</a>
-        <a href="https://www.npmjs.com/package/kustron" target="_blank" rel="noopener">npm</a>
+        <a href="https://github.com/itsmunim/kustron/releases" target="_blank" rel="noopener">Releases</a>
       </div>
     </div>
   </footer>
