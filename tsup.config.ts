@@ -1,10 +1,9 @@
 import { defineConfig } from 'tsup'
 
 export default defineConfig({
-  entry: [
-    'src/bin/kustron.ts',
-    'src/scripts/postinstall.ts',
-  ],
+  entry: {
+    'bin/kustron': 'src/bin/kustron.ts',
+  },
   outDir: 'dist',
   format: ['esm'],
   target: 'node18',

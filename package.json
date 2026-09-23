@@ -3,19 +3,10 @@
   "version": "2.0.0",
   "description": "A CLI tool that gives anyone a fully working local Kubernetes setup in minutes",
   "type": "module",
-  "main": "dist/bin/kustron.js",
-  "bin": {
-    "kustron": "dist/bin/kustron.js"
-  },
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "prepublishOnly": "npm run build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "postinstall": "node dist/scripts/postinstall.js || true",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
