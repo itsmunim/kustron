@@ -641,6 +641,24 @@
       text-decoration: none;
     }
 
+    /* ── FAQ ── */
+    .faq-list {
+      display: grid;
+      gap: 28px;
+      max-width: 760px;
+    }
+    .faq-item h4 {
+      color: var(--text-bright);
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    .faq-item p {
+      font-size: 15px;
+      color: var(--text);
+      line-height: 1.7;
+      margin-bottom: 10px;
+    }
+
     /* ── Star button ── */
     .star-btn {
       gap: 8px;
@@ -998,6 +1016,39 @@
 
   <hr class="divider">
 
+  <!-- Example: a real env -->
+  <section>
+    <div class="section-inner">
+      <div class="section-label">Example</div>
+      <h2>Your repo, plus the infra it needs.</h2>
+      <p class="section-sub">Start inside a source repo with a Dockerfile. Add a local DynamoDB, an S3-compatible store, and a cache, then bring it all up.</p>
+
+      <div class="yaml-window">
+        <div class="yaml-titlebar">
+          <div class="dot dot-red"></div>
+          <div class="dot dot-yellow"></div>
+          <div class="dot dot-green"></div>
+          <span class="yaml-filename">terminal</span>
+        </div>
+        <pre>
+          <code class="language-bash">
+          cd my-api                                  # your repo, with a Dockerfile
+          kustron env init                           # creates kustron-env.yaml
+
+          kustron apps add --name local-ddb  --image amazon/dynamodb-local:latest --port 8000 --healthcheck tcp
+          kustron apps add --name local-s3   --image luofuxiang/local-s3 --port 80
+          kustron apps add --name kivo       --image ghcr.io/itsmunim/kivo:v1.5.0 --port 6379 --healthcheck tcp
+
+          kustron env up
+          </code>
+        </pre>
+      </div>
+
+      <p class="section-sub">Your app now talks to <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">local-ddb:8000</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">local-s3:80</code> and <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">kivo:6379</code> by name. The cache is <a href="https://itsmunim.github.io/kivo" target="_blank" rel="noopener">kivo</a>, our Redis-compatible in-memory store: same protocol, same port, so it drops in where you'd use redis. Prefer the real thing? Swap in <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">redis:7</code>, nothing else changes.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
   <!-- App types -->
   <section>
     <div class="section-inner">
@@ -1116,10 +1167,11 @@
         <div class="prereq-row">
           <div class="prereq-status required">required</div>
           <div class="prereq-info">
-            <h4>Docker runtime</h4>
-            <p><a href="https://orbstack.dev" target="_blank" rel="noopener">OrbStack</a> (recommended) or <a
-                href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener">Docker Desktop</a>
-            </p>
+            <h4>Container runtime</h4>
+            <p><a href="https://orbstack.dev" target="_blank" rel="noopener">OrbStack</a> (recommended on macOS) ·
+              <a href="https://podman.io" target="_blank" rel="noopener">Podman</a> (any platform) · or <a
+                href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener">Docker Desktop</a>.
+              Kustron auto-detects whichever you have.</p>
           </div>
         </div>
         <div class="prereq-row">
@@ -1269,6 +1321,50 @@
     </div>
   </section>
 
+  <!-- FAQ -->
+  <section>
+    <div class="section-inner">
+      <div class="section-label">FAQ</div>
+      <h2>Good questions, quick answers.</h2>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <h4>Which container runtime should I use, and how do I set it up?</h4>
+          <p><strong>OrbStack (macOS, recommended):</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">brew install --cask orbstack</code>, open it once, done. Kustron detects it automatically.</p>
+          <p><strong>Podman (any platform):</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">brew install podman</code> (macOS) or your package manager (Linux), then <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">podman machine init --rootful --cpus 4 --memory 4096</code> and <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">podman machine start</code>. The kustron installer does all of this for you and checks the daemon is responding.</p>
+          <p>Docker Desktop works too, but it's heavy with k3d. See the next question.</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>Docker Desktop + k3d hogs my CPU</h4>
+          <p>Docker Desktop runs Linux in a VM, and k3d runs a full Kubernetes cluster inside that VM. Two layers of virtualization means the k3d containers keep chewing CPU even when idle, plus several GB of RAM. OrbStack and Podman don't stack a second VM on top, which is why k3d is much happier on both.</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>&ldquo;cannot create network with name 'bridge' because it conflicts with a valid network mode&rdquo;</h4>
+          <p>Podman reserves <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">bridge</code> as a network mode keyword, so a network can't be named that. Kustron used to try creating one before starting the cluster, which is exactly where this error came from. k3d handles networking itself (it auto-creates a <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">k3d-&lt;cluster&gt;</code> network on podman), and current kustron versions just let it. Update kustron with <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">./install.sh</code> and run <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">kustron env up</code>.</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>Railpack won't install, and I use a private npm registry</h4>
+          <p>Railpack used to ship on npm, so <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">npm i -g railpack</code> broke for anyone pointed at a private registry. It's not on npm anymore: the installer downloads the prebuilt binary straight from <a href="https://github.com/railwayapp/railpack/releases" target="_blank" rel="noopener">GitHub releases</a>. No npm, no brew, no package manager involved.</p>
+          <p>Building an app that pulls private npm deps (without a Dockerfile)? Keep your <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">.npmrc</code> auth or <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">NPM_TOKEN</code> env var in the app's build environment so railpack can authenticate.</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>Port 5000 is already in use</h4>
+          <p>Kustron binds the local image registry to <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">localhost:5000</code>. If something else is listening there, free the port and re-run <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">kustron env up</code>.</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>Podman machine runs out of memory while k3d runs</h4>
+          <p>A k3d cluster wants around 4GB in the podman VM. On macOS: <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">podman machine init --rootful --cpus 4 --memory 4096</code> for a new machine, or <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">podman machine set --memory 4096</code> + restart for an existing one.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
   <!-- Footer -->
   <footer>
     <div class="footer-inner">
