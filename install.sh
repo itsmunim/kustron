@@ -7,7 +7,8 @@
 #   - k3d                                            — REQUIRED
 #   - kubectl                                        — REQUIRED
 #   - railpack                                       — recommended (builds images
-#                                                      when there is no Dockerfile)
+#                                                      without a Dockerfile; binary
+#                                                      downloaded from GitHub, no npm)
 #   - helm                                           — optional (helm apps only)
 #   - git                                            — optional (git sources only)
 #
@@ -218,8 +219,65 @@ install_helm() {
 }
 
 install_railpack() {
-  # railpack publishes a CLI on npm: https://www.npmjs.com/package/railpack
-  npm install -g railpack
+  # Railpack is no longer published on npm. Fetch the prebuilt binary from
+  # GitHub releases instead — that works regardless of your npm registry
+  # config (a private registry is a common reason `npm i -g railpack` fails).
+  if ! have curl; then
+    err "curl is needed to download railpack."
+    return 1
+  fi
+
+  local tag arch os asset url
+  tag="$(curl -fsSL https://api.github.com/repos/railwayapp/railpack/releases/latest | grep -oE '"tag_name":\s*"[^"]+"' | head -1 | sed 's/.*"\([^"]*\)"$/\1/')"
+  if [[ -z "$tag" ]]; then
+    err "Could not determine the latest railpack release."
+    return 1
+  fi
+
+  case "$(uname -s)" in
+    Darwin) os="apple-darwin" ;;
+    Linux)  os="unknown-linux-musl" ;;
+    *)      err "Unsupported OS for railpack: $(uname -s)" ; return 1 ;;
+  esac
+  case "$(uname -m)" in
+    arm64|aarch64) arch="arm64" ;;
+    x86_64|amd64)  arch="x86_64" ;;
+    *)             err "Unsupported architecture for railpack: $(uname -m)" ; return 1 ;;
+  esac
+
+  url="https://github.com/railwayapp/railpack/releases/download/${tag}/railpack-${tag}-${arch}-${os}.tar.gz"
+  note "Downloading railpack ${tag} (${arch}/${os}) from GitHub releases..."
+
+  local tmp
+  tmp="$(mktemp -d)"
+  if ! curl -fsSL "$url" -o "$tmp/railpack.tar.gz"; then
+    err "Failed to download railpack from $url"
+    rm -rf "$tmp"
+    return 1
+  fi
+  tar -xzf "$tmp/railpack.tar.gz" -C "$tmp"
+
+  local bin
+  bin="$(find "$tmp" -type f -name 'railpack' -perm -u+x | head -1)"
+  if [[ -z "$bin" ]]; then
+    err "Downloaded archive does not contain the railpack binary."
+    rm -rf "$tmp"
+    return 1
+  fi
+
+  if [[ -w "$BIN_DIR_DEFAULT" ]] || [[ "$(id -u)" -eq 0 ]]; then
+    $SUDO install -m 0755 "$bin" "$BIN_DIR_DEFAULT/railpack"
+    rm -rf "$tmp"
+    ok "railpack installed to $BIN_DIR_DEFAULT/railpack"
+  else
+    mkdir -p "$BIN_DIR_FALLBACK"
+    install -m 0755 "$bin" "$BIN_DIR_FALLBACK/railpack"
+    rm -rf "$tmp"
+    ok "railpack installed to $BIN_DIR_FALLBACK/railpack"
+    if [[ ":$PATH:" != *":$BIN_DIR_FALLBACK:"* ]]; then
+      warn "$BIN_DIR_FALLBACK is not on your PATH — add it with:  export PATH=\"$BIN_DIR_FALLBACK:\$PATH\""
+    fi
+  fi
 }
 
 install_git() {
@@ -310,7 +368,7 @@ fi
 printf '\n=== railpack ===\n'
 if have railpack; then
   ok "railpack"
-elif ask "Install railpack? (railpack helps to create container images from source code without providing any Dockerfile)" "y"; then
+elif ask "Install railpack? (railpack helps to create container images from source code without providing any Dockerfile) (binary from GitHub, no npm needed)" "y"; then
   install_railpack
 else
   warn "Skipping railpack — apps with a Dockerfile will still build fine."

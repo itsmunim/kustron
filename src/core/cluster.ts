@@ -2,7 +2,6 @@ import {exec} from '../utils/exec.js';
 import {
   getDockerHostEnv,
   getRuntimeCommand,
-  detectContainerRuntime,
 } from '../utils/container-runtime.js';
 import type {ClusterConfig} from '../types/index.js';
 
@@ -39,19 +38,15 @@ export async function createCluster(config: ClusterConfig): Promise<void> {
 
   const env = await getK3dEnv();
 
-  // k3d attaches nodes and the registry to a network named `bridge`.
-  // Rootless podman does not ship one (its default network is `podman`), so
-  // create it up front to keep cluster creation deterministic on podman hosts.
-  if ((await detectContainerRuntime()) === 'podman') {
-    const existsResult = await exec(
-      'podman',
-      ['network', 'exists', 'bridge'],
-      {silent: true, reject: false, env},
-    );
-    if (existsResult.exitCode !== 0) {
-      await exec('podman', ['network', 'create', 'bridge'], {silent: true, env});
-    }
-  }
+  // NOTE: do NOT pre-create a docker network named `bridge` here. k3d already
+  // handles this: it uses Docker's default `bridge` network when one exists,
+  // and on rootless podman (where `bridge` doesn't exist) it auto-creates a
+  // `k3d-<cluster>` network. Explicitly creating a network named `bridge`
+  // fails on podman with "cannot create network with name 'bridge' because it
+  // conflicts with a valid network mode" — podman reserves `bridge` as a
+  // network mode keyword.
+
+  await exec('k3d', args, {env});
 
   await exec('k3d', args, {env});
 }
