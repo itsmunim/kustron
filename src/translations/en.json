@@ -8,6 +8,7 @@
     "downDescription": "Tear everything down",
     "reloadDescription": "Down + up (pick up any yaml changes)",
     "showSpecDescription": "Pretty-print the kustron-env.yaml schema",
+    "statusDescription": "Show cluster and app status",
     "yesOption": "skip confirmation prompt",
     "appsDescription": "Manage apps in kustron-env.yaml",
     "addDescription": "Add a new app entry to kustron-env.yaml",
@@ -50,6 +51,28 @@
       "cancelled": "Teardown cancelled.",
       "success": "Cluster '{{name}}' has been torn down.",
       "notFound": "Cluster '{{name}}' not found. Nothing to do."
+    },
+    "status": {
+      "noEnvFile": "No kustron-env.yaml found. Run `kustron env init` to create one.",
+      "clusterNotCreated": "Cluster '{{name}}' does not exist. Run `kustron env up` to create it.",
+      "clusterNotRunning": "Cluster '{{name}}' exists but is not running. Run `kustron env up` to start it.",
+      "header": "Apps",
+      "namespace": "namespace: {{namespace}}",
+      "nodePortOnly": "NodePort {{port}}",
+      "notDeployed": "not deployed",
+      "running": "Running",
+      "starting": "Starting",
+      "imagePullFailed": "Image pull failed",
+      "crashLoop": "Crash looping",
+      "pending": "Pending",
+      "unknown": "Unknown",
+      "divider": "-",
+      "colApp": "APP",
+      "colType": "TYPE",
+      "colStatus": "STATUS",
+      "colReady": "READY",
+      "colImage": "IMAGE",
+      "colUrl": "URL"
     }
   },
   "apps": {

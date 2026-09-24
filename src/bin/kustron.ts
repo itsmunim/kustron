@@ -5,6 +5,7 @@ import {envUp} from '../commands/env/up.js';
 import {envDown} from '../commands/env/down.js';
 import {envReload} from '../commands/env/reload.js';
 import {envShowSpec} from '../commands/env/show-spec.js';
+import {envStatus} from '../commands/env/status.js';
 import {appsAdd} from '../commands/apps/add.js';
 import {appsRemove} from '../commands/apps/remove.js';
 import {setVerbose} from '../utils/exec.js';
@@ -64,6 +65,13 @@ env
   .description(t('cli.showSpecDescription'))
   .action(async () => {
     await envShowSpec();
+  });
+
+env
+  .command('status')
+  .description(t('cli.statusDescription'))
+  .action(async () => {
+    await envStatus();
   });
 
 const apps = program.command('apps').description(t('cli.appsDescription'));
