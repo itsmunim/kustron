@@ -860,8 +860,26 @@
       }
 
       .install-block {
+        width: 100%;
+        max-width: 100%;
         flex-wrap: wrap;
-        justify-content: center;
+        justify-content: flex-start;
+        gap: 8px;
+        padding: 12px 14px;
+      }
+
+      .install-block code {
+        min-width: 0;
+        flex: 1 1 auto;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: break-all;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .copy-btn {
+        flex-shrink: 0;
       }
 
       .footer-inner {
