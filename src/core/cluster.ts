@@ -47,8 +47,6 @@ export async function createCluster(config: ClusterConfig): Promise<void> {
   // network mode keyword.
 
   await exec('k3d', args, {env});
-
-  await exec('k3d', args, {env});
 }
 
 export async function installMetricsServer(): Promise<void> {
