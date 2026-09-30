@@ -32,6 +32,7 @@ import type {AppEntry, DeployContext} from '../types/index.js';
 import {topoSortApps, appNamespace, appDeploymentName, buildVars, interpolate} from './deps.js';
 import {waitForDependency} from './wait-deps.js';
 import {exec} from '../utils/exec.js';
+import {ensureNamespace} from './apply.js';
 
 export interface DeployResult {
   name: string;
@@ -51,6 +52,7 @@ async function deployFromImage(
   image: string,
   url: string | null,
 ): Promise<DeployResult> {
+  const effectiveName = appDeploymentName(app);
   // Interpolate ${VAR} / ${app.endpoint} references in env values (P1).
   const vars = buildVars(ctx.allApps ?? [], ctx.namespace);
   const env: Record<string, string> = {};
@@ -61,7 +63,7 @@ async function deployFromImage(
   const port = typeof app.port === 'number' ? app.port : 80;
 
   const opts = {
-    name: app.name,
+    name: effectiveName,
     namespace: ctx.namespace,
     image,
     port,
@@ -76,7 +78,7 @@ async function deployFromImage(
   };
 
   info(`[${app.name}] ${t('deploy.generatingManifests')}`);
-  const cm = buildConfigMap(app.name, ctx.namespace, env);
+  const cm = buildConfigMap(effectiveName, ctx.namespace, env);
   const deployment = buildDeployment(opts);
   const service = buildService(opts);
   const hpa = app.ha ? buildHPA(opts) : null;
@@ -89,12 +91,12 @@ async function deployFromImage(
   info(`[${app.name}] ${t('deploy.manifestsApplied')}`);
 
   info(`[${app.name}] ${t('deploy.waitingRollout')}`);
-  await waitForRollout(app.name, ctx.namespace);
+  await waitForRollout(effectiveName, ctx.namespace);
   info(`[${app.name}] ${t('deploy.rolloutComplete')}`);
 
   let finalUrl = url;
   if (app.exposed) {
-    const nodePort = await getServiceNodePort(app.name, ctx.namespace);
+    const nodePort = await getServiceNodePort(effectiveName, ctx.namespace);
     if (nodePort) {
       finalUrl = buildExposureUrl(ctx.nodeIp, nodePort);
     }
@@ -301,7 +303,12 @@ async function deployAppWithDeps(
 ): Promise<DeployResult> {
   const effectiveName = appDeploymentName(app);
   const ns = appNamespace(app, ctx.namespace);
+  // Per-app namespace (idea 7): derive a context targeting the app's own
+  // namespace, so every kubectl/helm call below uses it without changing
+  // their signatures.
+  const appCtx: DeployContext = {...ctx, namespace: ns};
 
+  await ensureNamespace(ns);
   await runHooks(app.hooks?.pre, 'pre', effectiveName);
 
   for (const dep of app.dependsOn ?? []) {
@@ -310,7 +317,7 @@ async function deployAppWithDeps(
     await waitForDependency(dep, depNs, app.wait);
   }
 
-  const result = await deployApp(app, ctx);
+  const result = await deployApp(app, appCtx);
 
   await runHooks(app.hooks?.post, 'post', effectiveName);
   return result;

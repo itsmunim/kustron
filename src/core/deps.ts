@@ -21,26 +21,29 @@ export function appDeploymentName(app: AppEntry): string {
  * Stable: apps without dependencies keep file order.
  */
 export function topoSortApps(apps: AppEntry[]): AppEntry[] {
-  const byName = new Map(apps.map((a) => [a.name, a]));
+  // Key by the instance-qualified deployment name (idea 7): two entries with
+  // the same `name` but different `instance` are distinct apps.
+  const key = (a: AppEntry) => appDeploymentName(a);
+  const byName = new Map(apps.map((a) => [key(a), a]));
   const state = new Map<string, 'visiting' | 'done'>();
   const order: AppEntry[] = [];
 
   const visit = (app: AppEntry, chain: string[]) => {
-    const s = state.get(app.name);
+    const s = state.get(key(app));
     if (s === 'done') return;
     if (s === 'visiting') {
-      const cycle = [...chain, app.name].join(' -> ');
+      const cycle = [...chain, key(app)].join(' -> ');
       throw new Error(`Circular dependsOn detected: ${cycle}`);
     }
-    state.set(app.name, 'visiting');
+    state.set(key(app), 'visiting');
     for (const dep of app.dependsOn ?? []) {
       const depApp = byName.get(dep);
       if (!depApp) {
-        throw new Error(`App '${app.name}' dependsOn '${dep}' which is not defined`);
+        throw new Error(`App '${key(app)}' dependsOn '${dep}' which is not defined`);
       }
-      visit(depApp, [...chain, app.name]);
+      visit(depApp, [...chain, key(app)]);
     }
-    state.set(app.name, 'done');
+    state.set(key(app), 'done');
     order.push(app);
   };
 
