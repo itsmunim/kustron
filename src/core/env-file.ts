@@ -101,8 +101,15 @@ const appEntrySchema = z
     },
   );
 
+const componentSpecSchema = z.object({
+  name: z.string().min(1),
+  source: z.string().min(1),
+  inputs: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional(),
+});
+
 const envFileSchema = z.object({
   config: z.object({namespace: z.string().optional()}).optional(),
+  components: z.array(componentSpecSchema).optional(),
   apps: z.array(appEntrySchema),
 });
 
@@ -121,6 +128,7 @@ export async function parseEnvFileContent(content: string): Promise<EnvFile> {
   const result = envFileSchema.parse(parsed);
   const envFile: EnvFile = {
     config: result.config,
+    components: result.components,
     apps: result.apps.map((app) => ({
       ...app,
       port:

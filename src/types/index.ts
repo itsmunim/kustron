@@ -72,8 +72,17 @@ export interface WaitConfig {
   namespace?: string;
 }
 
+export interface ComponentSpec {
+  name: string;
+  /** Local path or git URL of the component (must contain a Kustronfile). */
+  source: string;
+  /** Inputs passed to the component; override its Kustronfile defaults. */
+  inputs?: Record<string, string | number | boolean>;
+}
+
 export interface EnvFile {
   config?: {namespace?: string};
+  components?: ComponentSpec[];
   apps: AppEntry[];
 }
 
@@ -90,6 +99,8 @@ export interface DeployContext {
   nodeIp?: string;
   /** All apps in the env file (used for cross-app ${app.endpoint} interpolation). */
   allApps?: AppEntry[];
+  /** Component output vars (e.g. {hub-kafka.bootstrap: 'kafka:9092'}) for ${...} interpolation. */
+  componentOutputs?: Record<string, string>;
 }
 
 export interface DependencyCheck {

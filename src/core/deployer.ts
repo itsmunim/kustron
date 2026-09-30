@@ -54,8 +54,11 @@ async function deployFromImage(
   url: string | null,
 ): Promise<DeployResult> {
   const effectiveName = appDeploymentName(app);
-  // Interpolate ${VAR} / ${app.endpoint} references in env values (P1).
-  const vars = buildVars(ctx.allApps ?? [], ctx.namespace);
+  // Interpolate ${VAR} / ${app.endpoint} / ${component.output} refs (P1).
+  const vars = {
+    ...buildVars(ctx.allApps ?? [], ctx.namespace),
+    ...(ctx.componentOutputs ?? {}),
+  };
   const env: Record<string, string> = {};
   for (const [k, v] of Object.entries(app.env ?? {})) {
     env[k] = interpolate(v, vars);

@@ -17,6 +17,7 @@ import {
 import {mergeKubeconfig, setContext} from '../../core/context.js';
 import {readAndParseEnvFile} from '../../core/env-file.js';
 import {deployAll} from '../../core/deployer.js';
+import {expandComponents} from '../../core/components.js';
 import {ensureNamespace} from '../../core/apply.js';
 import {error, success, step, warn} from '../../utils/logger.js';
 import {t} from '../../utils/i18n.js';
@@ -108,7 +109,14 @@ export async function envUp(): Promise<void> {
 
   step(t('env.up.deployingApps'));
   await ensureNamespace(namespace);
-  await deployAll(envFile.apps, ctx);
+
+  // Expand components (idea 8) into concrete apps, exposing ${component.output} vars.
+  const {apps, outputs} = await expandComponents(envFile);
+
+  await deployAll(apps, {
+    ...ctx,
+    componentOutputs: outputs,
+  });
 
   success(t('env.up.success', {name: clusterName}));
 }
