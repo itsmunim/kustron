@@ -31,8 +31,9 @@ import {t} from '../utils/i18n.js';
 import type {AppEntry, DeployContext} from '../types/index.js';
 import {topoSortApps, appNamespace, appDeploymentName, buildVars, interpolate} from './deps.js';
 import {waitForDependency} from './wait-deps.js';
-import {exec} from '../utils/exec.js';
 import {ensureNamespace} from './apply.js';
+import {ensurePullSecret} from './registry.js';
+import {exec} from '../utils/exec.js';
 
 export interface DeployResult {
   name: string;
@@ -61,6 +62,13 @@ async function deployFromImage(
   }
   const replicas = app.ha ? 2 : (app.replicas ?? 1);
   const port = typeof app.port === 'number' ? app.port : 80;
+  // Private registry (idea 6): ensure an imagePullSecret in the namespace so
+  // the cluster can pull the image; attach it to the Deployment.
+  let imagePullSecrets: string[] | undefined;
+  if (app.registry?.server && app.registry.username) {
+    const secretName = await ensurePullSecret(app, ctx.namespace);
+    if (secretName) imagePullSecrets = [secretName];
+  }
 
   const opts = {
     name: effectiveName,
@@ -75,6 +83,7 @@ async function deployFromImage(
     args: app.args,
     resources: app.resources,
     patch: app.patch,
+    imagePullSecrets,
   };
 
   info(`[${app.name}] ${t('deploy.generatingManifests')}`);

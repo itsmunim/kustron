@@ -8,6 +8,7 @@ import {envShowSpec} from '../commands/env/show-spec.js';
 import {envStatus} from '../commands/env/status.js';
 import {appsAdd} from '../commands/apps/add.js';
 import {appsRemove} from '../commands/apps/remove.js';
+import {registerRegistryCommand} from '../commands/registry/index.js';
 import {setVerbose} from '../utils/exec.js';
 import {t} from '../utils/i18n.js';
 import {printBanner} from '../utils/banner.js';
@@ -114,6 +115,8 @@ apps
   .action(async (name) => {
     await appsRemove(name);
   });
+
+registerRegistryCommand(program);
 
 // Show banner for help output
 const originalOutputHelp = program.outputHelp.bind(program);

@@ -23,6 +23,8 @@ export interface ManifestOptions {
   };
   /** Generic escape hatch: deep-merged onto the Deployment document. */
   patch?: Record<string, unknown>;
+  /** imagePullSecrets attached to the Deployment, needed for private registries (idea 6). */
+  imagePullSecrets?: string[];
 }
 
 function managedLabels(name: string): Record<string, string> {
@@ -127,6 +129,9 @@ export function buildDeployment(opts: ManifestOptions): string {
         },
         spec: {
           containers: [container],
+          ...(opts.imagePullSecrets && opts.imagePullSecrets.length > 0
+            ? {imagePullSecrets: opts.imagePullSecrets.map((n) => ({name: n}))}
+            : {}),
         },
       },
     },

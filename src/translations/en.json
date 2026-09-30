@@ -13,6 +13,9 @@
     "appsDescription": "Manage apps in kustron-env.yaml",
     "addDescription": "Add a new app entry to kustron-env.yaml",
     "removeDescription": "Remove an app entry from kustron-env.yaml",
+    "registryDescription": "Manage container registries",
+    "registryLoginDescription": "Login to a container registry (docker/podman)",
+    "registryImportDescription": "Import local images into the kustron cluster (k3d image import)",
     "nameOption": "App name",
     "sourceOption": "Local path or git SSH/HTTPS URL",
     "imageOption": "Existing container image (e.g. postgres:15)",
@@ -150,5 +153,11 @@
     "podmanSocketNotFound": "Podman socket not found. Run `podman machine init` followed by `podman machine start`, then try again.",
     "railpackMissing": "Railpack is required to build this app but is not installed. Install it from https://railpack.io or add a Dockerfile to your project.",
     "unknownError": "Unknown error"
+  },
+  "registry": {
+    "login": "Logging in to {{server}}...",
+    "loginFailed": "Failed to log in to {{server}}.",
+    "importing": "Importing {{image}} into the cluster...",
+    "noImages": "No images given to import."
   }
 }
