@@ -103,6 +103,7 @@ export async function envUp(): Promise<void> {
     clusterName,
     verbose: false,
     nodeIp: nodeIp ?? undefined,
+    allApps: envFile.apps,
   };
 
   step(t('env.up.deployingApps'));

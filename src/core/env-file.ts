@@ -40,6 +40,29 @@ const appEntrySchema = z
       })
       .optional(),
     patch: z.record(z.string(), z.unknown()).optional(),
+    dependsOn: z.array(z.string()).optional(),
+    wait: z
+      .object({
+        type: z.enum(['rollout', 'established', 'command']).optional(),
+        command: z.string().optional(),
+        namespace: z.string().optional(),
+      })
+      .optional(),
+    hooks: z
+      .object({
+        pre: z.array(z.string()).optional(),
+        post: z.array(z.string()).optional(),
+      })
+      .optional(),
+    namespace: z.string().optional(),
+    instance: z.string().optional(),
+    registry: z
+      .object({
+        server: z.string().optional(),
+        username: z.string().optional(),
+        password: z.string().optional(),
+      })
+      .optional(),
   })
   .refine(
     (data) => {

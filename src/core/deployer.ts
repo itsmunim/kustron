@@ -29,6 +29,9 @@ import {checkDependency} from '../utils/checks.js';
 import {info, success, warn, step, error} from '../utils/logger.js';
 import {t} from '../utils/i18n.js';
 import type {AppEntry, DeployContext} from '../types/index.js';
+import {topoSortApps, appNamespace, appDeploymentName, buildVars, interpolate} from './deps.js';
+import {waitForDependency} from './wait-deps.js';
+import {exec} from '../utils/exec.js';
 
 export interface DeployResult {
   name: string;
@@ -48,7 +51,12 @@ async function deployFromImage(
   image: string,
   url: string | null,
 ): Promise<DeployResult> {
-  const env = app.env ?? {};
+  // Interpolate ${VAR} / ${app.endpoint} references in env values (P1).
+  const vars = buildVars(ctx.allApps ?? [], ctx.namespace);
+  const env: Record<string, string> = {};
+  for (const [k, v] of Object.entries(app.env ?? {})) {
+    env[k] = interpolate(v, vars);
+  }
   const replicas = app.ha ? 2 : (app.replicas ?? 1);
   const port = typeof app.port === 'number' ? app.port : 80;
 
@@ -272,14 +280,51 @@ export async function deployApp(
   }
 }
 
+async function runHooks(
+  hooks: string[] | undefined,
+  kind: 'pre' | 'post',
+  appName: string,
+): Promise<void> {
+  if (!hooks || hooks.length === 0) return;
+  for (const hook of hooks) {
+    info(`[${appName}] ${kind}-hook: ${hook}`);
+    await exec('sh', ['-c', hook], {reject: false} as Record<string, unknown>);
+  }
+}
+
+/**
+ * Deploy one app with ordering + hooks (idea 3 + idea 4).
+ */
+async function deployAppWithDeps(
+  app: AppEntry,
+  ctx: DeployContext,
+): Promise<DeployResult> {
+  const effectiveName = appDeploymentName(app);
+  const ns = appNamespace(app, ctx.namespace);
+
+  await runHooks(app.hooks?.pre, 'pre', effectiveName);
+
+  for (const dep of app.dependsOn ?? []) {
+    step(t('deploy.waitingDep', {dep, name: effectiveName}));
+    const depNs = app.wait?.namespace ?? ns;
+    await waitForDependency(dep, depNs, app.wait);
+  }
+
+  const result = await deployApp(app, ctx);
+
+  await runHooks(app.hooks?.post, 'post', effectiveName);
+  return result;
+}
+
 export async function deployAll(
   apps: AppEntry[],
   ctx: DeployContext,
 ): Promise<DeployResult[]> {
+  const ordered = topoSortApps(apps);
   const results: DeployResult[] = [];
 
-  for (const app of apps) {
-    const result = await deployApp(app, ctx);
+  for (const app of ordered) {
+    const result = await deployAppWithDeps(app, ctx);
     results.push(result);
   }
 

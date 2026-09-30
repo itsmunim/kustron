@@ -42,6 +42,34 @@ export interface AppEntry {
    * Objects merge recursively, arrays are replaced. (idea 2)
    */
   patch?: Record<string, unknown>;
+  /** Deploy ordering (idea 3): apps that must be deployed + ready first. */
+  dependsOn?: string[];
+  /** How each dependency must be considered ready before this app deploys. */
+  wait?: WaitConfig;
+  /** Pre/post hooks (idea 4): shell commands run on the host around deploy. */
+  hooks?: {
+    pre?: string[];
+    post?: string[];
+  };
+  /** Per-app namespace override (idea 7). */
+  namespace?: string;
+  /** Instance suffix: deploy the same app twice with different parameters (idea 7). */
+  instance?: string;
+  /** Private registry credentials (idea 6). */
+  registry?: {
+    server?: string;
+    username?: string;
+    password?: string;
+  };
+}
+
+export interface WaitConfig {
+  /** rollout (default) | established | command */
+  type?: 'rollout' | 'established' | 'command';
+  /** For type: command — the shell command to run (exit 0 = ready). */
+  command?: string;
+  /** Namespace to wait in (defaults to the dependency's namespace). */
+  namespace?: string;
 }
 
 export interface EnvFile {
@@ -60,6 +88,8 @@ export interface DeployContext {
   clusterName: string;
   verbose: boolean;
   nodeIp?: string;
+  /** All apps in the env file (used for cross-app ${app.endpoint} interpolation). */
+  allApps?: AppEntry[];
 }
 
 export interface DependencyCheck {

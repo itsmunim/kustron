@@ -134,6 +134,45 @@ async function snapshotRollout(appName: string, namespace: string): Promise<Roll
     // deployment not visible (yet) — continue polling
   }
 
+  // Only consider pods of the CURRENT ReplicaSet. During a rolling update the
+  // old RS's pods may be crash-looping/ImagePullBackOff while being scaled
+  // down; treating those as failures produces false fast-fails (seen with a
+  // stale postgres pod blocking a healthy rollout).
+  let currentHash: string | null = null;
+  try {
+    const {stdout: rsJson} = await exec(
+      'kubectl',
+      [
+        'get',
+        'replicasets',
+        '-l',
+        `app.kubernetes.io/name=${appName}`,
+        '-n',
+        namespace,
+        '-o',
+        'json',
+      ],
+      {silent: true, reject: false} as Record<string, unknown>,
+    );
+    const rsList = JSON.parse(rsJson);
+    let bestRevision = -1;
+    for (const rs of rsList?.items ?? []) {
+      const revision = parseInt(
+        rs?.metadata?.annotations?.['deployment.kubernetes.io/revision'] ?? '0',
+        10,
+      );
+      const replicas = rs?.status?.replicas ?? 0;
+      if (replicas > 0 && revision > bestRevision) {
+        bestRevision = revision;
+        currentHash =
+          (rs?.spec?.template?.metadata?.labels?.['pod-template-hash'] as string | undefined) ??
+          null;
+      }
+    }
+  } catch {
+    // RS list unavailable — fall back to all pods below
+  }
+
   const {stdout: podsJson} = await exec(
     'kubectl',
     [
@@ -152,6 +191,10 @@ async function snapshotRollout(appName: string, namespace: string): Promise<Roll
   try {
     const pods = JSON.parse(podsJson);
     for (const pod of pods?.items ?? []) {
+      if (currentHash) {
+        const podHash = pod?.metadata?.labels?.['pod-template-hash'];
+        if (podHash && podHash !== currentHash) continue; // stale RS pod
+      }
       if (pod?.status?.phase === 'Running') snapshot.podRunning = true;
       for (const cs of pod?.status?.containerStatuses ?? []) {
         const reason = cs?.state?.waiting?.reason;

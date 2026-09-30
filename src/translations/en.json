@@ -104,6 +104,7 @@
   },
   "deploy": {
     "starting": "Deploying {{name}}...",
+    "waitingDep": "Waiting for {{dep}} before deploying {{name}}...",
     "resolvingSource": "Resolving source...",
     "sourceResolved": "Source resolved",
     "cloningRepo": "Cloning repository...",
