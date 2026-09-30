@@ -8,7 +8,14 @@ const helmConfigSchema = z.object({
   chart: z.string(),
   repo: z.string().optional(),
   version: z.string().optional(),
-  values: z.record(z.string(), z.string()).optional(),
+  values: z.record(z.string(), z.unknown()).optional(),
+  valuesFiles: z.array(z.string()).optional(),
+  imageValues: z
+    .object({
+      repository: z.string().optional(),
+      tag: z.string().optional(),
+    })
+    .optional(),
   selector: z.record(z.string(), z.string()).optional(),
 });
 
@@ -24,24 +31,44 @@ const appEntrySchema = z
     replicas: z.number().optional(),
     ha: z.boolean().optional(),
     env: z.record(z.string(), z.string()).optional(),
+    command: z.array(z.string()).optional(),
+    args: z.array(z.string()).optional(),
+    resources: z
+      .object({
+        requests: z.object({cpu: z.string().optional(), memory: z.string().optional()}).optional(),
+        limits: z.object({cpu: z.string().optional(), memory: z.string().optional()}).optional(),
+      })
+      .optional(),
+    patch: z.record(z.string(), z.unknown()).optional(),
   })
   .refine(
     (data) => {
       const hasSource = !!data.source;
       const hasImage = !!data.image;
       const hasHelm = !!data.helm;
+      // source and image are mutually exclusive runtimes
+      if (hasSource && hasImage) return false;
+      // source/image + helm means: build the image, deploy via the chart.
+      // That requires imageValues so the image actually reaches the chart.
+      if (hasHelm && (hasSource || hasImage)) {
+        return !!data.helm?.imageValues;
+      }
       return [hasSource, hasImage, hasHelm].filter(Boolean).length === 1;
     },
     {
-      message: 'Each app must have exactly one of: source, image, or helm',
+      message:
+        'Each app must have exactly one of: source, image, helm (a source or image combined with helm requires helm.imageValues)',
     },
   )
   .refine(
     (data) => {
       const hasSource = !!data.source;
       const hasImage = !!data.image;
+      const hasHelm = !!data.helm;
       const hasPort = data.port !== undefined;
-      if ((hasSource || hasImage) && !hasPort) {
+      // port is only needed for the builtin template deploy; helm (or
+      // source/image + helm) manages its own ports through the chart.
+      if ((hasSource || hasImage) && !hasHelm && !hasPort) {
         return false;
       }
       return true;
@@ -147,6 +174,23 @@ apps:
       NODE_ENV: production
       DB_HOST: postgres                 # 'postgres' resolves to the postgres app's service
 
+    # First-class escape hatches (all optional):
+    # command: ["/bin/sh", "-c"]      # override the container command
+    # args: ["run", "--port", "3000"] # override the container args
+    # resources:
+    #   requests:
+    #     cpu: 250m
+    #     memory: 256Mi
+    #   limits:
+    #     cpu: 1
+    #     memory: 512Mi
+    # patch:                            # generic escape hatch, deep-merged onto
+    #   spec:                           # the Deployment manifest (objects merge,
+    #     template:                     # arrays replace). For anything the
+    #       metadata:                   # first-class fields don't cover
+    #         annotations:
+    #           team: platform
+
   # --- Type 2: Existing container image ---
   - name: postgres
     image: postgres:15
@@ -163,12 +207,27 @@ apps:
       chart: kube-prometheus-stack
       repo: https://prometheus-community.github.io/helm-charts
       version: "45.0.0"
-      values:                           # passed as helm --set flags
-        grafana.enabled: "true"
-        alertmanager.enabled: "false"
+      values:                           # arbitrary YAML (nested ok), via a --values file
+        grafana:
+          enabled: true
+        alertmanager:
+          enabled: false
+      valuesFiles:
+        - ./extra-values.yaml           # additional local values files
+      # chart: ./charts/my-app          # local chart path (no repo needed)
+      # chart: oci://ghcr.io/org/chart  # OCI chart
       selector:                         # required when exposed: true for helm apps
         app.kubernetes.io/name: grafana
     exposed: false
+
+  # --- Type 4: Build from source, deploy via helm ---
+  - name: backend
+    source: ./
+    helm:
+      chart: ./charts/backend           # chart owns the Deployment/Service
+      imageValues:                      # where to inject the built image
+        repository: image.repository
+        tag: image.tag
 `)
   );
 }

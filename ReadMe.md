@@ -180,15 +180,22 @@ Run `kustron env show-spec` for a full annotated schema reference.
 
 | Rule | Detail |
 |---|---|
-| Exactly one of `source`, `image`, `helm` | Required per app entry |
-| `port` | Required for `source` and `image`; optional for `helm` |
+| Exactly one of `source`, `image`, `helm` (a `source` or `image` combined with `helm` deploys the built image via the chart; requires `helm.imageValues`) | Required per app entry |
+| `port` | Required for `source` and `image` apps using the builtin template; optional for `helm` (the chart owns ports) |
 | `healthcheck` | Optional for `source` and `image`; ignored for `helm`. `/<path>` = HTTP GET, `tcp` = port check, omit / `none` = no probes |
 | `ha: true` | Overrides `replicas`; sets min 2 / max 5 / CPU 90% / mem 80% |
-| `env` | Creates a ConfigMap for `source` and `image`; for `helm` values are passed as `--set` |
+| `env` | Creates a ConfigMap for `source` and `image`; for `helm` values are passed as a `--values` file (nested YAML supported) |
 | `exposed: true` | Service becomes `NodePort` type, reachable at the k3d node IP; requires `port` |
 | `helm.selector` | Required when `helm` app has `exposed: true`; must match the chart's pod labels |
 | `name` | Becomes the Kubernetes Service name; other apps reach it at `http://<name>:<port>` |
 | `port: PORT` | The string `PORT` is treated as an unset placeholder; validation fails with a clear message |
+| `command` / `args` | First-class escape hatches: override the container command / args |
+| `resources` | First-class escape hatch: override container resource requests / limits (deep-merged over kustron defaults) |
+| `patch` | Generic escape hatch: deep-merged onto the generated Deployment manifest (objects merge, arrays replace) |
+| `helm.values` | Arbitrary chart values, nested YAML supported (passed via a `--values` file) |
+| `helm.valuesFiles` | Additional local values files, each passed as `--values` |
+| `helm.imageValues` | Inject a kustron-built image into the chart: `{repository: 'image.repository', tag: 'image.tag'}` (dotted paths) |
+| `helm.chart` | Repo chart name, local path (`./charts/x`), OCI (`oci://...`), or packaged `.tgz` |
 
 ---
 

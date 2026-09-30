@@ -1,5 +1,5 @@
 import {dump} from 'js-yaml';
-
+import {deepMerge} from '../utils/merge.js';
 const DEFAULT_CPU_REQUEST = '100m';
 const DEFAULT_CPU_LIMIT = '500m';
 const DEFAULT_MEMORY_REQUEST = '128Mi';
@@ -14,6 +14,15 @@ export interface ManifestOptions {
   env: Record<string, string>;
   expose: boolean;
   healthcheck?: string;
+  /** First-class escape hatch overrides (command/args/resources). */
+  command?: string[];
+  args?: string[];
+  resources?: {
+    requests?: {cpu?: string; memory?: string};
+    limits?: {cpu?: string; memory?: string};
+  };
+  /** Generic escape hatch: deep-merged onto the Deployment document. */
+  patch?: Record<string, unknown>;
 }
 
 function managedLabels(name: string): Record<string, string> {
@@ -43,16 +52,19 @@ export function buildConfigMap(
 }
 
 export function buildDeployment(opts: ManifestOptions): string {
-  const resources: Record<string, unknown> = {
-    requests: {
-      cpu: DEFAULT_CPU_REQUEST,
-      memory: DEFAULT_MEMORY_REQUEST,
+  const resources: Record<string, unknown> = deepMerge(
+    {
+      requests: {
+        cpu: DEFAULT_CPU_REQUEST,
+        memory: DEFAULT_MEMORY_REQUEST,
+      },
+      limits: {
+        cpu: DEFAULT_CPU_LIMIT,
+        memory: DEFAULT_MEMORY_LIMIT,
+      },
     },
-    limits: {
-      cpu: DEFAULT_CPU_LIMIT,
-      memory: DEFAULT_MEMORY_LIMIT,
-    },
-  };
+    (opts.resources ?? {}) as Record<string, unknown>,
+  );
 
   const container: Record<string, unknown> = {
     name: opts.name,
@@ -60,6 +72,14 @@ export function buildDeployment(opts: ManifestOptions): string {
     ports: [{containerPort: opts.port}],
     resources,
   };
+
+  if (opts.command) {
+    container.command = opts.command;
+  }
+  if (opts.args) {
+    container.args = opts.args;
+  }
+
 
   if (Object.keys(opts.env).length > 0) {
     container.envFrom = [{configMapRef: {name: opts.name}}];
@@ -88,7 +108,7 @@ export function buildDeployment(opts: ManifestOptions): string {
     container.livenessProbe = {...probe, periodSeconds: 10, failureThreshold: 3};
   }
 
-  const deployment = {
+  const deployment: Record<string, unknown> = {
     apiVersion: 'apps/v1',
     kind: 'Deployment',
     metadata: {
@@ -112,7 +132,9 @@ export function buildDeployment(opts: ManifestOptions): string {
     },
   };
 
-  return dump(deployment);
+  // Generic escape hatch: deep-merge user patch onto the Deployment document.
+  const merged = opts.patch ? deepMerge(deployment, opts.patch) : deployment;
+  return dump(merged);
 }
 
 export function buildService(opts: ManifestOptions): string {

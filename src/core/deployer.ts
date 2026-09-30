@@ -19,7 +19,11 @@ import {
   waitForRollout,
   getServiceNodePort,
 } from './apply.js';
-import {helmInstall, createHelmExposureService} from './helm.js';
+import {
+  helmInstall,
+  createHelmExposureService,
+  helmReleaseImage,
+} from './helm.js';
 import {getDeployedImage} from './apply.js';
 import {checkDependency} from '../utils/checks.js';
 import {info, success, warn, step, error} from '../utils/logger.js';
@@ -57,6 +61,10 @@ async function deployFromImage(
     env,
     expose: app.exposed ?? false,
     healthcheck: app.healthcheck,
+    command: app.command,
+    args: app.args,
+    resources: app.resources,
+    patch: app.patch,
   };
 
   info(`[${app.name}] ${t('deploy.generatingManifests')}`);
@@ -73,12 +81,8 @@ async function deployFromImage(
   info(`[${app.name}] ${t('deploy.manifestsApplied')}`);
 
   info(`[${app.name}] ${t('deploy.waitingRollout')}`);
-  try {
-    await waitForRollout(app.name, ctx.namespace);
-    info(`[${app.name}] ${t('deploy.rolloutComplete')}`);
-  } catch (rolloutErr) {
-    throw rolloutErr;
-  }
+  await waitForRollout(app.name, ctx.namespace);
+  info(`[${app.name}] ${t('deploy.rolloutComplete')}`);
 
   let finalUrl = url;
   if (app.exposed) {
@@ -90,11 +94,24 @@ async function deployFromImage(
   return {name: app.name, url: finalUrl};
 }
 
-async function deploySourceApp(
+interface BuiltImage {
+  ref: string;
+  image: string;
+}
+
+/**
+ * BUILD PHASE (idea 1: split build from deploy).
+ *
+ * Resolves the source, computes the deterministic content-hash ref, and
+ * builds + pushes unless `skipCheck` reports the exact image is already in
+ * the cluster. Returns the in-cluster image reference, which any deploy
+ * target (builtin template, helm chart) can then consume.
+ */
+async function buildSourceImage(
   app: AppEntry,
   ctx: DeployContext,
-  url: string | null,
-): Promise<DeployResult> {
+  skipCheck: (image: string, ref: string) => Promise<boolean>,
+): Promise<BuiltImage> {
   let sourcePath: string | undefined;
   let cloned = false;
 
@@ -110,20 +127,14 @@ async function deploySourceApp(
       info(`[${app.name}] ${t('deploy.sourceResolved')}`);
     }
 
-    // Deterministic image ref: content hash of the source tree. Unchanged
-    // source -> same tag -> nothing to rebuild or redeploy.
     const ref = await hashSourceDir(sourcePath);
     info(`[${app.name}] ${t('deploy.sourceHash', {ref})}`);
     const pushTag = buildPushTag(app.name, ref);
-    const manifestImage = buildTag(app.name, ref);
+    const image = buildTag(app.name, ref);
 
-    // Image already running: skip the build + push entirely. `kubectl apply`
-    // below is still a no-op for unchanged manifests, but picks up yaml-only
-    // changes (env, replicas, exposure) when they happen.
-    const deployedImage = await getDeployedImage(app.name, ctx.namespace);
-    if (deployedImage === manifestImage) {
+    if (await skipCheck(image, ref)) {
       info(`[${app.name}] ${t('deploy.upToDate', {ref})}`);
-      return await deployFromImage(app, ctx, manifestImage, url);
+      return {ref, image};
     }
 
     info(`[${app.name}] ${t('deploy.detectingStrategy')}`);
@@ -146,12 +157,26 @@ async function deploySourceApp(
     await pushImage(pushTag);
     info(`[${app.name}] ${t('deploy.imagePushed')}`);
 
-    return await deployFromImage(app, ctx, manifestImage, url);
+    return {ref, image};
   } finally {
     if (cloned && sourcePath) {
       await cleanupSource(sourcePath).catch(() => {});
     }
   }
+}
+
+// DEPLOY TARGET: builtin template (ConfigMap + Deployment + Service + HPA).
+// Deploy target stays the builtin template when neither images/helm apply.
+async function deploySourceApp(
+  app: AppEntry,
+  ctx: DeployContext,
+  url: string | null,
+): Promise<DeployResult> {
+  const {image} = await buildSourceImage(app, ctx, async (image) => {
+    const deployedImage = await getDeployedImage(app.name, ctx.namespace);
+    return deployedImage === image;
+  });
+  return await deployFromImage(app, ctx, image, url);
 }
 
 async function deployImageApp(
@@ -162,13 +187,17 @@ async function deployImageApp(
   return await deployFromImage(app, ctx, app.image!, url);
 }
 
+// DEPLOY TARGET: helm chart that owns the Deployment/Service itself.
+// Used by plain helm apps, image + helm, and source + helm (idea 1: the
+// built image is injected into the chart via helm.imageValues).
 async function deployHelmApp(
   app: AppEntry,
   ctx: DeployContext,
   url: string | null,
+  imageOverride?: string,
 ): Promise<DeployResult> {
   info(`[${app.name}] ${t('deploy.installingHelm')}`);
-  await helmInstall(app, ctx.namespace);
+  await helmInstall(app, ctx.namespace, imageOverride);
   info(`[${app.name}] ${t('deploy.helmInstalled')}`);
 
   let finalUrl = url;
@@ -192,7 +221,19 @@ async function deployHelmApp(
   }
 
   return {name: app.name, url: finalUrl};
+}
 
+/** source + helm: build the image, then let the chart own the deploy. */
+async function deploySourceAsHelmApp(
+  app: AppEntry,
+  ctx: DeployContext,
+  url: string | null,
+): Promise<DeployResult> {
+  const {image} = await buildSourceImage(app, ctx, async (image) => {
+    const releaseImage = await helmReleaseImage(app, ctx.namespace);
+    return releaseImage === image;
+  });
+  return await deployHelmApp(app, ctx, url, image);
 }
 
 export async function deployApp(
@@ -205,6 +246,12 @@ export async function deployApp(
 
   try {
     if (app.helm) {
+      if (app.source) {
+        return await deploySourceAsHelmApp(app, ctx, url);
+      }
+      if (app.image) {
+        return await deployHelmApp(app, ctx, url, app.image);
+      }
       return await deployHelmApp(app, ctx, url);
     }
 
