@@ -452,8 +452,21 @@
     }
 
     .type-icon {
-      font-size: 24px;
-      margin-bottom: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+
+    .type-icon svg {
+      width: 20px;
+      height: 20px;
     }
 
     .type-card h3 {
@@ -1094,26 +1107,26 @@
 
       <div class="types-grid">
         <div class="type-card">
-          <div class="type-icon">📁</div>
+          <div class="type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></div>
           <h3>Local source</h3>
           <p>Point to a folder. Kustron uses your Dockerfile if it exists, or Railpack to containerize automatically.
           </p>
           <div class="type-tag">source: ./path</div>
         </div>
         <div class="type-card">
-          <div class="type-icon">🔗</div>
+          <div class="type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg></div>
           <h3>Git repository</h3>
           <p>Provide a git SSH URL. Kustron clones it, builds it, and deploys it. SSH access must already be set up.</p>
           <div class="type-tag">source: git@…</div>
         </div>
         <div class="type-card">
-          <div class="type-icon">📦</div>
+          <div class="type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><path d="m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7"/></svg></div>
           <h3>Container image</h3>
           <p>Use any image from Docker Hub or any registry. Perfect for databases and third-party services.</p>
           <div class="type-tag">image: postgres:15</div>
         </div>
         <div class="type-card">
-          <div class="type-icon">⎈</div>
+          <div class="type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v7.5"/><path d="m19 5-5.23 5.23"/><path d="M22 12h-7.5"/><path d="m19 19-5.23-5.23"/><path d="M12 14.5V22"/><path d="M10.23 13.77 5 19"/><path d="M9.5 12H2"/><path d="M10.23 10.23 5 5"/></svg></div>
           <h3>Helm chart</h3>
           <p>Install any Helm chart into your environment. Pass values directly from the yaml file.</p>
           <div class="type-tag">helm: {chart: …}</div>
