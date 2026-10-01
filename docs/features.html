@@ -424,11 +424,9 @@
 
   <hr class="divider">
 
-  <!-- Feature 1 -->
   <div class="feature">
     <div class="wrap feature-inner">
       <div class="feature-text">
-        <div class="section-label">Feature 01</div>
         <h3>App types: source, image, helm</h3>
         <p>Deploy from local source (uses your Dockerfile, or Railpack if there isn't one), pull any container image, or install a Helm chart. Mix all three in one environment.</p>
         <span class="feature-meta">source: ./ &nbsp;·&nbsp; image: postgres:15 &nbsp;·&nbsp; helm: {chart: …}</span>
@@ -459,11 +457,9 @@
     </div>
   </div>
 
-  <!-- Feature 2 -->
   <div class="feature">
     <div class="wrap feature-inner">
       <div class="feature-text">
-        <div class="section-label">Feature 02</div>
         <h3>Deterministic, idempotent deploys</h3>
         <p>Images are tagged with a content hash of the source, not a timestamp. Run <code>env up</code> twice with no changes and the second run is a fast no-op: same tag, build skipped, nothing redeployed.</p>
         <span class="feature-meta">kustron env up → skip build</span>
@@ -484,11 +480,9 @@ Done.</code></pre>
     </div>
   </div>
 
-  <!-- Feature 3 -->
   <div class="feature">
     <div class="wrap feature-inner">
       <div class="feature-text">
-        <div class="section-label">Feature 03</div>
         <h3>Healthchecks that match the protocol</h3>
         <p>Point an HTTP probe at a TCP-only service like Redis or DynamoDB and rollout stalls forever. So healthchecks are opt-in: <code>tcp</code> for socket probes, a path for HTTP, or nothing for no probes at all.</p>
         <span class="feature-meta">healthcheck: tcp | /health | none</span>
@@ -514,11 +508,9 @@ Done.</code></pre>
     </div>
   </div>
 
-  <!-- Feature 4 -->
   <div class="feature">
     <div class="wrap feature-inner">
       <div class="feature-text">
-        <div class="section-label">Feature 04</div>
         <h3>Split build from deploy</h3>
         <p>Build an image from source, then deploy it anywhere: the built-in template, a raw Kustomize/manifests directory, or a Helm chart of your own via <code>helm.imageValues</code>.</p>
         <span class="feature-meta">source + helm.imageValues</span>
@@ -542,11 +534,9 @@ Done.</code></pre>
     </div>
   </div>
 
-  <!-- Feature 5 -->
   <div class="feature">
     <div class="wrap feature-inner">
       <div class="feature-text">
-        <div class="section-label">Feature 05</div>
         <h3>Ordering: dependsOn + hooks</h3>
         <p>Declare what must be ready before an app deploys, waiting on rollout, a CRD <code>established</code>, or a custom command. Push runs before deploy, and post hooks after — great for seeding a DB or applying CRDs.</p>
         <span class="feature-meta">dependsOn + wait + hooks.pre/post</span>
@@ -577,11 +567,9 @@ Done.</code></pre>
     </div>
   </div>
 
-  <!-- Feature 6 -->
   <div class="feature">
     <div class="wrap feature-inner">
       <div class="feature-text">
-        <div class="section-label">Feature 06</div>
         <h3>Escape hatches: command, args, resources, patch</h3>
         <p>First-class overrides for the container command, args, and resource limits. When you need more, <code>patch</code> deep-merges arbitrary keys onto the generated Deployment — no more "one missing field means leaving Kustron".</p>
         <span class="feature-meta">command, args, resources, patch</span>
@@ -613,11 +601,9 @@ Done.</code></pre>
     </div>
   </div>
 
-  <!-- Feature 7 -->
   <div class="feature">
     <div class="wrap feature-inner">
       <div class="feature-text">
-        <div class="section-label">Feature 07</div>
         <h3>Helm, done right</h3>
         <p>Nested values pass through a real <code>--values</code> file (not flattened <code>--set</code> strings). Add extra local values files, or point at a local chart directory or an OCI registry chart.</p>
         <span class="feature-meta">values, valuesFiles, ./charts, oci://</span>
@@ -644,11 +630,9 @@ Done.</code></pre>
     </div>
   </div>
 
-  <!-- Feature 8 -->
   <div class="feature">
     <div class="wrap feature-inner">
       <div class="feature-text">
-        <div class="section-label">Feature 08</div>
         <h3>Private registries</h3>
         <p>Login to any container registry, have Kustron create an imagePullSecret per app and attach it to the Deployment, or import images directly into the cluster when push isn't an option.</p>
         <span class="feature-meta">kustron registry login/import</span>
@@ -672,11 +656,9 @@ Done.</code></pre>
     </div>
   </div>
 
-  <!-- Feature 9 -->
   <div class="feature">
     <div class="wrap feature-inner">
       <div class="feature-text">
-        <div class="section-label">Feature 09</div>
         <h3>Instances & per-app namespaces</h3>
         <p>Deploy the same app twice with different parameters using <code>instance</code>, or isolate apps into their own namespaces. Great for testing multi-tenant setups locally.</p>
         <span class="feature-meta">instance + namespace</span>
@@ -704,11 +686,9 @@ Done.</code></pre>
     </div>
   </div>
 
-  <!-- Feature 10 -->
   <div class="feature">
     <div class="wrap feature-inner">
       <div class="feature-text">
-        <div class="section-label">Feature 10</div>
         <h3>Reusable components</h3>
         <p>Bundle apps into a component with a <code>Kustronfile</code> — inputs, outputs, and app entries. Reference it from any environment and wire its outputs into your apps with <code>${component.output}</code>.</p>
         <span class="feature-meta">components + Kustronfile</span>
