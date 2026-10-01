@@ -19,7 +19,7 @@
   <link rel="canonical" href="https://itsmunim.github.io/kustron/">
   <meta name="description"
     content="Define your apps in one file. Kustron spins up a local Kubernetes cluster, builds, and deploys them. No Kubernetes knowledge required.">
-  <meta name="theme-color" content="#F6F4EF">
+  <meta name="theme-color" content="#F1F4FA">
 
   <!-- Open Graph (Facebook, LinkedIn, Discord, iMessage) -->
   <meta property="og:type" content="website">
@@ -81,15 +81,16 @@
     }
 
     :root {
-      --bg: #f6f4ef;
+      --bg: #f1f4fa;
       --surface: #ffffff;
-      --surface2: #ece9e0;
-      --border: #e0dcd0;
-      --text: #1a1712;
-      --muted: #6f6a5e;
-      --accent: #c7452e;
-      --accent-dim: rgba(199, 69, 46, .08);
+      --surface2: #e5eaf3;
+      --border: #c9d4e6;
+      --text: #16233c;
+      --muted: #5b6a82;
+      --accent: #1d4ed8;
+      --accent-dim: rgba(29, 78, 216, .08);
       --green: #2e7d4f;
+      --amber: #a97f1f;
       --radius: 10px;
     }
 
@@ -98,7 +99,11 @@
     }
 
     body {
-      background: var(--bg);
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(to right, rgba(22, 35, 60, .028) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(22, 35, 60, .028) 1px, transparent 1px);
+      background-size: 28px 28px;
       color: var(--text);
       font-family: 'Inter', sans-serif;
       font-size: 16px;
@@ -120,7 +125,7 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(246, 244, 239, .85);
+      background: rgba(241, 244, 250, .85);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       padding: 0 24px;
@@ -185,7 +190,7 @@
     }
 
     .btn-primary:hover {
-      background: #d95a40;
+      background: #1d4ed8;
       text-decoration: none;
     }
 
@@ -202,7 +207,7 @@
       align-items: center;
       gap: 6px;
       background: var(--accent-dim);
-      border: 1px solid rgba(199, 69, 46, .28);
+      border: 1px solid rgba(29, 78, 216, .28);
       border-radius: 100px;
       padding: 4px 12px;
       font-size: 13px;
@@ -216,7 +221,7 @@
       line-height: 1.1;
       letter-spacing: -2px;
       margin-bottom: 20px;
-      background: linear-gradient(135deg, #1a1712 30%, #c7452e);
+      background: linear-gradient(135deg, #16233c 30%, #1d4ed8);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -379,7 +384,7 @@
 
     /* ── YAML block ── */
     .yaml-window {
-      background: #0d1117;
+      background: #0e1728;
       border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
@@ -487,7 +492,7 @@
       font-size: 11px;
       background: var(--accent-dim);
       color: var(--accent);
-      border: 1px solid rgba(199, 69, 46, .22);
+      border: 1px solid rgba(29, 78, 216, .22);
       border-radius: 4px;
       padding: 2px 7px;
       margin-top: 10px;
@@ -528,11 +533,11 @@
     }
 
     .cmd-code .arg {
-      color: #8a7448;
+      color: #5b6a82;
     }
 
     .cmd-code .flag {
-      color: #8f6d2a;
+      color: #a97f1f;
     }
 
     .cmd-desc {
@@ -577,9 +582,9 @@
     }
 
     .required {
-      background: rgba(199, 69, 46, .1);
+      background: rgba(29, 78, 216, .1);
       color: var(--accent);
-      border: 1px solid rgba(199, 69, 46, .28);
+      border: 1px solid rgba(29, 78, 216, .28);
     }
 
     .optional {
@@ -604,7 +609,7 @@
       align-items: flex-start;
       gap: 16px;
       background: var(--accent-dim);
-      border: 1px solid rgba(199, 69, 46, .22);
+      border: 1px solid rgba(29, 78, 216, .22);
       border-radius: var(--radius);
       padding: 16px 20px;
       margin-bottom: 16px;
@@ -749,7 +754,7 @@
       height: 32px;
       border-radius: 50%;
       background: var(--accent-dim);
-      border: 1px solid rgba(199, 69, 46, .25);
+      border: 1px solid rgba(29, 78, 216, .25);
       color: var(--accent);
       font-family: 'JetBrains Mono', monospace;
       font-size: 12px;

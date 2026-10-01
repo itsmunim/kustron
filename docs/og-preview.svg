@@ -1,19 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#F6F4EF"/>
-      <stop offset="100%" stop-color="#EBE7DC"/>
+      <stop offset="0%" stop-color="#F1F4FA"/>
+      <stop offset="100%" stop-color="#DFE6F2"/>
     </linearGradient>
     <linearGradient id="ink" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#1A1712"/>
-      <stop offset="100%" stop-color="#C7452E"/>
+      <stop offset="0%" stop-color="#16233C"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
     </linearGradient>
   </defs>
 
   <rect width="1200" height="630" fill="url(#bg)"/>
 
-  <!-- subtle grid hint (paper blueprint) -->
-  <g stroke="#D8D3C6" stroke-width="1" opacity="0.7">
+  <!-- blueprint grid -->
+  <g stroke="#C9D4E6" stroke-width="1" opacity="0.7">
     <line x1="0" y1="126" x2="1200" y2="126"/>
     <line x1="0" y1="252" x2="1200" y2="252"/>
     <line x1="0" y1="378" x2="1200" y2="378"/>
@@ -28,11 +28,11 @@
   </g>
 
   <!-- logo mark -->
-  <rect x="92" y="80" width="84" height="84" rx="18" fill="#FFFFFF" stroke="#E0DCD0" stroke-width="2"/>
-  <text x="134" y="140" text-anchor="middle" font-family="'JetBrains Mono', Menlo, monospace" font-size="46" font-weight="500" fill="#C7452E" letter-spacing="-1">k</text>
+  <rect x="92" y="80" width="84" height="84" rx="18" fill="#FFFFFF" stroke="#C9D4E6" stroke-width="2"/>
+  <text x="134" y="140" text-anchor="middle" font-family="'JetBrains Mono', Menlo, monospace" font-size="46" font-weight="500" fill="#1D4ED8" letter-spacing="-1">k</text>
 
-  <!-- headline (ink gradient) -->
-  <text x="92" y="268" font-family="Inter, -apple-system, sans-serif" font-size="58" font-weight="700" fill="#1A1712" letter-spacing="-1">
+  <!-- headline -->
+  <text x="92" y="268" font-family="Inter, -apple-system, sans-serif" font-size="58" font-weight="700" fill="#16233C" letter-spacing="-1">
     Local dev environment,
   </text>
   <text x="92" y="338" font-family="Inter, -apple-system, sans-serif" font-size="58" font-weight="700" fill="url(#ink)" letter-spacing="-1">
@@ -40,25 +40,25 @@
   </text>
 
   <!-- tagline -->
-  <text x="92" y="394" font-family="Inter, -apple-system, sans-serif" font-size="24" fill="#6F6A5E">
+  <text x="92" y="394" font-family="Inter, -apple-system, sans-serif" font-size="24" fill="#5B6A82">
     Define your apps in one file. Kustron handles the rest:
   </text>
-  <text x="92" y="426" font-family="Inter, -apple-system, sans-serif" font-size="24" fill="#6F6A5E">
+  <text x="92" y="426" font-family="Inter, -apple-system, sans-serif" font-size="24" fill="#5B6A82">
     local cluster, registry, build, deploy.
   </text>
 
   <!-- terminal card -->
-  <rect x="92" y="462" width="1016" height="66" rx="12" fill="#17150F" stroke="#3A362C" stroke-width="1.5"/>
+  <rect x="92" y="462" width="1016" height="66" rx="12" fill="#10193A" stroke="#22315C" stroke-width="1.5"/>
   <circle cx="120" cy="495" r="6" fill="#FF5F57"/>
   <circle cx="146" cy="495" r="6" fill="#FEBC2E"/>
   <circle cx="172" cy="495" r="6" fill="#28C840"/>
-  <text x="205" y="500" font-family="'JetBrains Mono', Menlo, monospace" font-size="23" fill="#E8E4D8">
-    <tspan fill="#A8A294">$</tspan>
-    <tspan dx="12" fill="#F6F4EF">curl -fsSL https://raw.githubusercontent.com/itsmunim/kustron/master/download.sh | bash</tspan>
+  <text x="205" y="500" font-family="'JetBrains Mono', Menlo, monospace" font-size="23" fill="#E3E9F6">
+    <tspan fill="#93A3C8">$</tspan>
+    <tspan dx="12" fill="#F1F4FA">curl -fsSL https://raw.githubusercontent.com/itsmunim/kustron/master/download.sh | bash</tspan>
   </text>
 
   <!-- footer -->
-  <line x1="92" y1="572" x2="1108" y2="572" stroke="#E0DCD0" stroke-width="1.5"/>
-  <text x="92" y="604" font-family="Inter, -apple-system, sans-serif" font-size="19" fill="#6F6A5E">kustron</text>
-  <text x="1108" y="604" text-anchor="end" font-family="'JetBrains Mono', Menlo, monospace" font-size="19" fill="#C7452E">deterministic · idempotent</text>
+  <line x1="92" y1="572" x2="1108" y2="572" stroke="#C9D4E6" stroke-width="1.5"/>
+  <text x="92" y="604" font-family="Inter, -apple-system, sans-serif" font-size="19" fill="#5B6A82">kustron</text>
+  <text x="1108" y="604" text-anchor="end" font-family="'JetBrains Mono', Menlo, monospace" font-size="19" fill="#1D4ED8">deterministic · idempotent</text>
 </svg>
