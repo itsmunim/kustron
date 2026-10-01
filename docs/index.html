@@ -323,6 +323,11 @@
       margin-bottom: 48px;
     }
 
+    .yaml-window + .section-sub,
+    .install-block + .section-sub {
+      margin-top: 32px;
+    }
+
     .section-sub a {
       color: var(--accent);
       font-weight: 500;
@@ -341,6 +346,9 @@
     }
 
     .step {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
@@ -369,7 +377,13 @@
     }
 
     .step-cmd {
+      margin-top: auto;
       font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #e3e9f6;
+      background: #10193a;
+      padding: 8px 12px;
+      border-radius: 6px;
       font-size: 13px;
       color: #e3e9f6;
       background: #10193a;
@@ -497,6 +511,32 @@
       border-radius: 4px;
       padding: 2px 7px;
       margin-top: 10px;
+    }
+
+    .use-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      column-gap: 40px;
+      row-gap: 36px;
+    }
+
+    .use-item h3 {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .use-item p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .use-item code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: var(--accent);
     }
 
     /* ── Commands ── */
@@ -891,6 +931,10 @@
         padding: 56px 16px;
       }
 
+      .use-grid {
+        grid-template-columns: 1fr;
+      }
+
       .install-block {
         width: 100%;
         max-width: 100%;
@@ -1008,6 +1052,40 @@
           <h3>Iterate</h3>
           <p>Add apps, change config, redeploy. The file is the source of truth.</p>
           <div class="step-cmd"><span>$ </span>kustron env reload</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Use kustron for -->
+  <section>
+    <div class="section-inner">
+      <div class="section-label">Use kustron for</div>
+      <h2>Where it takes an hour, Kustron takes one command.</h2>
+      <p class="section-sub">Five situations where the environment is the whole job.</p>
+
+      <div class="use-grid">
+        <div class="use-item">
+          <h3>Full-stack local dev</h3>
+          <p>App, database, cache, object store, workers. Everything running together, reachable by name, <code>env up</code> when you start work.</p>
+        </div>
+        <div class="use-item">
+          <h3>Sandboxes on demand</h3>
+          <p>An isolated stack for a demo, a test, or a brief experiment. <code>env down</code> when it's done and nothing lingers.</p>
+        </div>
+        <div class="use-item">
+          <h3>A dev box in the cloud</h3>
+          <p>The same <code>kustron-env.yaml</code> on a cheap Linux VM gives you an identical environment on the real internet. Demos, staging, workshops.</p>
+        </div>
+        <div class="use-item">
+          <h3>Prod-like parity</h3>
+          <p>Helm charts, private registries, per-app namespaces, deploy ordering. What production runs, runs the same way locally.</p>
+        </div>
+        <div class="use-item">
+          <h3>Agent-friendly iteration</h3>
+          <p>An agent scaffolds the code; Kustron supplies a reproducible environment to run and test it in, and tears it down after.</p>
         </div>
       </div>
     </div>
