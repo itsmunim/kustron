@@ -528,11 +528,11 @@
     }
 
     .cmd-code .arg {
-      color: #f9a8d4;
+      color: #8a7448;
     }
 
     .cmd-code .flag {
-      color: #fbbf24;
+      color: #8f6d2a;
     }
 
     .cmd-desc {
@@ -1191,6 +1191,21 @@
           </td>
           <td><span class="cmd-desc">Remove an app entry from <code>kustron-env.yaml</code>. Then run
               <code>kustron env reload</code> to apply.</span></td>
+        </tr>
+        <tr>
+          <td colspan="2" class="cmd-group">registry</td>
+        </tr>
+        <tr>
+          <td><code class="cmd-code"><span class="kw">kustron</span> registry login <span
+                class="arg">&lt;server&gt;</span></code></td>
+          <td><span class="cmd-desc">Log in to a container registry (docker/podman) so private images can be
+              pulled and pushed.</span></td>
+        </tr>
+        <tr>
+          <td><code class="cmd-code"><span class="kw">kustron</span> registry import <span
+                class="arg">&lt;image&gt;</span></code></td>
+          <td><span class="cmd-desc">Import a local image directly into the cluster without pushing to the
+              registry.</span></td>
         </tr>
       </table>
     </div>
