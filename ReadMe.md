@@ -196,6 +196,13 @@ Run `kustron env show-spec` for a full annotated schema reference.
 | `helm.valuesFiles` | Additional local values files, each passed as `--values` |
 | `helm.imageValues` | Inject a kustron-built image into the chart: `{repository: 'image.repository', tag: 'image.tag'}` (dotted paths) |
 | `helm.chart` | Repo chart name, local path (`./charts/x`), OCI (`oci://...`), or packaged `.tgz` |
+| `dependsOn` | Deploy this app only after the listed apps are ready (topological order, cycle-checked) |
+| `wait` | How a dependency must be ready: `rollout` (default), `established` (CRDs), or `command` with `wait.command` |
+| `hooks.pre` / `hooks.post` | Host shell commands run before / after the app deploys |
+| `namespace` | Deploy this app into its own namespace (default: the env namespace) |
+| `instance` | Instance suffix so the same `name` can be deployed twice (`kafka-primary`, `kafka-secondary`) |
+| `registry` | Private registry creds (`server`, `username`, `password`); creates an imagePullSecret and attaches it |
+| `components` | Top-level block: reusable app bundles from a `Kustronfile` (local dir or git URL) with `inputs` / `outputs` |
 
 ---
 
@@ -209,6 +216,8 @@ Run `kustron env show-spec` for a full annotated schema reference.
 | `kustron env reload` | Down + up (pick up any yaml changes) |
 | `kustron env show-spec` | Pretty-print the `kustron-env.yaml` schema |
 | `kustron env status` | Show cluster + app states in a table |
+| `kustron registry login <server>` | Login to a container registry (docker/podman), then push images to it |
+| `kustron registry import <images...>` | Import local images into the k3d cluster (alternative to push) |
 | `kustron apps add [flags]` | Add a new app entry to `kustron-env.yaml` |
 | `kustron apps remove <name>` | Remove an app entry from `kustron-env.yaml` |
 
