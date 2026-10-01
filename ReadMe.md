@@ -14,6 +14,31 @@ Think docker-compose, but for Kubernetes. You define your apps in a `kustron-env
 
 ---
 
+## Features
+
+- **One file defines the environment.** Three app types in a single `kustron-env.yaml`: build from source (local folder or git URL), run an existing image, or deploy a Helm chart. No Kubernetes manifests to write.
+- **Deterministic, idempotent `env up`.** Image tags are content hashes, not timestamps. Re-running `env up` with no changes is a fast no-op: same tag, build skipped, manifests unchanged. A source edit rebuilds and rolls out only what changed.
+- **Healthchecks that match the protocol.** `healthcheck: /health` does an HTTP GET, `healthcheck: tcp` probes the port, omit it for no probes. TCP-only services (redis, postgres, DynamoDB) stop stalling rollouts.
+- **Split build from deploy.** A built image can feed a Helm chart (via `helm.imageValues`) or the built-in template, whichever the app needs.
+- **Deploy ordering.** `dependsOn` deploys apps in topological order, with three readiness modes per dependency: `rollout`, `established` (CRDs), or a custom `command`. Plus `hooks.pre` / `hooks.post` for seeding, migrations, and side effects.
+- **Escape hatches.** `command`, `args`, `resources` as first-class fields, and a generic `patch` that deep-merges onto the generated Deployment. One missing field no longer means leaving Kustron.
+- **Helm done right.** Nested `values` (passed as a real `--values` file), extra `valuesFiles`, local chart paths, OCI charts, and `helm.imageValues` to inject a built image.
+- **Private registries.** Per-app `registry` creds create and attach an imagePullSecret, plus `kustron registry login` and `kustron registry import` for local images.
+- **Per-app namespaces & instances.** Deploy the same app twice (`kafka-primary`, `kafka-secondary`) or into its own namespace.
+- **Reusable components.** A `components:` block pulls in a `Kustronfile` (local dir or git URL) with inputs, outputs, and apps. Values wire together via interpolation: `${component.bootstrap}`, `${app.endpoint}`.
+- **One command to see everything.** `kustron env status` lists every app, its readiness, and its URL in a table. No kubectl required.
+
+## Use cases: where Kustron shines
+
+- **Full-stack local dev.** Your app plus the databases, caches, object stores, and workers it talks to, all in one namespace, all reachable by name. `env up` when you start work; everything's already there.
+- **Sandboxes on demand.** An isolated stack for a demo, a spike, or a broken-testing session. Bring it up, abuse it freely, `env down` when you're done and nothing lingers.
+- **A dev box in the cloud.** The same `kustron-env.yaml` on a cheap Linux VM produces an identical environment on the real internet. Demos, staging, and workshops run the same setup your laptop runs.
+- **Prod-like parity without the prod.** Helm charts, private registries, per-app namespaces, deploy ordering, scaling: if it's in production, it can run the same way locally.
+- **Agent-friendly iteration.** Agents scaffold code in minutes; Kustron supplies the reproducible environment to run and test it in, and tears it down when the task ends.
+- **Onboarding, in one command.** Commit the env file and a new teammate goes from clone to a complete running stack with a single `env up`. No "works in my compose".
+
+---
+
 ## Prerequisites
 
 - **Container runtime:** [Podman](https://podman.io) or Docker ([OrbStack](https://orbstack.dev) / Docker Desktop). Kustron auto-detects whichever you have and uses it for the k3d cluster and image builds.
