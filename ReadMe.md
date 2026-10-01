@@ -174,7 +174,9 @@ apps:
     exposed: false
 ```
 
-Run `kustron env show-spec` for a full annotated schema reference.
+> **More examples & features:** every app type and field is documented with a
+> use case on the [Features & Examples](https://itsmunim.github.io/kustron/features.html)
+> page. Run `kustron env show-spec` for a full annotated schema reference.
 
 ### Schema rules
 

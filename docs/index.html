@@ -19,7 +19,7 @@
   <link rel="canonical" href="https://itsmunim.github.io/kustron/">
   <meta name="description"
     content="Define your apps in one file. Kustron spins up a local Kubernetes cluster, builds, and deploys them. No Kubernetes knowledge required.">
-  <meta name="theme-color" content="#09090b">
+  <meta name="theme-color" content="#F6F4EF">
 
   <!-- Open Graph (Facebook, LinkedIn, Discord, iMessage) -->
   <meta property="og:type" content="website">
@@ -81,15 +81,15 @@
     }
 
     :root {
-      --bg: #09090b;
-      --surface: #18181b;
-      --surface2: #27272a;
-      --border: #3f3f46;
-      --text: #fafafa;
-      --muted: #a1a1aa;
-      --accent: #818cf8;
-      --accent-dim: rgba(129, 140, 248, .12);
-      --green: #4ade80;
+      --bg: #f6f4ef;
+      --surface: #ffffff;
+      --surface2: #ece9e0;
+      --border: #e0dcd0;
+      --text: #1a1712;
+      --muted: #6f6a5e;
+      --accent: #c7452e;
+      --accent-dim: rgba(199, 69, 46, .08);
+      --green: #2e7d4f;
       --radius: 10px;
     }
 
@@ -120,7 +120,7 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(9, 9, 11, .85);
+      background: rgba(246, 244, 239, .85);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       padding: 0 24px;
@@ -180,12 +180,12 @@
 
     .btn-primary {
       background: var(--accent);
-      color: #1e1b4b;
+      color: #fff;
       font-weight: 600;
     }
 
     .btn-primary:hover {
-      background: #a5b4fc;
+      background: #d95a40;
       text-decoration: none;
     }
 
@@ -202,7 +202,7 @@
       align-items: center;
       gap: 6px;
       background: var(--accent-dim);
-      border: 1px solid rgba(129, 140, 248, .3);
+      border: 1px solid rgba(199, 69, 46, .28);
       border-radius: 100px;
       padding: 4px 12px;
       font-size: 13px;
@@ -216,7 +216,7 @@
       line-height: 1.1;
       letter-spacing: -2px;
       margin-bottom: 20px;
-      background: linear-gradient(135deg, #fff 40%, #818cf8);
+      background: linear-gradient(135deg, #1a1712 30%, #c7452e);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -227,6 +227,15 @@
       color: var(--muted);
       max-width: 520px;
       margin: 0 auto 40px;
+
+    .hero-cta {
+      margin-top: -8px;
+    }
+
+    .hero-cta .btn {
+      font-size: 15px;
+      padding: 10px 22px;
+    }
     }
 
     .install-block {
@@ -308,6 +317,11 @@
       color: var(--muted);
       margin-bottom: 48px;
       max-width: 600px;
+    }
+
+    .section-sub a {
+      color: var(--accent);
+      font-weight: 500;
     }
 
     .divider {
@@ -461,7 +475,7 @@
       font-size: 11px;
       background: var(--accent-dim);
       color: var(--accent);
-      border: 1px solid rgba(129, 140, 248, .25);
+      border: 1px solid rgba(199, 69, 46, .22);
       border-radius: 4px;
       padding: 2px 7px;
       margin-top: 10px;
@@ -551,9 +565,9 @@
     }
 
     .required {
-      background: rgba(99, 102, 241, .15);
+      background: rgba(199, 69, 46, .1);
       color: var(--accent);
-      border: 1px solid rgba(99, 102, 241, .3);
+      border: 1px solid rgba(199, 69, 46, .28);
     }
 
     .optional {
@@ -578,7 +592,7 @@
       align-items: flex-start;
       gap: 16px;
       background: var(--accent-dim);
-      border: 1px solid rgba(129, 140, 248, .25);
+      border: 1px solid rgba(199, 69, 46, .22);
       border-radius: var(--radius);
       padding: 16px 20px;
       margin-bottom: 16px;
@@ -723,7 +737,7 @@
       height: 32px;
       border-radius: 50%;
       background: var(--accent-dim);
-      border: 1px solid rgba(129, 140, 248, .3);
+      border: 1px solid rgba(199, 69, 46, .25);
       color: var(--accent);
       font-family: 'JetBrains Mono', monospace;
       font-size: 12px;
@@ -804,9 +818,9 @@
 
     .vm-svc .svc-badge {
       font-size: 10px;
-      background: rgba(74, 222, 128, .1);
+      background: rgba(46, 125, 79, .1);
       color: var(--green);
-      border: 1px solid rgba(74, 222, 128, .2);
+      border: 1px solid rgba(46, 125, 79, .22);
       border-radius: 3px;
       padding: 1px 5px;
       margin-left: 6px;
@@ -835,8 +849,8 @@
       display: flex;
       align-items: flex-start;
       gap: 10px;
-      background: rgba(251, 191, 36, .06);
-      border: 1px solid rgba(251, 191, 36, .2);
+      background: rgba(196, 140, 44, .08);
+      border: 1px solid rgba(196, 140, 44, .22);
       border-radius: 7px;
       padding: 12px 14px;
       margin-top: 16px;
@@ -897,6 +911,7 @@
     <div class="nav-inner">
       <div class="nav-logo"><span>k</span>ustron</div>
       <div class="nav-links">
+        <a href="features.html" class="btn btn-outline">Features</a>
         <a href="https://github.com/itsmunim/kustron/stargazers" class="btn btn-outline star-btn" id="star-btn"
           target="_blank" rel="noopener">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -937,7 +952,9 @@
         <button class="copy-btn" onclick="copyInstall(this)">Copy</button>
       </div>
     </div>
-
+    <div class="hero-cta">
+      <a href="features.html" class="btn btn-primary">See all features &amp; examples →</a>
+    </div>
   </div>
 
   <hr class="divider">
