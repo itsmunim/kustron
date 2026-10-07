@@ -1,4 +1,6 @@
 import {dump} from 'js-yaml';
+import {createHash} from 'crypto';
+import {deepMerge} from '../utils/merge.js';
 import {deepMerge} from '../utils/merge.js';
 const DEFAULT_CPU_REQUEST = '100m';
 const DEFAULT_CPU_LIMIT = '500m';
@@ -110,6 +112,11 @@ export function buildDeployment(opts: ManifestOptions): string {
     container.livenessProbe = {...probe, periodSeconds: 10, failureThreshold: 3};
   }
 
+  const envHash = createHash('sha256')
+    .update(JSON.stringify(opts.env))
+    .digest('hex')
+    .slice(0, 12);
+
   const deployment: Record<string, unknown> = {
     apiVersion: 'apps/v1',
     kind: 'Deployment',
@@ -126,6 +133,9 @@ export function buildDeployment(opts: ManifestOptions): string {
       template: {
         metadata: {
           labels: managedLabels(opts.name),
+          annotations: {
+            'kustron.dev/env-hash': envHash,
+          },
         },
         spec: {
           containers: [container],

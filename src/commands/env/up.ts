@@ -85,18 +85,6 @@ export async function envUp(): Promise<void> {
   } else {
     warn(t('env.up.clusterExists', {name: clusterName}));
   }
-  if (!exists) {
-    step(t('env.up.creatingCluster', {name: clusterName}));
-    await createCluster({
-      name: clusterName,
-      namespace,
-    });
-  } else if (!(await isClusterRunning(clusterName))) {
-    step(t('env.up.startingCluster', {name: clusterName}));
-    await startCluster(clusterName);
-  } else {
-    warn(t('env.up.clusterExists', {name: clusterName}));
-  }
 
   // Idempotent convergence: every `env up` guarantees a usable kubectl
   // context and a wired-in registry, whatever state it finds the cluster in.
@@ -106,7 +94,6 @@ export async function envUp(): Promise<void> {
   await mergeKubeconfig(clusterName);
   step(t('env.up.ensuringRegistry'));
   await ensureRegistry(clusterName, registryPort);
-  await ensureRegistry(clusterName);
   step(t('env.up.installingMetricsServer'));
   await installMetricsServer(clusterName);
 
@@ -128,10 +115,16 @@ export async function envUp(): Promise<void> {
   // Expand components (idea 8) into concrete apps, exposing ${component.output} vars.
   const {apps, outputs} = await expandComponents(envFile);
 
+  // Remove apps that were previously deployed but are no longer in the env file.
+  await pruneRemovedApps(apps, namespace, clusterName);
+
   await deployAll(apps, {
     ...ctx,
     componentOutputs: outputs,
   });
+
+  // Record what was deployed so we can prune removed apps on the next run.
+  await recordDeployedApps(apps, namespace);
 
   success(t('env.up.success', {name: clusterName}));
 }
