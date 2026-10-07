@@ -108,7 +108,7 @@ const componentSpecSchema = z.object({
 });
 
 const envFileSchema = z.object({
-  config: z.object({namespace: z.string().optional()}).optional(),
+  config: z.object({namespace: z.string().optional(), clusterName: z.string().optional()}).optional(),
   components: z.array(componentSpecSchema).optional(),
   apps: z.array(appEntrySchema),
 });

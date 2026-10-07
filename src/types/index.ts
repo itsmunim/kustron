@@ -89,6 +89,7 @@ export interface EnvFile {
 export interface ClusterConfig {
   name: string;
   namespace: string;
+  registryPort?: number;
 }
 
 export interface DeployContext {
@@ -97,6 +98,7 @@ export interface DeployContext {
   clusterName: string;
   verbose: boolean;
   nodeIp?: string;
+  registryPort: number;
   /** All apps in the env file (used for cross-app ${app.endpoint} interpolation). */
   allApps?: AppEntry[];
   /** Component output vars (e.g. {hub-kafka.bootstrap: 'kafka:9092'}) for ${...} interpolation. */

@@ -9,7 +9,7 @@ import type {ClusterConfig} from '../types/index.js';
 const DEFAULT_CLUSTER_NAME = 'kustron';
 const DEFAULT_AGENTS = 2;
 const REGISTRY_NAME = 'kustron-registry';
-const REGISTRY_PORT = 5000;
+const DEFAULT_REGISTRY_PORT = 5000;
 
 interface ClusterInfo {
   name: string;
@@ -24,7 +24,7 @@ async function getK3dEnv(): Promise<Record<string, string>> {
 export async function createCluster(config: ClusterConfig): Promise<void> {
   const name = config.name;
   const agents = DEFAULT_AGENTS;
-  const registryPort = REGISTRY_PORT;
+  const registryPort = config.registryPort ?? DEFAULT_REGISTRY_PORT;
 
   const args = [
     'cluster',
@@ -33,7 +33,7 @@ export async function createCluster(config: ClusterConfig): Promise<void> {
     '--agents',
     String(agents),
     '--registry-create',
-    `${REGISTRY_NAME}:0.0.0.0:${registryPort}`,
+    `${REGISTRY_NAME}:127.0.0.1:${registryPort}`,
     '--wait',
   ];
 
@@ -125,8 +125,9 @@ export async function startCluster(name?: string): Promise<void> {
  * Idempotent: a registry created by `k3d cluster create --registry-create`
  * (or a previous run) is left untouched.
  */
-export async function ensureRegistry(clusterName?: string): Promise<void> {
+export async function ensureRegistry(clusterName?: string, registryPort?: number): Promise<void> {
   const name = clusterName ?? DEFAULT_CLUSTER_NAME;
+  const port = registryPort ?? DEFAULT_REGISTRY_PORT;
   const env = await getK3dEnv();
 
   let exists = false;
@@ -142,7 +143,7 @@ export async function ensureRegistry(clusterName?: string): Promise<void> {
 
   await exec(
     'k3d',
-    ['registry', 'create', REGISTRY_NAME, '-p', `127.0.0.1:${REGISTRY_PORT}:${REGISTRY_PORT}`],
+    ['registry', 'create', REGISTRY_NAME, '-p', `127.0.0.1:${port}:${DEFAULT_REGISTRY_PORT}`],
     {env},
   );
   await exec('k3d', ['registry', 'connect', REGISTRY_NAME, name], {env});

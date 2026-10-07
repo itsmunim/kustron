@@ -5,7 +5,7 @@ import {
   cleanupSource,
 } from './source.js';
 import {detectBuildStrategy, buildImage} from './build.js';
-import {buildTag, buildPushTag, pushImage, REGISTRY_HOST} from './push.js';
+import {buildTag, buildPushTag, pushImage, REGISTRY_HOST, getRegistryPushHost} from './push.js';
 import {hashSourceDir} from './hash.js';
 import {
   buildConfigMap,
@@ -151,7 +151,7 @@ async function buildSourceImage(
 
     const ref = await hashSourceDir(sourcePath);
     info(`[${app.name}] ${t('deploy.sourceHash', {ref})}`);
-    const pushTag = buildPushTag(app.name, ref);
+    const pushTag = buildPushTag(app.name, ref, ctx.registryPort);
     const image = buildTag(app.name, ref);
 
     if (await skipCheck(image, ref)) {

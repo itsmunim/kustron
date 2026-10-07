@@ -22,6 +22,7 @@ import {ensureNamespace} from '../../core/apply.js';
 import {error, success, step, warn} from '../../utils/logger.js';
 import {t} from '../../utils/i18n.js';
 import type {DeployContext} from '../../types/index.js';
+import {findAvailablePort} from '../../utils/port.js';
 
 const DEFAULT_CLUSTER_NAME = 'kustron';
 
@@ -69,6 +70,21 @@ export async function envUp(): Promise<void> {
   }
 
   const exists = await clusterExists(clusterName);
+  const registryPort = await findAvailablePort(5000);
+
+  if (!exists) {
+    step(t('env.up.creatingCluster', {name: clusterName}));
+    await createCluster({
+      name: clusterName,
+      namespace,
+      registryPort,
+    });
+  } else if (!(await isClusterRunning(clusterName))) {
+    step(t('env.up.startingCluster', {name: clusterName}));
+    await startCluster(clusterName);
+  } else {
+    warn(t('env.up.clusterExists', {name: clusterName}));
+  }
   if (!exists) {
     step(t('env.up.creatingCluster', {name: clusterName}));
     await createCluster({
@@ -89,6 +105,7 @@ export async function envUp(): Promise<void> {
   step(t('env.up.importingKubeconfig'));
   await mergeKubeconfig(clusterName);
   step(t('env.up.ensuringRegistry'));
+  await ensureRegistry(clusterName, registryPort);
   await ensureRegistry(clusterName);
   step(t('env.up.installingMetricsServer'));
   await installMetricsServer(clusterName);
@@ -101,6 +118,7 @@ export async function envUp(): Promise<void> {
     clusterName,
     verbose: false,
     nodeIp: nodeIp ?? undefined,
+    registryPort,
     allApps: envFile.apps,
   };
 
