@@ -69,7 +69,7 @@ async function deployFromImage(
   // the cluster can pull the image; attach it to the Deployment.
   let imagePullSecrets: string[] | undefined;
   if (app.registry?.server && app.registry.username) {
-    const secretName = await ensurePullSecret(app, ctx.namespace);
+    const secretName = await ensurePullSecret(app, ctx.namespace, ctx.clusterName);
     if (secretName) imagePullSecrets = [secretName];
   }
 
@@ -99,16 +99,16 @@ async function deployFromImage(
   info(`[${app.name}] ${t('deploy.manifestsGenerated')}`);
 
   info(`[${app.name}] ${t('deploy.applyingManifests')}`);
-  await applyManifests(manifestYaml);
+  await applyManifests(manifestYaml, ctx.clusterName);
   info(`[${app.name}] ${t('deploy.manifestsApplied')}`);
 
   info(`[${app.name}] ${t('deploy.waitingRollout')}`);
-  await waitForRollout(effectiveName, ctx.namespace);
+  await waitForRollout(effectiveName, ctx.namespace, ctx.clusterName);
   info(`[${app.name}] ${t('deploy.rolloutComplete')}`);
 
   let finalUrl = url;
   if (app.exposed) {
-    const nodePort = await getServiceNodePort(effectiveName, ctx.namespace);
+    const nodePort = await getServiceNodePort(effectiveName, ctx.namespace, ctx.clusterName);
     if (nodePort) {
       finalUrl = buildExposureUrl(ctx.nodeIp, nodePort);
     }
@@ -195,7 +195,7 @@ async function deploySourceApp(
   url: string | null,
 ): Promise<DeployResult> {
   const {image} = await buildSourceImage(app, ctx, async (image) => {
-    const deployedImage = await getDeployedImage(app.name, ctx.namespace);
+    const deployedImage = await getDeployedImage(app.name, ctx.namespace, ctx.clusterName);
     return deployedImage === image;
   });
   return await deployFromImage(app, ctx, image, url);
@@ -219,7 +219,7 @@ async function deployHelmApp(
   imageOverride?: string,
 ): Promise<DeployResult> {
   info(`[${app.name}] ${t('deploy.installingHelm')}`);
-  await helmInstall(app, ctx.namespace, imageOverride);
+  await helmInstall(app, ctx.namespace, ctx.clusterName, imageOverride);
   info(`[${app.name}] ${t('deploy.helmInstalled')}`);
 
   let finalUrl = url;
@@ -231,10 +231,10 @@ async function deployHelmApp(
       app.port,
       app.helm.selector,
     );
-    await applyManifests(serviceYaml);
+    await applyManifests(serviceYaml, ctx.clusterName);
     info(`[${app.name}] ${t('deploy.exposureServiceCreated')}`);
 
-    const nodePort = await getServiceNodePort(app.name, ctx.namespace);
+    const nodePort = await getServiceNodePort(app.name, ctx.namespace, ctx.clusterName);
     if (nodePort) {
       finalUrl = buildExposureUrl(ctx.nodeIp, nodePort);
     }
@@ -252,7 +252,7 @@ async function deploySourceAsHelmApp(
   url: string | null,
 ): Promise<DeployResult> {
   const {image} = await buildSourceImage(app, ctx, async (image) => {
-    const releaseImage = await helmReleaseImage(app, ctx.namespace);
+    const releaseImage = await helmReleaseImage(app, ctx.namespace, ctx.clusterName);
     return releaseImage === image;
   });
   return await deployHelmApp(app, ctx, url, image);
@@ -320,13 +320,13 @@ async function deployAppWithDeps(
   // their signatures.
   const appCtx: DeployContext = {...ctx, namespace: ns};
 
-  await ensureNamespace(ns);
+  await ensureNamespace(ns, ctx.clusterName);
   await runHooks(app.hooks?.pre, 'pre', effectiveName);
 
   for (const dep of app.dependsOn ?? []) {
     step(t('deploy.waitingDep', {dep, name: effectiveName}));
     const depNs = app.wait?.namespace ?? ns;
-    await waitForDependency(dep, depNs, app.wait);
+    await waitForDependency(dep, depNs, ctx.clusterName, app.wait);
   }
 
   const result = await deployApp(app, appCtx);

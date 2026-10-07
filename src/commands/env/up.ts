@@ -14,7 +14,7 @@ import {
   installMetricsServer,
   getK3dNodeIp,
 } from '../../core/cluster.js';
-import {mergeKubeconfig, setContext} from '../../core/context.js';
+import {mergeKubeconfig} from '../../core/context.js';
 import {readAndParseEnvFile} from '../../core/env-file.js';
 import {deployAll} from '../../core/deployer.js';
 import {expandComponents} from '../../core/components.js';
@@ -36,6 +36,7 @@ export async function envUp(): Promise<void> {
 
   const envFile = await readAndParseEnvFile(filePath);
   const namespace = envFile.config?.namespace ?? 'kustron-env';
+  const clusterName = envFile.config?.clusterName ?? DEFAULT_CLUSTER_NAME;
 
   try {
     const hasHelmApps = envFile.apps.some((a) => a.helm);
@@ -67,8 +68,6 @@ export async function envUp(): Promise<void> {
     }
   }
 
-  const clusterName = DEFAULT_CLUSTER_NAME;
-
   const exists = await clusterExists(clusterName);
   if (!exists) {
     step(t('env.up.creatingCluster', {name: clusterName}));
@@ -89,12 +88,10 @@ export async function envUp(): Promise<void> {
   // failing on a stray kubeconfig/registry".
   step(t('env.up.importingKubeconfig'));
   await mergeKubeconfig(clusterName);
-  step(t('env.up.settingContext'));
-  await setContext(clusterName);
   step(t('env.up.ensuringRegistry'));
   await ensureRegistry(clusterName);
   step(t('env.up.installingMetricsServer'));
-  await installMetricsServer();
+  await installMetricsServer(clusterName);
 
   const nodeIp = await getK3dNodeIp(clusterName);
 
@@ -108,7 +105,7 @@ export async function envUp(): Promise<void> {
   };
 
   step(t('env.up.deployingApps'));
-  await ensureNamespace(namespace);
+  await ensureNamespace(namespace, clusterName);
 
   // Expand components (idea 8) into concrete apps, exposing ${component.output} vars.
   const {apps, outputs} = await expandComponents(envFile);

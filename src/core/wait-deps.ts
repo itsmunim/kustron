@@ -1,7 +1,9 @@
-import {exec} from '../utils/exec.js';
+import {kubectl} from './kubectl.js';
+
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
 import type {WaitConfig} from '../types/index.js';
 
 const DEFAULT_POLL_MS = 2000;
@@ -16,6 +18,7 @@ const DEFAULT_TIMEOUT_MS = 180_000;
 export async function waitForDependency(
   appName: string,
   namespace: string,
+  clusterName: string,
   wait: WaitConfig | undefined,
 ): Promise<void> {
   const type = wait?.type ?? 'rollout';
@@ -23,8 +26,8 @@ export async function waitForDependency(
 
   switch (type) {
     case 'established': {
-      await exec(
-        'kubectl',
+      await kubectl(
+        clusterName,
         [
           'wait',
           '--for=condition=established',
@@ -33,7 +36,7 @@ export async function waitForDependency(
           namespace,
           '--timeout=180s',
         ],
-        {reject: false} as Record<string, unknown>,
+        {reject: false},
       );
       return;
     }
@@ -46,10 +49,10 @@ export async function waitForDependency(
       const deadline = Date.now() + timeoutMs;
       // shell via 'sh -c' so pipes/redirects work
       while (Date.now() < deadline) {
-        const result = await exec('sh', ['-c', command], {
+        const result = await kubectl(clusterName, ['exec', 'deployment/' + appName, '-n', namespace, '--', 'sh', '-c', command], {
           silent: true,
           reject: false,
-        } as Record<string, unknown>);
+        });
         if (result.exitCode === 0) return;
         await sleep(DEFAULT_POLL_MS);
       }
@@ -60,8 +63,8 @@ export async function waitForDependency(
     default: {
       const deadline = Date.now() + timeoutMs;
       while (Date.now() < deadline) {
-        const {stdout} = await exec(
-          'kubectl',
+        const {stdout} = await kubectl(
+          clusterName,
           [
             'get',
             'deployment',
@@ -71,7 +74,7 @@ export async function waitForDependency(
             '-o',
             'jsonpath={.status.availableReplicas}/{.spec.replicas}',
           ],
-          {silent: true, reject: false} as Record<string, unknown>,
+          {silent: true, reject: false},
         );
         const [available, desired] = stdout.split('/').map((s) => parseInt(s.trim(), 10));
         if (Number.isFinite(available) && available >= (desired ?? 1)) return;

@@ -1,4 +1,5 @@
 import {exec} from '../utils/exec.js';
+import {kubectl} from './kubectl.js';
 import {detectContainerRuntime} from '../utils/container-runtime.js';
 import {info, error} from '../utils/logger.js';
 import {t} from '../utils/i18n.js';
@@ -26,6 +27,7 @@ export async function registryLogin(
 export async function ensurePullSecret(
   app: AppEntry,
   namespace: string,
+  clusterName: string,
 ): Promise<string | undefined> {
   const registry = app.registry;
   if (!registry?.server || !registry.username) return undefined;
@@ -48,14 +50,14 @@ export async function ensurePullSecret(
     '-o',
     'yaml',
   ];
-  const {stdout} = await exec('kubectl', args, {
+  const {stdout} = await kubectl(clusterName, args, {
     silent: true,
     reject: false,
-  } as Record<string, unknown>);
-  await exec('kubectl', ['apply', '-f', '-'], {
+  });
+  await kubectl(clusterName, ['apply', '-f', '-'], {
     input: stdout,
     silent: true,
-  } as Record<string, unknown>);
+  });
   return secretName;
 }
 

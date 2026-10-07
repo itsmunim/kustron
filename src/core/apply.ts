@@ -1,26 +1,27 @@
-import {exec} from '../utils/exec.js';
+import {kubectl} from './kubectl.js';
 import {error, info, warn} from '../utils/logger.js';
 import {t} from '../utils/i18n.js';
 
-export async function ensureNamespace(namespace: string): Promise<void> {
+export async function ensureNamespace(namespace: string, clusterName: string): Promise<void> {
   try {
-    await exec('kubectl', ['get', 'namespace', namespace]);
+    await kubectl(clusterName, ['get', 'namespace', namespace], {silent: true});
   } catch {
-    await exec('kubectl', ['create', 'namespace', namespace]);
+    await kubectl(clusterName, ['create', 'namespace', namespace]);
   }
 }
 
-export async function applyManifests(yaml: string): Promise<void> {
+export async function applyManifests(yaml: string, clusterName: string): Promise<void> {
   info(t('deploy.applyingManifests'));
-  await exec('kubectl', ['apply', '-f', '-'], {input: yaml});
+  await kubectl(clusterName, ['apply', '-f', '-'], {input: yaml});
 }
 
 export async function deleteApp(
   appName: string,
   namespace: string,
+  clusterName: string,
 ): Promise<void> {
   try {
-    await exec('kubectl', [
+    await kubectl(clusterName, [
       'delete',
       'all,configmap',
       '-l',
@@ -57,6 +58,7 @@ interface RolloutSnapshot {
 export async function waitForRollout(
   appName: string,
   namespace: string,
+  clusterName: string,
   timeoutMs = 150_000,
 ): Promise<void> {
   info(t('deploy.waitingRollout'));
@@ -65,7 +67,7 @@ export async function waitForRollout(
   let lastSnapshot: RolloutSnapshot | null = null;
 
   while (Date.now() < deadline) {
-    lastSnapshot = await snapshotRollout(appName, namespace);
+    lastSnapshot = await snapshotRollout(appName, namespace, clusterName);
 
     // Rolled out: template replaced, old RS scaled to zero, new pods Ready.
     // (Same signal kubectl rollout status uses — avoids the race where the
@@ -77,21 +79,21 @@ export async function waitForRollout(
       lastSnapshot.available >= lastSnapshot.updated
     ) {
       info(t('deploy.rolloutComplete'));
-      await pruneStaleReplicaSets(appName, namespace);
+      await pruneStaleReplicaSets(appName, namespace, clusterName);
       return;
     }
 
     // Broken: image cannot be pulled. Nothing will change by waiting.
     if (lastSnapshot.errors.has('ImagePullBackOff') || lastSnapshot.errors.has('ErrImagePull')) {
       error(t('deploy.imagePullFailed'));
-      await reportPodDetails(appName, namespace);
+      await reportPodDetails(appName, namespace, clusterName);
       throw new Error(t('deploy.imagePullFailed'));
     }
 
     // Broken: container restarting endlessly.
     if (lastSnapshot.errors.has('CrashLoopBackOff')) {
       error(t('deploy.crashLoop'));
-      await reportPodDetails(appName, namespace);
+      await reportPodDetails(appName, namespace, clusterName);
       throw new Error(t('deploy.crashLoop'));
     }
 
@@ -105,11 +107,11 @@ export async function waitForRollout(
   }
 
   error(t('deploy.rolloutFailed'));
-  await reportPodDetails(appName, namespace);
+  await reportPodDetails(appName, namespace, clusterName);
   throw new Error(t('deploy.rolloutFailed'));
 }
 
-async function snapshotRollout(appName: string, namespace: string): Promise<RolloutSnapshot> {
+async function snapshotRollout(appName: string, namespace: string, clusterName: string): Promise<RolloutSnapshot> {
   const snapshot: RolloutSnapshot = {
     desired: 0,
     updated: 0,
@@ -120,10 +122,10 @@ async function snapshotRollout(appName: string, namespace: string): Promise<Roll
   };
 
   try {
-    const {stdout} = await exec(
-      'kubectl',
+    const {stdout} = await kubectl(
+      clusterName,
       ['get', 'deployment', appName, '-n', namespace, '-o', 'json'],
-      {silent: true, reject: false} as Record<string, unknown>,
+      {silent: true, reject: false},
     );
     const dep = JSON.parse(stdout);
     snapshot.desired = dep?.spec?.replicas ?? 0;
@@ -140,8 +142,8 @@ async function snapshotRollout(appName: string, namespace: string): Promise<Roll
   // stale postgres pod blocking a healthy rollout).
   let currentHash: string | null = null;
   try {
-    const {stdout: rsJson} = await exec(
-      'kubectl',
+    const {stdout: rsJson} = await kubectl(
+      clusterName,
       [
         'get',
         'replicasets',
@@ -152,7 +154,7 @@ async function snapshotRollout(appName: string, namespace: string): Promise<Roll
         '-o',
         'json',
       ],
-      {silent: true, reject: false} as Record<string, unknown>,
+      {silent: true, reject: false},
     );
     const rsList = JSON.parse(rsJson);
     let bestRevision = -1;
@@ -173,8 +175,8 @@ async function snapshotRollout(appName: string, namespace: string): Promise<Roll
     // RS list unavailable — fall back to all pods below
   }
 
-  const {stdout: podsJson} = await exec(
-    'kubectl',
+  const {stdout: podsJson} = await kubectl(
+    clusterName,
     [
       'get',
       'pods',
@@ -185,7 +187,7 @@ async function snapshotRollout(appName: string, namespace: string): Promise<Roll
       '-o',
       'json',
     ],
-    {silent: true, reject: false} as Record<string, unknown>,
+    {silent: true, reject: false},
   );
 
   try {
@@ -208,9 +210,9 @@ async function snapshotRollout(appName: string, namespace: string): Promise<Roll
   return snapshot;
 }
 
-export async function reportPodDetails(appName: string, namespace: string): Promise<void> {
-  const debugInfo = await getPodDebugInfo(appName, namespace);
-  const logs = await getPodLogs(appName, namespace);
+export async function reportPodDetails(appName: string, namespace: string, clusterName: string): Promise<void> {
+  const debugInfo = await getPodDebugInfo(appName, namespace, clusterName);
+  const logs = await getPodLogs(appName, namespace, clusterName);
   if (debugInfo) {
     console.log();
     info('--- Pod describe ---');
@@ -238,16 +240,17 @@ export async function reportPodDetails(appName: string, namespace: string): Prom
 export async function pruneStaleReplicaSets(
   appName: string,
   namespace: string,
+  clusterName: string,
 ): Promise<void> {
   const nameLabel = `app.kubernetes.io/name=${appName}`;
 
   for (let attempt = 0; attempt < 6; attempt++) {
     let deletedAny = false;
     try {
-      const {stdout: rsOut} = await exec(
-        'kubectl',
+      const {stdout: rsOut} = await kubectl(
+        clusterName,
         ['get', 'replicasets', '-l', nameLabel, '-n', namespace, '-o', 'json'],
-        {silent: true, reject: false} as Record<string, unknown>,
+        {silent: true, reject: false},
       );
       const rsList = JSON.parse(rsOut);
       for (const rs of rsList?.items ?? []) {
@@ -256,10 +259,10 @@ export async function pruneStaleReplicaSets(
         const ready = status.readyReplicas ?? 0;
         const available = status.availableReplicas ?? 0;
         if (replicas === 0 && ready === 0 && available === 0) {
-          await exec(
-            'kubectl',
+          await kubectl(
+            clusterName,
             ['delete', 'replicaset', rs.metadata.name, '-n', namespace],
-            {silent: true, reject: false} as Record<string, unknown>,
+            {silent: true, reject: false},
           );
           deletedAny = true;
         }
@@ -285,10 +288,11 @@ function sleep(ms: number): Promise<void> {
 export async function getDeployedImage(
   appName: string,
   namespace: string,
+  clusterName: string,
 ): Promise<string | null> {
   try {
-    const {stdout} = await exec(
-      'kubectl',
+    const {stdout} = await kubectl(
+      clusterName,
       [
         'get',
         'deployment',
@@ -298,7 +302,7 @@ export async function getDeployedImage(
         '-o',
         'jsonpath={.spec.template.spec.containers[0].image}',
       ],
-      {silent: true, reject: false} as Record<string, unknown>,
+      {silent: true, reject: false},
     );
     return stdout.trim() || null;
   } catch {
@@ -309,9 +313,10 @@ export async function getDeployedImage(
 export async function getPodDebugInfo(
   appName: string,
   namespace: string,
+  clusterName: string,
 ): Promise<string> {
   try {
-    const {stdout: describe} = await exec('kubectl', [
+    const {stdout: describe} = await kubectl(clusterName, [
       'describe',
       'pod',
       '-l',
@@ -328,10 +333,11 @@ export async function getPodDebugInfo(
 export async function getPodLogs(
   appName: string,
   namespace: string,
+  clusterName: string,
 ): Promise<string> {
   try {
-    const {stdout, stderr} = await exec(
-      'kubectl',
+    const {stdout, stderr} = await kubectl(
+      clusterName,
       [
         'logs',
         '-l',
@@ -340,7 +346,7 @@ export async function getPodLogs(
         namespace,
         '--tail=50',
       ],
-      {silent: true, reject: false} as Record<string, unknown>,
+      {silent: true, reject: false},
     );
     return stdout || stderr;
   } catch {
@@ -351,10 +357,11 @@ export async function getPodLogs(
 export async function getServiceNodePort(
   appName: string,
   namespace: string,
+  clusterName: string,
 ): Promise<number | null> {
   try {
-    const {stdout} = await exec(
-      'kubectl',
+    const {stdout} = await kubectl(
+      clusterName,
       [
         'get',
         'service',

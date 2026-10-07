@@ -2,7 +2,7 @@ import {access} from 'fs/promises';
 import chalk from 'chalk';
 import {readAndParseEnvFile} from '../../core/env-file.js';
 import {clusterExists, isClusterRunning, getK3dNodeIp} from '../../core/cluster.js';
-import {exec} from '../../utils/exec.js';
+import {kubectl} from '../../core/kubectl.js';
 import {error, info, warn} from '../../utils/logger.js';
 import {t} from '../../utils/i18n.js';
 
@@ -36,11 +36,11 @@ function statusColor(state: PodState['label']): (s: string) => string {
   }
 }
 
-async function getDeploymentInfo(appName: string, namespace: string): Promise<DeploymentInfo> {
-  const result = await exec(
-    'kubectl',
+async function getDeploymentInfo(appName: string, namespace: string, clusterName: string): Promise<DeploymentInfo> {
+  const result = await kubectl(
+    clusterName,
     ['get', 'deployment', appName, '-n', namespace, '-o', 'json'],
-    {silent: true, reject: false} as Record<string, unknown>,
+    {silent: true, reject: false},
   );
   if (result.exitCode !== 0) {
     return {exists: false, ready: 0, desired: 0, image: ''};
@@ -60,11 +60,11 @@ async function getDeploymentInfo(appName: string, namespace: string): Promise<De
   }
 }
 
-async function getPodState(appName: string, namespace: string): Promise<PodState> {
-  const result = await exec(
-    'kubectl',
+async function getPodState(appName: string, namespace: string, clusterName: string): Promise<PodState> {
+  const result = await kubectl(
+    clusterName,
     ['get', 'pods', '-l', `app.kubernetes.io/name=${appName}`, '-n', namespace, '-o', 'json'],
-    {silent: true, reject: false} as Record<string, unknown>,
+    {silent: true, reject: false},
   );
   if (result.exitCode !== 0) {
     return {label: 'unknown'};
@@ -104,11 +104,11 @@ async function getPodState(appName: string, namespace: string): Promise<PodState
   }
 }
 
-async function getNodePort(appName: string, namespace: string): Promise<number | null> {
-  const result = await exec(
-    'kubectl',
+async function getNodePort(appName: string, namespace: string, clusterName: string): Promise<number | null> {
+  const result = await kubectl(
+    clusterName,
     ['get', 'service', appName, '-n', namespace, '-o', 'jsonpath={.spec.ports[0].nodePort}'],
-    {silent: true, reject: false} as Record<string, unknown>,
+    {silent: true, reject: false},
   );
   if (result.exitCode !== 0) return null;
   const port = parseInt(result.stdout.trim(), 10);
@@ -126,16 +126,17 @@ export async function envStatus(): Promise<void> {
 
   const envFile = await readAndParseEnvFile(filePath);
   const namespace = envFile.config?.namespace ?? DEFAULT_NAMESPACE;
+  const clusterName = envFile.config?.clusterName ?? DEFAULT_CLUSTER_NAME;
 
   // Cluster state (informational; status still lists yaml apps regardless)
-  const exists = await clusterExists(DEFAULT_CLUSTER_NAME);
+  const exists = await clusterExists(clusterName);
   if (!exists) {
-    warn(t('env.status.clusterNotCreated', {name: DEFAULT_CLUSTER_NAME}));
-  } else if (!(await isClusterRunning(DEFAULT_CLUSTER_NAME))) {
-    warn(t('env.status.clusterNotRunning', {name: DEFAULT_CLUSTER_NAME}));
+    warn(t('env.status.clusterNotCreated', {name: clusterName}));
+  } else if (!(await isClusterRunning(clusterName))) {
+    warn(t('env.status.clusterNotRunning', {name: clusterName}));
   }
 
-  const nodeIp = exists ? await getK3dNodeIp(DEFAULT_CLUSTER_NAME) : null;
+  const nodeIp = exists ? await getK3dNodeIp(clusterName) : null;
 
   info(`${t('env.status.header')} (${envFile.apps.length})`);
   info(t('env.status.namespace', {namespace}));
@@ -143,9 +144,9 @@ export async function envStatus(): Promise<void> {
 
   const rows = await Promise.all(
     envFile.apps.map(async (app) => {
-      const deployment = await getDeploymentInfo(app.name, namespace);
-      const podState = await getPodState(app.name, namespace);
-      const nodePort = app.exposed ? await getNodePort(app.name, namespace) : null;
+      const deployment = await getDeploymentInfo(app.name, namespace, clusterName);
+      const podState = await getPodState(app.name, namespace, clusterName);
+      const nodePort = app.exposed ? await getNodePort(app.name, namespace, clusterName) : null;
       const url =
         app.exposed && nodePort && nodeIp
           ? `http://${nodeIp}:${nodePort}`

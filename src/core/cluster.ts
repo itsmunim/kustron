@@ -1,4 +1,5 @@
 import {exec} from '../utils/exec.js';
+import {kubectl} from './kubectl.js';
 import {
   getDockerHostEnv,
   getRuntimeCommand,
@@ -49,27 +50,25 @@ export async function createCluster(config: ClusterConfig): Promise<void> {
   await exec('k3d', args, {env});
 }
 
-export async function installMetricsServer(): Promise<void> {
+export async function installMetricsServer(clusterName: string): Promise<void> {
   try {
-    await exec('kubectl', [
-      'get',
-      'deployment',
-      'metrics-server',
-      '-n',
-      'kube-system',
-    ], {silent: true});
+    await kubectl(
+      clusterName,
+      ['get', 'deployment', 'metrics-server', '-n', 'kube-system'],
+      {silent: true},
+    );
     return;
   } catch {
     // not installed, proceed
   }
 
-  await exec('kubectl', [
+  await kubectl(clusterName, [
     'apply',
     '-f',
     'https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml',
   ]);
 
-  await exec('kubectl', [
+  await kubectl(clusterName, [
     'patch',
     'deployment',
     'metrics-server',

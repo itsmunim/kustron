@@ -12,11 +12,6 @@ export async function mergeKubeconfig(clusterName?: string): Promise<void> {
   ]);
 }
 
-export async function setContext(clusterName?: string): Promise<void> {
-  const name = clusterName ?? DEFAULT_CLUSTER_NAME;
-  await exec('kubectl', ['config', 'use-context', `k3d-${name}`]);
-}
-
 export async function deleteContext(clusterName?: string): Promise<void> {
   const name = clusterName ?? DEFAULT_CLUSTER_NAME;
   try {

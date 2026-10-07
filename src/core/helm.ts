@@ -1,4 +1,4 @@
-import {exec} from '../utils/exec.js';
+import {helm} from './kubectl.js';
 import {dump} from 'js-yaml';
 import {mkdtemp, rm, writeFile} from 'fs/promises';
 import {join} from 'path';
@@ -51,14 +51,15 @@ export function injectImageValues(
 export async function helmReleaseImage(
   app: AppEntry,
   namespace: string,
+  clusterName: string,
 ): Promise<string | null> {
   const imageRef = app.helm?.imageValues;
   if (!imageRef?.repository && !imageRef?.tag) return null;
   try {
-    const {stdout} = await exec(
-      'helm',
+    const {stdout} = await helm(
+      clusterName,
       ['get', 'values', app.name, '-n', namespace, '--all', '-o', 'json'],
-      {silent: true, reject: false} as Record<string, unknown>,
+      {silent: true, reject: false},
     );
     if (!stdout.trim()) return null;
     const values = JSON.parse(stdout) as Record<string, unknown>;
@@ -82,6 +83,7 @@ export async function helmReleaseImage(
 export async function helmInstall(
   app: AppEntry,
   namespace: string,
+  clusterName: string,
   imageOverride?: string,
 ): Promise<void> {
   if (!app.helm) throw new Error('App has no helm configuration');
@@ -99,8 +101,8 @@ export async function helmInstall(
 
   const needsRepo = !!app.helm.repo && !isLocalOrOciChart(app.helm.chart);
   if (needsRepo) {
-    await exec('helm', ['repo', 'add', `kustron-${app.name}`, app.helm.repo!]);
-    await exec('helm', ['repo', 'update']);
+    await helm(clusterName, ['repo', 'add', `kustron-${app.name}`, app.helm.repo!]);
+    await helm(clusterName, ['repo', 'update']);
   } else if (app.helm.repo) {
     // repo given but chart is local/OCI: nothing to add
   }
@@ -130,7 +132,7 @@ export async function helmInstall(
       args.push('--values', file);
     }
 
-    await exec('helm', args);
+    await helm(clusterName, args);
   } finally {
     if (tempDir) {
       await rm(tempDir, {recursive: true, force: true}).catch(() => {});
@@ -141,9 +143,10 @@ export async function helmInstall(
 export async function helmUninstall(
   appName: string,
   namespace: string,
+  clusterName: string,
 ): Promise<void> {
   try {
-    await exec('helm', ['uninstall', appName, '--namespace', namespace]);
+    await helm(clusterName, ['uninstall', appName, '--namespace', namespace]);
   } catch {
     // ignore if not installed
   }
@@ -152,9 +155,10 @@ export async function helmUninstall(
 export async function isHelmRelease(
   appName: string,
   namespace: string,
+  clusterName: string,
 ): Promise<boolean> {
   try {
-    const {stdout} = await exec('helm', [
+    const {stdout} = await helm(clusterName, [
       'list',
       '-n',
       namespace,
