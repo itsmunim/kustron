@@ -3,6 +3,8 @@ import chalk from 'chalk';
 import {envInit} from '../commands/env/init.js';
 import {envUp} from '../commands/env/up.js';
 import {envDown} from '../commands/env/down.js';
+import {envStop} from '../commands/env/stop.js';
+import {clusterDestroy} from '../commands/cluster/destroy.js';
 import {envReload} from '../commands/env/reload.js';
 import {envShowSpec} from '../commands/env/show-spec.js';
 import {envStatus} from '../commands/env/status.js';
@@ -55,6 +57,12 @@ env
   });
 
 env
+  .command('stop')
+  .description(t('cli.stopDescription'))
+  .action(async () => {
+    await envStop();
+  });
+env
   .command('reload')
   .description(t('cli.reloadDescription'))
   .action(async () => {
@@ -73,6 +81,16 @@ env
   .description(t('cli.statusDescription'))
   .action(async () => {
     await envStatus();
+  });
+
+const cluster = program.command('cluster').description(t('cli.clusterDescription'));
+
+cluster
+  .command('destroy')
+  .description(t('cli.destroyDescription'))
+  .option('--yes', t('cli.yesOption'))
+  .action(async (options) => {
+    await clusterDestroy(options);
   });
 
 const apps = program.command('apps').description(t('cli.appsDescription'));

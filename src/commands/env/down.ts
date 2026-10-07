@@ -1,27 +1,11 @@
-import {confirm} from '@clack/prompts';
-import {deleteCluster} from '../../core/cluster.js';
-import {deleteContext} from '../../core/context.js';
-import {success, warn} from '../../utils/logger.js';
-import {t} from '../../utils/i18n.js';
-
-const DEFAULT_CLUSTER_NAME = 'kustron';
+import {clusterDestroy} from '../cluster/destroy.js';
+import {warn} from '../../utils/logger.js';
 
 export async function envDown(options: {yes?: boolean} = {}): Promise<void> {
-  if (!options.yes) {
-    const shouldDelete = await confirm({
-      message: t('env.down.confirm', {name: DEFAULT_CLUSTER_NAME}),
-    });
-    if (!shouldDelete) {
-      warn(t('env.down.cancelled'));
-      return;
-    }
-  }
-
-  try {
-    await deleteCluster();
-    await deleteContext();
-    success(t('env.down.success', {name: DEFAULT_CLUSTER_NAME}));
-  } catch {
-    warn(t('env.down.notFound', {name: DEFAULT_CLUSTER_NAME}));
-  }
+  warn(
+    '`kustron env down` destroys the entire cluster. ' +
+    'Use `kustron env stop` to stop apps without destroying infrastructure. ' +
+    'Use `kustron cluster destroy` to explicitly delete the cluster.',
+  );
+  await clusterDestroy(options);
 }
