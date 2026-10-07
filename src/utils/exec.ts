@@ -35,7 +35,6 @@ export async function exec(
   options?: {input?: string; silent?: boolean} & Omit<ExecaOptions, 'input'>,
 ): Promise<ExecResult> {
   const opts: Record<string, unknown> = {
-    all: true,
     ...(options ?? {}),
   };
 
@@ -43,16 +42,43 @@ export async function exec(
     opts.input = options.input;
   }
 
-  if (verboseMode) {
-    opts.stdout = 'inherit';
-    opts.stderr = 'inherit';
-  }
+  // Always capture stdout/stderr so JSON parsing and other consumers work.
+  // In verbose mode we also stream to the console.
+  const captureStdout: string[] = [];
+  const captureStderr: string[] = [];
 
   try {
-    const result = await execa(command, args, opts as ExecaOptions);
+    const subprocess = execa(command, args, opts as ExecaOptions);
+
+    if (verboseMode && subprocess.stdout) {
+      subprocess.stdout.on('data', (chunk: Buffer) => {
+        const text = chunk.toString();
+        captureStdout.push(text);
+        process.stdout.write(text);
+      });
+    }
+    if (verboseMode && subprocess.stderr) {
+      subprocess.stderr.on('data', (chunk: Buffer) => {
+        const text = chunk.toString();
+        captureStderr.push(text);
+        process.stderr.write(text);
+      });
+    }
+
+    const result = await subprocess;
+
+    // If we were streaming in verbose mode, use the captured chunks.
+    // Otherwise use the result directly.
+    const stdout = verboseMode
+      ? captureStdout.join('')
+      : String(result.stdout ?? '');
+    const stderr = verboseMode
+      ? captureStderr.join('')
+      : String(result.stderr ?? '');
+
     return {
-      stdout: String(result.stdout ?? ''),
-      stderr: String(result.stderr ?? ''),
+      stdout,
+      stderr,
       exitCode: result.exitCode ?? 0,
     };
   } catch (err) {
@@ -63,9 +89,9 @@ export async function exec(
       command?: string;
       exitCode?: number;
     };
-    const message = String(
-      ex.stderr ?? ex.stdout ?? ex.message ?? t('errors.unknownError'),
-    );
+    const stdout = verboseMode ? captureStdout.join('') : String(ex.stdout ?? '');
+    const stderr = verboseMode ? captureStderr.join('') : String(ex.stderr ?? '');
+    const message = String(stderr ?? stdout ?? ex.message ?? t('errors.unknownError'));
     error(
       t('errors.commandFailed', {
         command: `${command} ${args.join(' ')}`,
