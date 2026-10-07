@@ -31,6 +31,8 @@ export interface AppEntry {
   replicas?: number;
   ha?: boolean;
   env?: Record<string, string>;
+  /** Secret environment variables (injected as K8s Secrets, not ConfigMaps). */
+  secret?: Record<string, string>;
   /** First-class escape hatch: override the container command. */
   command?: string[];
   /** First-class escape hatch: override the container args. */

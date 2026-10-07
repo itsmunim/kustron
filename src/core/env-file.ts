@@ -31,6 +31,7 @@ const appEntrySchema = z
     replicas: z.number().optional(),
     ha: z.boolean().optional(),
     env: z.record(z.string(), z.string()).optional(),
+    secret: z.record(z.string(), z.string()).optional(),
     command: z.array(z.string()).optional(),
     args: z.array(z.string()).optional(),
     resources: z

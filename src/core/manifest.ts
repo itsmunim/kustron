@@ -1,7 +1,6 @@
 import {dump} from 'js-yaml';
 import {createHash} from 'crypto';
 import {deepMerge} from '../utils/merge.js';
-import {deepMerge} from '../utils/merge.js';
 const DEFAULT_CPU_REQUEST = '100m';
 const DEFAULT_CPU_LIMIT = '500m';
 const DEFAULT_MEMORY_REQUEST = '128Mi';
@@ -14,6 +13,7 @@ export interface ManifestOptions {
   port: number;
   replicas: number;
   env: Record<string, string>;
+  secret?: Record<string, string>;
   expose: boolean;
   healthcheck?: string;
   /** First-class escape hatch overrides (command/args/resources). */
@@ -55,6 +55,26 @@ export function buildConfigMap(
   });
 }
 
+export function buildSecret(
+  appName: string,
+  namespace: string,
+  secret: Record<string, string>,
+): string | null {
+  if (Object.keys(secret).length === 0) return null;
+
+  return dump({
+    apiVersion: 'v1',
+    kind: 'Secret',
+    metadata: {
+      name: `${appName}-env`,
+      namespace,
+      labels: managedLabels(appName),
+    },
+    type: 'Opaque',
+    stringData: secret,
+  });
+}
+
 export function buildDeployment(opts: ManifestOptions): string {
   const resources: Record<string, unknown> = deepMerge(
     {
@@ -85,8 +105,14 @@ export function buildDeployment(opts: ManifestOptions): string {
   }
 
 
-  if (Object.keys(opts.env).length > 0) {
-    container.envFrom = [{configMapRef: {name: opts.name}}];
+  if (Object.keys(opts.env).length > 0 || Object.keys(opts.secret ?? {}).length > 0) {
+    container.envFrom = [];
+    if (Object.keys(opts.env).length > 0) {
+      container.envFrom.push({configMapRef: {name: opts.name}});
+    }
+    if (Object.keys(opts.secret ?? {}).length > 0) {
+      container.envFrom.push({secretRef: {name: `${opts.name}-env`}});
+    }
   }
 
   // Healthcheck is opt-in:

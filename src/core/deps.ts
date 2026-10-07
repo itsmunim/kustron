@@ -60,7 +60,7 @@ export function interpolate(
   vars: Record<string, string>,
 ): string {
   return value.replace(/\$\{([a-zA-Z0-9_.-]+)\}/g, (match, key: string) => {
-    return vars[key] ?? match;
+    return vars[key] ?? process.env[key] ?? match;
   });
 }
 

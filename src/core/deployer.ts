@@ -9,6 +9,8 @@ import {buildTag, buildPushTag, pushImage, REGISTRY_HOST, getRegistryPushHost} f
 import {hashSourceDir} from './hash.js';
 import {
   buildConfigMap,
+  buildSecret,
+  buildDeployment,
   buildDeployment,
   buildService,
   buildHPA,
@@ -60,8 +62,12 @@ async function deployFromImage(
     ...(ctx.componentOutputs ?? {}),
   };
   const env: Record<string, string> = {};
+  const secrets: Record<string, string> = {};
   for (const [k, v] of Object.entries(app.env ?? {})) {
     env[k] = interpolate(v, vars);
+  }
+  for (const [k, v] of Object.entries(app.secret ?? {})) {
+    secrets[k] = interpolate(v, vars);
   }
   const replicas = app.ha ? 2 : (app.replicas ?? 1);
   const port = typeof app.port === 'number' ? app.port : 80;
@@ -80,6 +86,7 @@ async function deployFromImage(
     port,
     replicas,
     env,
+    secret: secrets,
     expose: app.exposed ?? false,
     healthcheck: app.healthcheck,
     command: app.command,
@@ -91,11 +98,12 @@ async function deployFromImage(
 
   info(`[${app.name}] ${t('deploy.generatingManifests')}`);
   const cm = buildConfigMap(effectiveName, ctx.namespace, env);
+  const secretManifest = buildSecret(effectiveName, ctx.namespace, secrets);
   const deployment = buildDeployment(opts);
   const service = buildService(opts);
   const hpa = app.ha ? buildHPA(opts) : null;
 
-  const manifestYaml = assembleManifests([cm, deployment, service, hpa]);
+  const manifestYaml = assembleManifests([cm, secretManifest, deployment, service, hpa]);
   info(`[${app.name}] ${t('deploy.manifestsGenerated')}`);
 
   info(`[${app.name}] ${t('deploy.applyingManifests')}`);
