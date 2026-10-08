@@ -6,6 +6,9 @@ import {tmpdir} from 'os';
 import type {AppEntry} from '../types/index.js';
 import {REGISTRY_HOST} from './push.js';
 import {getPath, setPath} from '../utils/merge.js';
+import {parseImageRef} from '../utils/image.js';
+import {REGISTRY_HOST} from './push.js';
+import {getPath, setPath} from '../utils/merge.js';
 
 /** Chart types helm handles natively without a repo add / helm repo update. */
 function isLocalOrOciChart(chart: string): boolean {
@@ -30,8 +33,7 @@ export function injectImageValues(
   const imageRef = app.helm?.imageValues;
   if (!imageRef) return map;
 
-  const tag = image.split(':').pop() ?? '';
-  const repository = image.slice(0, image.length - tag.length - 1);
+  const {repository, tag} = parseImageRef(image);
 
   if (imageRef.repository) {
     setPath(map, imageRef.repository, repository);

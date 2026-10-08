@@ -25,6 +25,11 @@ export interface ManifestOptions {
   };
   /** Generic escape hatch: deep-merged onto the Deployment document. */
   patch?: Record<string, unknown>;
+  /** When true, omit replicas so HPA controls scaling. */
+  ha?: boolean;
+  /** imagePullSecrets attached to the Deployment, needed for private registries (idea 6). */
+  imagePullSecrets?: string[];
+  patch?: Record<string, unknown>;
   /** imagePullSecrets attached to the Deployment, needed for private registries (idea 6). */
   imagePullSecrets?: string[];
 }
@@ -152,7 +157,9 @@ export function buildDeployment(opts: ManifestOptions): string {
       labels: managedLabels(opts.name),
     },
     spec: {
-      replicas: opts.replicas,
+      // Omit replicas when HPA is enabled; setting both causes the HPA to
+      // fight the Deployment's declared replica count.
+      ...(opts.ha ? {} : {replicas: opts.replicas}),
       selector: {
         matchLabels: {'app.kubernetes.io/name': opts.name},
       },

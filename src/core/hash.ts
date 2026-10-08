@@ -11,7 +11,7 @@ const IGNORED_DIRS = new Set([
   '.next',
   '.cache',
   'coverage',
-  'dist',
+  '.keen',
   '.keen',
 ]);
 

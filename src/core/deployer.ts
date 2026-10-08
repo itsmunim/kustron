@@ -89,6 +89,7 @@ async function deployFromImage(
     secret: secrets,
     expose: app.exposed ?? false,
     healthcheck: app.healthcheck,
+    ha: app.ha ?? false,
     command: app.command,
     args: app.args,
     resources: app.resources,

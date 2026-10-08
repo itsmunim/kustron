@@ -82,6 +82,12 @@ export async function resolveComponent(spec: ComponentSpec): Promise<ResolvedCom
     const apps: AppEntry[] = kustronfile.apps.map((app) => ({
       ...app,
       name: `${spec.name}-${app.name}`,
+      // Component-internal dependsOn references must use prefixed names.
+      dependsOn: app.dependsOn?.map((dep) =>
+        kustronfile.apps.some((a) => a.name === dep)
+          ? `${spec.name}-${dep}`
+          : dep,
+      ),
       // resolve ${inputs.x} in env values and other strings
       env:
         app.env && Object.keys(app.env).length > 0
@@ -89,6 +95,12 @@ export async function resolveComponent(spec: ComponentSpec): Promise<ResolvedCom
               Object.entries(app.env).map(([k, v]) => [k, replaceVars(v, vars)]),
             )
           : app.env,
+      secret:
+        app.secret && Object.keys(app.secret).length > 0
+          ? Object.fromEntries(
+              Object.entries(app.secret).map(([k, v]) => [k, replaceVars(v, vars)]),
+            )
+          : app.secret,
       image: app.image ? replaceVars(app.image, vars) : app.image,
       source: app.source ? replaceVars(app.source, vars) : app.source,
       // replicas/port may be ${inputs.x} strings; coerce to their numeric form.
