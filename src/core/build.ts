@@ -20,6 +20,32 @@ export async function detectBuildStrategy(
   }
 }
 
+async function ensureBuildkit(): Promise<Record<string, string>> {
+  // Check if buildkitd is available via docker or directly
+  try {
+    const runtime = await detectContainerRuntime();
+    // Try to use the buildx/buildkit driver
+    await exec(runtime, ['buildx', 'inspect'], {silent: true});
+    return {};
+  } catch {
+    // Fall back to checking for buildkitd socket or starting one
+    try {
+      await exec('buildctl', ['debug', 'workers'], {silent: true});
+      return {};
+    } catch {
+      // Try docker-container driver for buildx
+      try {
+        const runtime = await detectContainerRuntime();
+        await exec(runtime, ['buildx', 'create', '--use', '--bootstrap'], {silent: true, reject: false});
+        return {};
+      } catch {
+        // Last resort: try to detect buildkit socket
+        return {BUILDKIT_HOST: 'unix:///run/buildkit/buildkitd.sock'};
+      }
+    }
+  }
+}
+
 export async function buildImage(
   sourcePath: string,
   imageTag: string,
@@ -31,6 +57,7 @@ export async function buildImage(
     await exec(runtime, ['build', '-t', imageTag, sourcePath]);
   } else {
     info(t('build.railpackBuild'));
-    await exec('railpack', ['build', sourcePath, '--name', imageTag]);
+    const env = await ensureBuildkit();
+    await exec('railpack', ['build', sourcePath, '--name', imageTag], {env});
   }
 }

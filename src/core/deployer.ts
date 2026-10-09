@@ -185,7 +185,7 @@ async function buildSourceImage(
     info(`[${app.name}] ${t('deploy.imageBuilt')}`);
 
     info(`[${app.name}] ${t('deploy.pushingImage')}`);
-    await pushImage(pushTag);
+    await pushImage(pushTag, getRegistryPushHost(ctx.registryPort));
     info(`[${app.name}] ${t('deploy.imagePushed')}`);
 
     return {ref, image};

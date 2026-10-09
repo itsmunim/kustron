@@ -17,8 +17,16 @@ export function buildPushTag(appName: string, ref: string, port: number): string
   return `${getRegistryPushHost(port)}/${appName}:${ref}`;
 }
 
-export async function pushImage(tag: string): Promise<void> {
+export async function pushImage(tag: string, registryHost?: string): Promise<void> {
   const runtime = await detectContainerRuntime();
   info(t('deploy.pushingImage'));
-  await exec(runtime, ['push', tag]);
+
+  const args = ['push', tag];
+
+  // podman requires --tls-verify=false for local HTTP registries
+  if (runtime === 'podman' && registryHost?.startsWith('localhost')) {
+    args.push('--tls-verify=false');
+  }
+
+  await exec(runtime, args);
 }
