@@ -4,11 +4,8 @@ import {mkdtemp, rm, writeFile} from 'fs/promises';
 import {join} from 'path';
 import {tmpdir} from 'os';
 import type {AppEntry} from '../types/index.js';
-import {REGISTRY_HOST} from './push.js';
 import {getPath, setPath} from '../utils/merge.js';
 import {parseImageRef} from '../utils/image.js';
-import {REGISTRY_HOST} from './push.js';
-import {getPath, setPath} from '../utils/merge.js';
 
 /** Chart types helm handles natively without a repo add / helm repo update. */
 function isLocalOrOciChart(chart: string): boolean {
@@ -94,20 +91,25 @@ export async function helmInstall(
     'upgrade',
     '--install',
     app.name,
-    app.helm.chart,
     '--namespace',
     namespace,
     '--create-namespace',
     '--wait',
   ];
 
+  let chartRef = app.helm.chart;
   const needsRepo = !!app.helm.repo && !isLocalOrOciChart(app.helm.chart);
   if (needsRepo) {
-    await helm(clusterName, ['repo', 'add', `kustron-${app.name}`, app.helm.repo!]);
+    const repoName = `kustron-${app.name}`;
+    await helm(clusterName, ['repo', 'add', repoName, app.helm.repo!]);
     await helm(clusterName, ['repo', 'update']);
+    // Reference chart as repo_name/chart_name, not just chart name
+    chartRef = `${repoName}/${app.helm.chart}`;
   } else if (app.helm.repo) {
     // repo given but chart is local/OCI: nothing to add
   }
+
+  args.push(chartRef);
 
   if (app.helm.version) {
     args.push('--version', app.helm.version);
