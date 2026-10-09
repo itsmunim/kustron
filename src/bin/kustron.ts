@@ -17,6 +17,18 @@ import {printBanner} from '../utils/banner.js';
 
 const program = new Command();
 
+// Graceful interruption: clean up temp resources on Ctrl+C
+let shuttingDown = false;
+process.on('SIGINT', () => {
+  if (shuttingDown) {
+    process.exit(1);
+  }
+  shuttingDown = true;
+  console.error(chalk.yellow('\nInterrupted. Cleaning up...'));
+  // Give ongoing operations a moment to finish gracefully
+  setTimeout(() => process.exit(130), 2000);
+});
+
 program
   .name('kustron')
   .description(t('cli.description'))

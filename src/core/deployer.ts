@@ -311,7 +311,7 @@ async function runHooks(
   if (!hooks || hooks.length === 0) return;
   for (const hook of hooks) {
     info(`[${appName}] ${kind}-hook: ${hook}`);
-    await exec('sh', ['-c', hook], {reject: false} as Record<string, unknown>);
+    await exec('sh', ['-c', hook]);
   }
 }
 
