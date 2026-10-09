@@ -11,6 +11,9 @@ import {envStatus} from '../commands/env/status.js';
 import {appsAdd} from '../commands/apps/add.js';
 import {appsRemove} from '../commands/apps/remove.js';
 import {registerRegistryCommand} from '../commands/registry/index.js';
+import {appStop} from '../commands/app/stop.js';
+import {appStart} from '../commands/app/start.js';
+import {appLogs} from '../commands/app/logs.js';
 import {setVerbose} from '../utils/exec.js';
 import {t} from '../utils/i18n.js';
 import {printBanner} from '../utils/banner.js';
@@ -103,6 +106,31 @@ cluster
   .option('--yes', t('cli.yesOption'))
   .action(async (options) => {
     await clusterDestroy(options);
+  });
+
+const app = program.command('app').description(t('cli.appDescription'));
+
+app
+  .command('stop <name>')
+  .description(t('cli.appStopDescription'))
+  .action(async (name) => {
+    await appStop(name);
+  });
+
+app
+  .command('start <name>')
+  .description(t('cli.appStartDescription'))
+  .action(async (name) => {
+    await appStart(name);
+  });
+
+app
+  .command('logs <name>')
+  .description(t('cli.appLogsDescription'))
+  .option('-f, --follow', t('cli.followOption'))
+  .option('-t, --tail <n>', t('cli.tailOption'), parseInt)
+  .action(async (name, options) => {
+    await appLogs(name, {follow: options.follow, tail: options.tail});
   });
 
 const apps = program.command('apps').description(t('cli.appsDescription'));
