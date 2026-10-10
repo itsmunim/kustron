@@ -65,6 +65,7 @@ const appEntrySchema = z
       })
       .optional(),
   })
+  .strict()
   .refine(
     (data) => {
       const hasSource = !!data.source;
@@ -108,11 +109,13 @@ const componentSpecSchema = z.object({
   inputs: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional(),
 });
 
-const envFileSchema = z.object({
-  config: z.object({namespace: z.string().optional(), clusterName: z.string().optional()}).optional(),
-  components: z.array(componentSpecSchema).optional(),
-  apps: z.array(appEntrySchema),
-});
+const envFileSchema = z
+  .object({
+    config: z.object({namespace: z.string().optional(), clusterName: z.string().optional()}).optional(),
+    components: z.array(componentSpecSchema).optional(),
+    apps: z.array(appEntrySchema),
+  })
+  .strict();
 
 function validatePortPlaceholders(envFile: EnvFile): void {
   for (const app of envFile.apps) {
@@ -199,7 +202,7 @@ apps:
     source: ./services/api              # local path OR git@github.com:user/repo.git
     port: 3000                          # required
     healthcheck: /health                # optional: /path (HTTP), tcp, or omit for no probes
-    exposed: true                       # reachable at the k3d node IP
+    exposed: true                       # reachable at localhost:<nodePort>
     replicas: 1                         # ignored when ha: true
     ha: false                           # min 2 / max 5 / cpu 90% / mem 80%
     env:

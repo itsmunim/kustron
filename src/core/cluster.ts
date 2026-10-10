@@ -34,6 +34,11 @@ export async function createCluster(config: ClusterConfig): Promise<void> {
     String(agents),
     '--registry-create',
     `${REGISTRY_NAME}:127.0.0.1:${registryPort}`,
+    // Map the Kubernetes NodePort range to the host so exposed services are
+    // reachable via localhost:<nodePort> from Docker Desktop, OrbStack, and
+    // rootless podman (which isolate the container network from the host).
+    '-p',
+    '30000-30100:30000-30100@loadbalancer',
     '--wait',
   ];
 
@@ -149,18 +154,12 @@ export async function ensureRegistry(clusterName?: string, registryPort?: number
   await exec('k3d', ['registry', 'connect', REGISTRY_NAME, name], {env});
 }
 
+/**
+ * Return the node IP for direct container-network access.
+ * When the cluster was created with loadbalancer port mapping, exposed
+ * services are reachable via localhost:<nodePort> instead, so callers
+ * should fall back to localhost URLs.
+ */
 export async function getK3dNodeIp(clusterName: string): Promise<string | null> {
-  try {
-    const runtime = await getRuntimeCommand();
-    const {stdout} = await exec(runtime, [
-      'inspect',
-      `k3d-${clusterName}-server-0`,
-      '-f',
-      '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}',
-    ]);
-    const ip = stdout.trim();
-    return ip || null;
-  } catch {
-    return null;
-  }
+  return null;
 }
