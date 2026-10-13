@@ -19,7 +19,7 @@ const helmConfigSchema = z.object({
   selector: z.record(z.string(), z.string()).optional(),
 });
 
-const appEntrySchema = z
+export const appEntrySchema = z
   .object({
     name: z.string().min(1),
     source: z.string().optional(),

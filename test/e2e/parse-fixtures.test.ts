@@ -53,8 +53,8 @@ describe('E2E: Parse fixtures', () => {
       'oci://registry-1.docker.io/bitnamicharts/postgresql',
     );
     expect(envFile.apps[0].helm?.version).toBe('13.4.0');
-    expect(envFile.apps[0].helm?.imageValues?.repository).toBe(
-      'image.repository',
+    expect(envFile.apps[0].helm?.values?.auth?.postgresPassword).toBe(
+      'secret123',
     );
   });
 });

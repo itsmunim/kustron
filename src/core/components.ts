@@ -1,9 +1,13 @@
-import {readFile, access, mkdtemp, rm} from 'fs/promises';
+import {readFile, access, mkdir} from 'fs/promises';
 import {join} from 'path';
-import {tmpdir} from 'os';
+import {homedir} from 'os';
+import {createHash} from 'crypto';
 import {load} from 'js-yaml';
+import {appEntrySchema} from './env-file.js';
 import {exec} from '../utils/exec.js';
 import type {AppEntry, ComponentSpec, EnvFile} from '../types/index.js';
+
+const COMPONENT_CACHE_DIR = join(homedir(), '.kustron', 'component-cache');
 
 export interface Kustronfile {
   name: string;
@@ -27,25 +31,28 @@ function isGitUrl(source: string): boolean {
   );
 }
 
-async function cloneComponent(
-  spec: ComponentSpec,
-): Promise<{dir: string; cleanup: () => Promise<void>}> {
-  const dir = await mkdtemp(join(tmpdir(), 'kustron-component-'));
-  await exec('git', ['clone', '--depth', '1', spec.source, dir], {
-    silent: true,
-  });
-  return {
-    dir,
-    cleanup: () => rm(dir, {recursive: true, force: true}),
-  };
-}
+async function resolveComponentSource(spec: ComponentSpec): Promise<string> {
+  if (isGitUrl(spec.source)) {
+    const hash = createHash('sha256').update(spec.source).digest('hex').slice(0, 16);
+    const dir = join(COMPONENT_CACHE_DIR, hash);
+    await mkdir(COMPONENT_CACHE_DIR, {recursive: true});
 
-async function resolveLocalComponent(
-  spec: ComponentSpec,
-): Promise<{dir: string; cleanup: () => Promise<void>}> {
+    try {
+      await access(join(dir, 'Kustronfile'));
+      // Already cached — pull latest
+      await exec('git', ['-C', dir, 'fetch', 'origin'], {silent: true});
+      await exec('git', ['-C', dir, 'reset', '--hard', 'origin/HEAD'], {silent: true});
+    } catch {
+      // Not cached — clone
+      await exec('git', ['clone', '--depth', '1', spec.source, dir], {silent: true});
+    }
+    return dir;
+  }
+
+  // Local path
   try {
     await access(spec.source);
-    return {dir: spec.source, cleanup: async () => {}};
+    return spec.source;
   } catch {
     throw new Error(
       `Component '${spec.name}' source '${spec.source}' not found locally and is not a git URL.`,
@@ -79,71 +86,64 @@ async function loadKustronfile(dir: string): Promise<Kustronfile> {
 export async function resolveComponent(
   spec: ComponentSpec,
 ): Promise<ResolvedComponent> {
-  const handle = isGitUrl(spec.source)
-    ? await cloneComponent(spec)
-    : await resolveLocalComponent(spec);
+  const dir = await resolveComponentSource(spec);
+  const kustronfile = await loadKustronfile(dir);
 
-  try {
-    const kustronfile = await loadKustronfile(handle.dir);
-
-    const vars: Record<string, string> = {};
-    for (const [key, value] of Object.entries(spec.inputs ?? {})) {
-      vars[`inputs.${key}`] = String(value);
-    }
-
-    const apps: AppEntry[] = kustronfile.apps.map((app) => ({
-      ...app,
-      name: `${spec.name}-${app.name}`,
-      // Component-internal dependsOn references must use prefixed names.
-      dependsOn: app.dependsOn?.map((dep) =>
-        kustronfile.apps.some((a) => a.name === dep)
-          ? `${spec.name}-${dep}`
-          : dep,
-      ),
-      // resolve ${inputs.x} in env values and other strings
-      env:
-        app.env && Object.keys(app.env).length > 0
-          ? Object.fromEntries(
-              Object.entries(app.env).map(([k, v]) => [
-                k,
-                replaceVars(v, vars),
-              ]),
-            )
-          : app.env,
-      secret:
-        app.secret && Object.keys(app.secret).length > 0
-          ? Object.fromEntries(
-              Object.entries(app.secret).map(([k, v]) => [
-                k,
-                replaceVars(v, vars),
-              ]),
-            )
-          : app.secret,
-      image: app.image ? replaceVars(app.image, vars) : app.image,
-      source: app.source ? replaceVars(app.source, vars) : app.source,
-      // replicas/port may be ${inputs.x} strings; coerce to their numeric form.
-      replicas:
-        typeof app.replicas === 'string'
-          ? Number(replaceVars(app.replicas, vars)) || undefined
-          : app.replicas,
-      port:
-        typeof app.port === 'string'
-          ? Number(replaceVars(app.port, vars)) || app.port
-          : app.port,
-    }));
-
-    // Component outputs: expose as ${<component>.<key>} vars.
-    const outputs = Object.fromEntries(
-      Object.entries(kustronfile.outputs ?? {}).map(([k, v]) => [
-        `${spec.name}.${k}`,
-        replaceVars(v, vars),
-      ]),
-    );
-
-    return {spec, kustronfile, apps, outputs};
-  } finally {
-    await handle.cleanup();
+  const vars: Record<string, string> = {};
+  for (const [key, value] of Object.entries(spec.inputs ?? {})) {
+    vars[`inputs.${key}`] = String(value);
   }
+
+  const apps: AppEntry[] = kustronfile.apps.map((app) => ({
+    ...app,
+    name: `${spec.name}-${app.name}`,
+    // Component-internal dependsOn references must use prefixed names.
+    dependsOn: app.dependsOn?.map((dep) =>
+      kustronfile.apps.some((a) => a.name === dep)
+        ? `${spec.name}-${dep}`
+        : dep,
+    ),
+    // resolve ${inputs.x} in env values and other strings
+    env:
+      app.env && Object.keys(app.env).length > 0
+        ? Object.fromEntries(
+            Object.entries(app.env).map(([k, v]) => [
+              k,
+              replaceVars(v, vars),
+            ]),
+          )
+        : app.env,
+    secret:
+      app.secret && Object.keys(app.secret).length > 0
+        ? Object.fromEntries(
+            Object.entries(app.secret).map(([k, v]) => [
+              k,
+              replaceVars(v, vars),
+            ]),
+          )
+        : app.secret,
+    image: app.image ? replaceVars(app.image, vars) : app.image,
+    source: app.source ? replaceVars(app.source, vars) : app.source,
+    // replicas/port may be ${inputs.x} strings; coerce to their numeric form.
+    replicas:
+      typeof app.replicas === 'string'
+        ? Number(replaceVars(app.replicas, vars)) || undefined
+        : app.replicas,
+    port:
+      typeof app.port === 'string'
+        ? Number(replaceVars(app.port, vars)) || app.port
+        : app.port,
+  }));
+
+  // Component outputs: expose as ${<component>.<key>} vars.
+  const outputs = Object.fromEntries(
+    Object.entries(kustronfile.outputs ?? {}).map(([k, v]) => [
+      `${spec.name}.${k}`,
+      replaceVars(v, vars),
+    ]),
+  );
+
+  return {spec, kustronfile, apps, outputs};
 }
 
 function replaceVars(value: string, vars: Record<string, string>): string {
@@ -173,6 +173,16 @@ export async function expandComponents(envFile: EnvFile): Promise<ExpandedEnv> {
     const resolved = await resolveComponent(spec);
     apps = apps.concat(resolved.apps);
     Object.assign(outputs, resolved.outputs);
+  }
+
+  // Validate expanded component apps against the schema.
+  for (const app of apps) {
+    const result = appEntrySchema.safeParse(app);
+    if (!result.success) {
+      throw new Error(
+        `Component app '${app.name}' is invalid: ${result.error.errors.map((e) => e.message).join(', ')}`,
+      );
+    }
   }
 
   // Prevent name collisions between expanded and declared apps.
