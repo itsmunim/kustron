@@ -6,6 +6,7 @@ import {envDown} from '../commands/env/down.js';
 import {envStop} from '../commands/env/stop.js';
 import {envDestroy} from '../commands/env/destroy.js';
 import {envReload} from '../commands/env/reload.js';
+import {envWatch} from '../commands/env/watch.js';
 import {envShowSpec} from '../commands/env/show-spec.js';
 import {envStatus} from '../commands/env/status.js';
 import {appsAdd} from '../commands/apps/add.js';
@@ -106,6 +107,13 @@ env
   .option('--yes', t('cli.yesOption'))
   .action(async (options) => {
     await envDestroy(options);
+  });
+
+env
+  .command('watch')
+  .description(t('cli.watchDescription'))
+  .action(async () => {
+    await envWatch();
   });
 
 const app = program.command('app').description(t('cli.appDescription'));
