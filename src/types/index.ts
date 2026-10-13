@@ -12,7 +12,8 @@ export interface HelmConfig {
   /** Extra local values files, passed as additional --values flags. */
   valuesFiles?: string[];
   /**
-   * Where to inject a Kustron-built image into the chart (idea 1: build from
+   * @deprecated Kustron no longer auto-injects built images. Set image values
+   * directly in `helm.values` instead.
    * source, deploy via helm). Keys are dotted paths into the chart's values,
    * e.g. {repository: 'image.repository', tag: 'image.tag'}.
    */

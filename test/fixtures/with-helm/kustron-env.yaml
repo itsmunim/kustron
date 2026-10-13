@@ -7,6 +7,6 @@ apps:
     helm:
       chart: oci://registry-1.docker.io/bitnamicharts/postgresql
       version: "13.4.0"
-      imageValues:
-        repository: image.repository
-        tag: image.tag
+      values:
+        auth:
+          postgresPassword: secret123

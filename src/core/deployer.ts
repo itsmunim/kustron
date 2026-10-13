@@ -254,10 +254,9 @@ async function deployHelmApp(
   app: AppEntry,
   ctx: DeployContext,
   url: string | null,
-  imageOverride?: string,
 ): Promise<DeployResult> {
   info(`[${app.name}] ${t('deploy.installingHelm')}`);
-  await helmInstall(app, ctx.namespace, ctx.clusterName, imageOverride);
+  await helmInstall(app, ctx.namespace, ctx.clusterName, appDeploymentName(app));
   info(`[${app.name}] ${t('deploy.helmInstalled')}`);
 
   let finalUrl = url;
@@ -299,12 +298,12 @@ async function deploySourceAsHelmApp(
       ctx.namespace,
       ctx.clusterName,
       appDeploymentName(app),
-      ctx.namespace,
-      ctx.clusterName,
     );
     return releaseImage === image;
   });
-  return await deployHelmApp(app, ctx, url, image);
+  // Image is built and pushed, but helm.values must reference it explicitly.
+  // Kustron no longer auto-injects images into helm charts.
+  return await deployHelmApp(app, ctx, url);
 }
 
 export async function deployApp(
@@ -321,7 +320,7 @@ export async function deployApp(
         return await deploySourceAsHelmApp(app, ctx, url);
       }
       if (app.image) {
-        return await deployHelmApp(app, ctx, url, app.image);
+        return await deployHelmApp(app, ctx, url);
       }
       return await deployHelmApp(app, ctx, url);
     }

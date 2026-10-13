@@ -4,8 +4,6 @@ import {mkdtemp, rm, writeFile} from 'fs/promises';
 import {join} from 'path';
 import {tmpdir} from 'os';
 import type {AppEntry} from '../types/index.js';
-import {getPath, setPath} from '../utils/merge.js';
-import {parseImageRef} from '../utils/image.js';
 
 /** Chart types helm handles natively without a repo add / helm repo update. */
 function isLocalOrOciChart(chart: string): boolean {
@@ -19,33 +17,11 @@ function isLocalOrOciChart(chart: string): boolean {
 }
 
 /**
- * imageValues keys are dotted paths (e.g. 'image.repository'). Inject the
- * built image into a values map: repository -> <registry>/<app>, tag -> <ref>.
- */
-export function injectImageValues(
-  app: AppEntry,
-  image: string,
-): Record<string, unknown> {
-  const map: Record<string, unknown> = {};
-  const imageRef = app.helm?.imageValues;
-  if (!imageRef) return map;
-
-  const {repository, tag} = parseImageRef(image);
-
-  if (imageRef.repository) {
-    setPath(map, imageRef.repository, repository);
-  }
-  if (imageRef.tag) {
-    setPath(map, imageRef.tag, tag);
-  }
-  return map;
-}
-
-/**
  * Image currently injected into a helm release, as `<repository>:<tag>`, read
  * from the release's computed values through the app's imageValues paths.
  * Returns null when the release doesn't exist or the paths don't resolve.
  * Used to skip rebuild+reinstall when nothing changed (deterministic env up).
+ * @deprecated Kustron no longer auto-injects images. Kept for backward compat.
  */
 export async function helmReleaseImage(
   app: AppEntry,
@@ -62,18 +38,15 @@ export async function helmReleaseImage(
       {silent: true, reject: false},
     );
     if (!stdout.trim()) return null;
-    const values = JSON.parse(stdout) as Record<string, unknown>;
-
-    const repo =
-      imageRef.repository &&
-      typeof getPath(values, imageRef.repository) === 'string'
-        ? (getPath(values, imageRef.repository) as string)
-        : null;
-    const tag =
-      imageRef.tag && typeof getPath(values, imageRef.tag) === 'string'
-        ? (getPath(values, imageRef.tag) as string)
-        : null;
-    if (repo && tag) return `${repo}:${tag}`;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const values = JSON.parse(stdout) as any;
+    // Simple path traversal for backward compat
+    const get = (obj: unknown, path: string): unknown => {
+      return path.split('.').reduce((o, k) => (o && typeof o === 'object' ? (o as Record<string, unknown>)[k] : undefined), obj);
+    };
+    const repo = imageRef.repository ? get(values, imageRef.repository) : null;
+    const tag = imageRef.tag ? get(values, imageRef.tag) : null;
+    if (typeof repo === 'string' && typeof tag === 'string') return `${repo}:${tag}`;
     return null;
   } catch {
     return null;
@@ -84,7 +57,6 @@ export async function helmInstall(
   app: AppEntry,
   namespace: string,
   clusterName: string,
-  imageOverride?: string,
   releaseName?: string,
 ): Promise<void> {
   if (!app.helm) throw new Error('App has no helm configuration');
@@ -117,13 +89,8 @@ export async function helmInstall(
     args.push('--version', app.helm.version);
   }
 
-  // Merge imageValues (injected built image) into the values map, then pass
-  // everything through a --values file so nested structures survive (the old
-  // --set approach flattened them into strings).
-  const valuesMap: Record<string, unknown> = {
-    ...(app.helm.values ?? {}),
-    ...injectImageValues(app, imageOverride ?? ''),
-  };
+  // helm.values is passed directly as a --values file. No merging, no magic.
+  const valuesMap = app.helm.values ?? {};
 
   let tempDir: string | undefined;
   try {
@@ -171,7 +138,8 @@ export async function isHelmRelease(
       '-o',
       'json',
     ]);
-    const releases = JSON.parse(stdout) as Array<{name: string}>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const releases = JSON.parse(stdout) as any[];
     return releases.some((r) => r.name === appName);
   } catch {
     return false;
