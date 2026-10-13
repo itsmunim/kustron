@@ -2,9 +2,9 @@
 
 [itsmunim.github.io/kustron](https://itsmunim.github.io/kustron)
 
-A single CLI that takes you from "I have some apps" to a running local Kubernetes environment. No Kubernetes knowledge required.
+A single CLI that takes you from "I have some apps" to a running local Kubernetes environment. No Kubernetes knowledge required — and your production kubectl context is never touched.
 
-Think docker-compose, but for Kubernetes. You define your apps in a `kustron-env.yaml` file, run `kustron env up`, and everything gets built, deployed, and exposed at the cluster node IP.
+Think docker-compose, but for Kubernetes. You define your apps in a `kustron-env.yaml` file, run `kustron env up`, and everything gets built, deployed, and exposed. Kustron scopes every kubectl and helm command to its own cluster — it never hijacks your global context.
 
 ---
 
@@ -17,6 +17,19 @@ Think docker-compose, but for Kubernetes. You define your apps in a `kustron-env
 ## Features
 
 - **One file defines the environment.** Three app types in a single `kustron-env.yaml`: build from source (local folder or git URL), run an existing image, or deploy a Helm chart. No Kubernetes manifests to write.
+- **Context-safe by design.** Every kubectl and helm call is scoped to the k3d cluster via `--context`. Kustron never calls `kubectl config use-context`, so your production clusters are safe.
+- **Deterministic, idempotent `env up`.** Image tags are content hashes, not timestamps. Re-running `env up` with no changes is a fast no-op: same tag, build skipped, manifests unchanged. A source edit rebuilds and rolls out only what changed.
+- **Secrets, not just env vars.** `env.secret:` creates Kubernetes Secrets (not ConfigMaps) for passwords and tokens. `${ENV}` interpolation pulls from your shell environment.
+- **Healthchecks that match the protocol.** `healthcheck: /health` does an HTTP GET, `healthcheck: tcp` probes the port, omit it for no probes. TCP-only services (redis, postgres, DynamoDB) stop stalling rollouts.
+- **Split build from deploy.** A built image can feed a Helm chart (via `helm.imageValues`) or the built-in template, whichever the app needs.
+- **Deploy ordering.** `dependsOn` deploys apps in topological order, with three readiness modes per dependency: `rollout`, `established` (CRDs), or a custom `command`. Plus `hooks.pre` / `hooks.post` for seeding, migrations, and side effects.
+- **Escape hatches.** `command`, `args`, `resources` as first-class fields, and a generic `patch` that deep-merges onto the generated Deployment. One missing field no longer means leaving Kustron.
+- **Helm done right.** Nested `values` (passed as a real `--values` file), extra `valuesFiles`, local chart paths, OCI charts, and `helm.imageValues` to inject a built image.
+- **Private registries.** Per-app `registry` creds create and attach an imagePullSecret, plus `kustron registry login` and `kustron registry import` for local images.
+- **Per-app namespaces & instances & clusters.** Deploy the same app twice (`kafka-primary`, `kafka-secondary`), into its own namespace, or run multiple isolated clusters.
+- **Reusable components.** A `components:` block pulls in a `Kustronfile` (local dir or git URL) with inputs, outputs, and apps. Values wire together via interpolation: `${component.bootstrap}`, `${app.endpoint}`.
+- **One command to see everything.** `kustron env status` lists every app, its readiness, and its URL in a table. No kubectl required.
+- **App-level lifecycle.** Stop, start, and stream logs for individual apps without tearing down the whole cluster.
 - **Deterministic, idempotent `env up`.** Image tags are content hashes, not timestamps. Re-running `env up` with no changes is a fast no-op: same tag, build skipped, manifests unchanged. A source edit rebuilds and rolls out only what changed.
 - **Healthchecks that match the protocol.** `healthcheck: /health` does an HTTP GET, `healthcheck: tcp` probes the port, omit it for no probes. TCP-only services (redis, postgres, DynamoDB) stop stalling rollouts.
 - **Split build from deploy.** A built image can feed a Helm chart (via `helm.imageValues`) or the built-in template, whichever the app needs.
@@ -162,6 +175,8 @@ The one file that defines everything. Like `docker-compose.yml`, but it targets 
 
 ```yaml
 config:
+  namespace: kustron-env      # default; all apps share this namespace
+  clusterName: myapp          # optional; default is 'kustron'
   namespace: kustron-env   # default; all apps share this namespace
 
 apps:
@@ -170,12 +185,15 @@ apps:
     source: ./services/api              # local path OR git@github.com:user/repo.git
     port: 3000
     healthcheck: /health
-    exposed: true                       # exposed at the k3d node IP (printed in the summary)
+    exposed: true                       # exposed at localhost:<nodePort> (printed in the summary)
     replicas: 1
     ha: false                           # min 2 / max 5 / cpu 90% / mem 80%
     env:
       NODE_ENV: production
       DB_HOST: postgres                 # 'postgres' resolves to the postgres app's service
+      API_KEY: ${API_KEY}               # interpolated from shell environment
+    secret:
+      DB_PASSWORD: ${DB_PASSWORD}       # created as a K8s Secret, not ConfigMap
 
   # --- Type 2: Existing container image ---
   - name: postgres
@@ -212,10 +230,9 @@ apps:
 | `healthcheck` | Optional for `source` and `image`; ignored for `helm`. `/<path>` = HTTP GET, `tcp` = port check, omit / `none` = no probes |
 | `ha: true` | Overrides `replicas`; sets min 2 / max 5 / CPU 90% / mem 80% |
 | `env` | Creates a ConfigMap for `source` and `image`; for `helm` values are passed as a `--values` file (nested YAML supported) |
-| `exposed: true` | Service becomes `NodePort` type, reachable at the k3d node IP; requires `port` |
-| `helm.selector` | Required when `helm` app has `exposed: true`; must match the chart's pod labels |
-| `name` | Becomes the Kubernetes Service name; other apps reach it at `http://<name>:<port>` |
-| `port: PORT` | The string `PORT` is treated as an unset placeholder; validation fails with a clear message |
+| `secret` | Creates a K8s Secret (not ConfigMap) for passwords and tokens. Use `${ENV}` for shell env interpolation |
+| `exposed: true` | Service becomes `NodePort` type, reachable at `http://localhost:<nodePort>`; requires `port` |
+| `config.clusterName` | Name of the k3d cluster (default: `kustron`). Multiple projects can use different names |
 | `command` / `args` | First-class escape hatches: override the container command / args |
 | `resources` | First-class escape hatch: override container resource requests / limits (deep-merged over kustron defaults) |
 | `patch` | Generic escape hatch: deep-merged onto the generated Deployment manifest (objects merge, arrays replace) |
@@ -239,16 +256,30 @@ apps:
 |---|---|
 | `kustron env init` | Create `kustron-env.yaml` in the current folder |
 | `kustron env up` | Bring up the environment and deploy all apps |
-| `kustron env down` | Tear everything down |
-| `kustron env reload` | Down + up (pick up any yaml changes) |
+| `kustron env stop` | Stop all apps (scale to 0, uninstall helm) without destroying the cluster |
+| `kustron env reload` | Stop + up (pick up any yaml changes) |
+| `kustron env down` | **Deprecated alias for `cluster destroy`** — deletes the entire cluster |
 | `kustron env show-spec` | Pretty-print the `kustron-env.yaml` schema |
 | `kustron env status` | Show cluster + app states in a table |
+| `kustron app stop <name>` | Stop a single app |
+| `kustron app start <name>` | Start a single app |
+| `kustron app logs <name>` | Stream logs for a single app (`-f` to follow, `--tail N`) |
+| `kustron cluster destroy` | Delete the k3d cluster and all data in it |
 | `kustron registry login <server>` | Login to a container registry (docker/podman), then push images to it |
 | `kustron registry import <images...>` | Import local images into the k3d cluster (alternative to push) |
+| `kustron registry prune` | Remove unused images from the local registry |
 | `kustron apps add [flags]` | Add a new app entry to `kustron-env.yaml` |
 | `kustron apps remove <name>` | Remove an app entry from `kustron-env.yaml` |
-
 ### `env up` is deterministic
+
+`kustron env up` reconciles your local environment to the desired state in `kustron-env.yaml`. Running it repeatedly is a no-op when nothing changed:
+
+- **Cluster:** if the cluster already exists and is running, it is not touched. If it exists but is stopped, it is started. If it does not exist, it is created.
+- **kubectl access:** the k3d kubeconfig is merged into your default config every run (idempotent). Kustron never calls `kubectl config use-context` — all commands use `--context=k3d-<clusterName>` so your production clusters are safe.
+- **Registry:** the in-cluster registry is ensured every run; a pre-existing cluster without one is wired up automatically. The registry port is auto-detected if 5000 is in use.
+- **Images:** source apps are tagged with a **content hash** (`<registry>/<app>:<sha>`), not a timestamp. Unchanged source produces the same tag, the build is skipped, and the deployment manifest applies as a no-op. Change the source and the next `env up` builds and rolls out a new version.
+- **YAML-only changes** (env vars, replicas, exposure, secrets) are picked up by `kubectl apply` even when the image tag is unchanged. Removed apps are cleaned up automatically.
+- **Pruning:** apps removed from `kustron-env.yaml` since the last `env up` are deleted from the cluster automatically.
 
 `kustron env up` reconciles your local environment to the desired state in `kustron-env.yaml`. Running it repeatedly is a no-op when nothing changed:
 
@@ -314,6 +345,8 @@ The HPA requires the metrics-server, which Kustron installs automatically during
 
 ## Deploying from a VM
 
+Exposed apps get a `NodePort` service mapped to `localhost` via the k3d loadbalancer, so they're reachable at `http://localhost:<nodeport>` from the host. On a VM, use `http://<vm-public-ip>:<nodeport>`.
+
 Exposed apps get a `NodePort` service on the k3d node, so the VM's public IP works directly (`http://<vm-public-ip>:<nodeport>`).
 
 ---
@@ -327,6 +360,12 @@ Exposed apps get a `NodePort` service on the k3d node, so the VM's public IP wor
 ---
 
 ## How It Works
+
+1. **Cluster:** k3d creates a lightweight local Kubernetes cluster with a built-in container registry. NodePort range is mapped to localhost via k3d loadbalancer.
+2. **Build:** Source apps are built with the detected container runtime (if `Dockerfile` exists) or Railpack (fallback). BuildKit is auto-detected.
+3. **Push:** Images are pushed to the local registry (`localhost:<port>`), referenced in-cluster as `kustron-registry:5000`. Podman gets `--tls-verify=false` for local registries.
+4. **Deploy:** Kubernetes manifests (ConfigMap, Secret, Deployment, Service, HPA) are generated and applied. Every kubectl/helm call uses `--context=k3d-<clusterName>`.
+5. **Expose:** Apps with `exposed: true` get a `NodePort` service reachable at `http://localhost:<nodePort>`.
 
 1. **Cluster:** k3d creates a lightweight local Kubernetes cluster with a built-in container registry
 2. **Build:** Source apps are built with the detected container runtime (if `Dockerfile` exists) or Railpack (fallback)
@@ -388,6 +427,8 @@ If your *app* pulls dependencies from a private npm registry (and you're buildin
 
 ### Port 5000 is already in use
 
+Kustron auto-detects an available port starting from 5000. If something else is listening there (e.g. macOS AirPlay), it picks the next free port automatically. You can also set a specific port via `config.registryPort` in `kustron-env.yaml`.
+
 Kustron binds the local image registry to `localhost:5000`. If something else is already listening there, creating the cluster or registry fails. Free the port and re-run `kustron env up`.
 
 ---
@@ -398,9 +439,16 @@ A k3d cluster (a few nodes plus a registry) wants around 4GB in the podman VM. O
 
 ---
 
-### Exposed apps aren't reachable from another machine / VM
+### Exposed apps aren't reachable
 
-Exposed apps are NodePort services on ports 30000-32767. They're reachable at the cluster node IP on your own machine; from a VM or another device, allow that range inbound (security group / firewall) and use `http://<public-ip>:<nodeport>`.
+Exposed apps are NodePort services mapped to `localhost:<nodePort>` via the k3d loadbalancer. They're reachable at `http://localhost:<nodeport>` on your own machine. From a VM or another device, use `http://<host-ip>:<nodeport>`.
+---
+
+### Will Kustron change my kubectl context?
+
+No. Kustron never calls `kubectl config use-context`. Every kubectl and helm command includes `--context=k3d-<clusterName>` (or `--kube-context` for helm), so your global kubectl context is never touched. You can safely run `kustron env up` while working with production clusters in other terminals.
+
+---
 
 ## Contributing / Running from Source
 
