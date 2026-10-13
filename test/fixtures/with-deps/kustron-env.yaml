@@ -1,0 +1,16 @@
+config:
+  namespace: test-deps
+  clusterName: test-deps
+
+apps:
+  - name: redis
+    image: redis:7
+    port: 6379
+
+  - name: api
+    source: ./api
+    port: 3000
+    dependsOn:
+      - redis
+    env:
+      REDIS_HOST: redis

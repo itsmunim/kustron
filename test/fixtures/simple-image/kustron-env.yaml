@@ -1,0 +1,9 @@
+config:
+  namespace: test-simple
+  clusterName: test-simple
+
+apps:
+  - name: nginx
+    image: nginx:alpine
+    port: 80
+    exposed: true

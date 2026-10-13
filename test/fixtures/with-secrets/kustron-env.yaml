@@ -1,0 +1,12 @@
+config:
+  namespace: test-secrets
+  clusterName: test-secrets
+
+apps:
+  - name: api
+    image: nginx:alpine
+    port: 80
+    env:
+      PUBLIC_VAR: hello
+    secret:
+      API_KEY: ${TEST_API_KEY}
