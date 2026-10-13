@@ -185,8 +185,8 @@ async function buildSourceImage(
 
     const ref = await hashSourceDir(sourcePath);
     info(`[${app.name}] ${t('deploy.sourceHash', {ref})}`);
-    const pushTag = buildPushTag(app.name, ref, ctx.registryPort);
-    const image = buildTag(app.name, ref);
+    const pushTag = buildPushTag(appDeploymentName(app), ref, ctx.registryPort);
+    const image = buildTag(appDeploymentName(app), ref);
 
     if (await skipCheck(image, ref)) {
       info(`[${app.name}] ${t('deploy.upToDate', {ref})}`);
@@ -230,7 +230,7 @@ async function deploySourceApp(
 ): Promise<DeployResult> {
   const {image} = await buildSourceImage(app, ctx, async (image) => {
     const deployedImage = await getDeployedImage(
-      app.name,
+      appDeploymentName(app),
       ctx.namespace,
       ctx.clusterName,
     );
@@ -264,7 +264,7 @@ async function deployHelmApp(
   if (app.exposed && typeof app.port === 'number' && app.helm?.selector) {
     info(`[${app.name}] ${t('deploy.creatingExposureService')}`);
     const serviceYaml = createHelmExposureService(
-      app.name,
+      appDeploymentName(app),
       ctx.namespace,
       app.port,
       app.helm.selector,
@@ -273,7 +273,7 @@ async function deployHelmApp(
     info(`[${app.name}] ${t('deploy.exposureServiceCreated')}`);
 
     const nodePort = await getServiceNodePort(
-      app.name,
+      appDeploymentName(app),
       ctx.namespace,
       ctx.clusterName,
     );
@@ -296,6 +296,9 @@ async function deploySourceAsHelmApp(
   const {image} = await buildSourceImage(app, ctx, async (image) => {
     const releaseImage = await helmReleaseImage(
       app,
+      ctx.namespace,
+      ctx.clusterName,
+      appDeploymentName(app),
       ctx.namespace,
       ctx.clusterName,
     );

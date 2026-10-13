@@ -29,6 +29,20 @@ export interface ExecResult {
   exitCode: number;
 }
 
+/**
+ * Strip sensitive values from command strings before logging.
+ * Matches common password flags across kubectl, helm, docker, podman, git, etc.
+ */
+export function sanitizeCommand(cmd: string): string {
+  return cmd
+    .replace(/(--password\s+)\S+/g, '$1***')
+    .replace(/(--docker-password\s+)\S+/g, '$1***')
+    .replace(/(--token\s+)\S+/g, '$1***')
+    .replace(/(--p\s+)\S+/g, '$1***')
+    .replace(/(-p\s+)\S+/g, '$1***')
+    .replace(/(--registry-password\s+)\S+/g, '$1***');
+}
+
 export async function exec(
   command: string,
   args: string[],
@@ -46,6 +60,8 @@ export async function exec(
   // In verbose mode we also stream to the console.
   const captureStdout: string[] = [];
   const captureStderr: string[] = [];
+
+  const fullCommand = `${command} ${args.join(' ')}`;
 
   try {
     const subprocess = execa(command, args, opts as ExecaOptions);
@@ -89,24 +105,19 @@ export async function exec(
       command?: string;
       exitCode?: number;
     };
-    const stdout = verboseMode
-      ? captureStdout.join('')
-      : String(ex.stdout ?? '');
-    const stderr = verboseMode
-      ? captureStderr.join('')
-      : String(ex.stderr ?? '');
-    const message = String(
-      stderr ?? stdout ?? ex.message ?? t('errors.unknownError'),
-    );
+    const stdout = verboseMode ? captureStdout.join('') : String(ex.stdout ?? '');
+    const stderr = verboseMode ? captureStderr.join('') : String(ex.stderr ?? '');
+    const message = String(stderr ?? stdout ?? ex.message ?? t('errors.unknownError'));
+    // Sanitize before logging so passwords don't leak
     error(
       t('errors.commandFailed', {
-        command: `${command} ${args.join(' ')}`,
+        command: sanitizeCommand(fullCommand),
         message,
       }),
     );
     throw new KustronExecError(
       message,
-      `${command} ${args.join(' ')}`,
+      sanitizeCommand(fullCommand),
       ex.exitCode,
     );
   }

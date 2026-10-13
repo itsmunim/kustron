@@ -51,13 +51,14 @@ export async function helmReleaseImage(
   app: AppEntry,
   namespace: string,
   clusterName: string,
+  releaseName?: string,
 ): Promise<string | null> {
   const imageRef = app.helm?.imageValues;
   if (!imageRef?.repository && !imageRef?.tag) return null;
   try {
     const {stdout} = await helm(
       clusterName,
-      ['get', 'values', app.name, '-n', namespace, '--all', '-o', 'json'],
+      ['get', 'values', releaseName ?? app.name, '-n', namespace, '--all', '-o', 'json'],
       {silent: true, reject: false},
     );
     if (!stdout.trim()) return null;
@@ -84,13 +85,14 @@ export async function helmInstall(
   namespace: string,
   clusterName: string,
   imageOverride?: string,
+  releaseName?: string,
 ): Promise<void> {
   if (!app.helm) throw new Error('App has no helm configuration');
 
   const args = [
     'upgrade',
     '--install',
-    app.name,
+    releaseName ?? app.name,
     '--namespace',
     namespace,
     '--create-namespace',
@@ -100,7 +102,7 @@ export async function helmInstall(
   let chartRef = app.helm.chart;
   const needsRepo = !!app.helm.repo && !isLocalOrOciChart(app.helm.chart);
   if (needsRepo) {
-    const repoName = `kustron-${app.name}`;
+    const repoName = `kustron-${releaseName ?? app.name}`;
     await helm(clusterName, ['repo', 'add', repoName, app.helm.repo!]);
     await helm(clusterName, ['repo', 'update']);
     // Reference chart as repo_name/chart_name, not just chart name

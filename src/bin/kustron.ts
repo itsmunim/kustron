@@ -108,8 +108,6 @@ env
 
 const app = program.command('app').description(t('cli.appDescription'));
 
-const app = program.command('app').description(t('cli.appDescription'));
-
 app
   .command('stop <name>')
   .description(t('cli.appStopDescription'))
