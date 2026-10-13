@@ -14,6 +14,8 @@ import {registerRegistryCommand} from '../commands/registry/index.js';
 import {appStop} from '../commands/app/stop.js';
 import {appStart} from '../commands/app/start.js';
 import {appLogs} from '../commands/app/logs.js';
+import {appExec} from '../commands/app/exec.js';
+import {appForward} from '../commands/app/forward.js';
 import {setVerbose} from '../utils/exec.js';
 import {t} from '../utils/i18n.js';
 import {printBanner} from '../utils/banner.js';
@@ -129,6 +131,20 @@ app
   .option('-t, --tail <n>', t('cli.tailOption'), parseInt)
   .action(async (name, options) => {
     await appLogs(name, {follow: options.follow, tail: options.tail});
+  });
+
+app
+  .command('exec <name> [command...]')
+  .description(t('cli.appExecDescription'))
+  .action(async (name, command) => {
+    await appExec(name, command.length > 0 ? command : ['sh']);
+  });
+
+app
+  .command('forward <name> <localPort> [remotePort]')
+  .description(t('cli.appForwardDescription'))
+  .action(async (name, localPort, remotePort) => {
+    await appForward(name, parseInt(localPort, 10), remotePort ? parseInt(remotePort, 10) : undefined);
   });
 
 const apps = program.command('apps').description(t('cli.appsDescription'));
