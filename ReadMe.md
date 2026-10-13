@@ -1,4 +1,8 @@
 # Kustron
+# Kustron
+
+![Coverage](https://img.shields.io/badge/coverage-19%25-yellow)
+[![CI](https://github.com/dibosh/kustron/actions/workflows/ci.yml/badge.svg)](https://github.com/dibosh/kustron/actions/workflows/ci.yml)
 
 [itsmunim.github.io/kustron](https://itsmunim.github.io/kustron)
 
