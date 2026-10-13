@@ -39,10 +39,14 @@ export async function appStop(appName: string): Promise<void> {
   if (app.helm) {
     await helmUninstall(app.name, namespace, clusterName);
   } else {
-    await kubectl(
-      clusterName,
-      ['scale', 'deployment', app.name, '--replicas=0', '-n', namespace],
-    );
+    await kubectl(clusterName, [
+      'scale',
+      'deployment',
+      app.name,
+      '--replicas=0',
+      '-n',
+      namespace,
+    ]);
   }
 
   success(t('app.stopped', {name: appName}));

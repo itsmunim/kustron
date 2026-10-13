@@ -2,7 +2,10 @@ import {kubectl} from './kubectl.js';
 import {error, info, warn} from '../utils/logger.js';
 import {t} from '../utils/i18n.js';
 
-export async function ensureNamespace(namespace: string, clusterName: string): Promise<void> {
+export async function ensureNamespace(
+  namespace: string,
+  clusterName: string,
+): Promise<void> {
   try {
     await kubectl(clusterName, ['get', 'namespace', namespace], {silent: true});
   } catch {
@@ -10,7 +13,10 @@ export async function ensureNamespace(namespace: string, clusterName: string): P
   }
 }
 
-export async function applyManifests(yaml: string, clusterName: string): Promise<void> {
+export async function applyManifests(
+  yaml: string,
+  clusterName: string,
+): Promise<void> {
   info(t('deploy.applyingManifests'));
   await kubectl(clusterName, ['apply', '-f', '-'], {input: yaml});
 }
@@ -84,7 +90,10 @@ export async function waitForRollout(
     }
 
     // Broken: image cannot be pulled. Nothing will change by waiting.
-    if (lastSnapshot.errors.has('ImagePullBackOff') || lastSnapshot.errors.has('ErrImagePull')) {
+    if (
+      lastSnapshot.errors.has('ImagePullBackOff') ||
+      lastSnapshot.errors.has('ErrImagePull')
+    ) {
       error(t('deploy.imagePullFailed'));
       await reportPodDetails(appName, namespace, clusterName);
       throw new Error(t('deploy.imagePullFailed'));
@@ -111,7 +120,11 @@ export async function waitForRollout(
   throw new Error(t('deploy.rolloutFailed'));
 }
 
-async function snapshotRollout(appName: string, namespace: string, clusterName: string): Promise<RolloutSnapshot> {
+async function snapshotRollout(
+  appName: string,
+  namespace: string,
+  clusterName: string,
+): Promise<RolloutSnapshot> {
   const snapshot: RolloutSnapshot = {
     desired: 0,
     updated: 0,
@@ -167,8 +180,8 @@ async function snapshotRollout(appName: string, namespace: string, clusterName: 
       if (replicas > 0 && revision > bestRevision) {
         bestRevision = revision;
         currentHash =
-          (rs?.spec?.template?.metadata?.labels?.['pod-template-hash'] as string | undefined) ??
-          null;
+          (rs?.spec?.template?.metadata?.labels?.['pod-template-hash'] as
+            string | undefined) ?? null;
       }
     }
   } catch {
@@ -210,7 +223,11 @@ async function snapshotRollout(appName: string, namespace: string, clusterName: 
   return snapshot;
 }
 
-export async function reportPodDetails(appName: string, namespace: string, clusterName: string): Promise<void> {
+export async function reportPodDetails(
+  appName: string,
+  namespace: string,
+  clusterName: string,
+): Promise<void> {
   const debugInfo = await getPodDebugInfo(appName, namespace, clusterName);
   const logs = await getPodLogs(appName, namespace, clusterName);
   if (debugInfo) {

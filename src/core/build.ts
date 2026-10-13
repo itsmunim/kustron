@@ -36,7 +36,10 @@ async function ensureBuildkit(): Promise<Record<string, string>> {
       // Try docker-container driver for buildx
       try {
         const runtime = await detectContainerRuntime();
-        await exec(runtime, ['buildx', 'create', '--use', '--bootstrap'], {silent: true, reject: false});
+        await exec(runtime, ['buildx', 'create', '--use', '--bootstrap'], {
+          silent: true,
+          reject: false,
+        });
         return {};
       } catch {
         // Last resort: try to detect buildkit socket

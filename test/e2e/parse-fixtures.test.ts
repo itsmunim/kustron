@@ -49,8 +49,12 @@ describe('E2E: Parse fixtures', () => {
     const envFile = await readAndParseEnvFile(filePath);
 
     expect(envFile.apps).toHaveLength(1);
-    expect(envFile.apps[0].helm?.chart).toBe('oci://registry-1.docker.io/bitnamicharts/postgresql');
+    expect(envFile.apps[0].helm?.chart).toBe(
+      'oci://registry-1.docker.io/bitnamicharts/postgresql',
+    );
     expect(envFile.apps[0].helm?.version).toBe('13.4.0');
-    expect(envFile.apps[0].helm?.imageValues?.repository).toBe('image.repository');
+    expect(envFile.apps[0].helm?.imageValues?.repository).toBe(
+      'image.repository',
+    );
   });
 });

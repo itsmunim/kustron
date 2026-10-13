@@ -42,9 +42,15 @@ export async function envUp(): Promise<void> {
   try {
     const hasHelmApps = envFile.apps.some((a) => a.helm);
     if (hasHelmApps) {
-      await checkAll(['container-runtime', 'k3d', 'kubectl', 'helm'], ['railpack', 'docker']);
+      await checkAll(
+        ['container-runtime', 'k3d', 'kubectl', 'helm'],
+        ['railpack', 'docker'],
+      );
     } else {
-      await checkAll(['container-runtime', 'k3d', 'kubectl'], ['helm', 'railpack', 'docker']);
+      await checkAll(
+        ['container-runtime', 'k3d', 'kubectl'],
+        ['helm', 'railpack', 'docker'],
+      );
     }
   } catch {
     error(t('env.up.missingDepsHint'));

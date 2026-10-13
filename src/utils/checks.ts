@@ -23,7 +23,8 @@ const dependencies: Dependency[] = [
     name: 'docker',
     command: 'docker',
     required: false,
-    installHint: 'Used by k3d under the hood; install podman-docker if using Podman',
+    installHint:
+      'Used by k3d under the hood; install podman-docker if using Podman',
     url: 'https://podman.io',
   },
   {
@@ -58,7 +59,8 @@ const dependencies: Dependency[] = [
     name: 'git',
     command: 'git',
     required: false,
-    installHint: 'Usually pre-installed; otherwise https://git-scm.com/downloads',
+    installHint:
+      'Usually pre-installed; otherwise https://git-scm.com/downloads',
     url: 'https://git-scm.com/downloads',
   },
 ];
@@ -82,7 +84,9 @@ export async function checkDependency(
     return {present: false};
   }
   const installed =
-    name === 'container-runtime' ? await isRuntimeInstalled() : await isInstalled(dep.command);
+    name === 'container-runtime'
+      ? await isRuntimeInstalled()
+      : await isInstalled(dep.command);
   return {present: installed};
 }
 
@@ -152,4 +156,3 @@ export async function checkAll(
 
   success(t('checks.allRequiredInstalled'));
 }
-

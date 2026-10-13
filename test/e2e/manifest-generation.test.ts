@@ -50,9 +50,15 @@ describe('E2E: Manifest generation', () => {
     expect(manifest.kind).toBe('Deployment');
     expect(manifest.metadata?.name).toBe('api');
     expect(manifest.spec?.replicas).toBe(2);
-    expect(manifest.spec?.template?.spec?.containers?.[0]?.image).toBe('api:v1');
-    expect(manifest.spec?.template?.spec?.containers?.[0]?.ports?.[0]?.containerPort).toBe(3000);
-    expect(manifest.spec?.template?.metadata?.annotations?.['kustron.dev/env-hash']).toBeTruthy();
+    expect(manifest.spec?.template?.spec?.containers?.[0]?.image).toBe(
+      'api:v1',
+    );
+    expect(
+      manifest.spec?.template?.spec?.containers?.[0]?.ports?.[0]?.containerPort,
+    ).toBe(3000);
+    expect(
+      manifest.spec?.template?.metadata?.annotations?.['kustron.dev/env-hash'],
+    ).toBeTruthy();
   });
 
   it('omits replicas when ha is true', () => {

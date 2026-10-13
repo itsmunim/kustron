@@ -39,7 +39,9 @@ export async function detectContainerRuntime(): Promise<string> {
 
 export function getContainerRuntime(): string {
   if (!cachedRuntime) {
-    throw new Error('Container runtime not detected. Call detectContainerRuntime() first.');
+    throw new Error(
+      'Container runtime not detected. Call detectContainerRuntime() first.',
+    );
   }
   return cachedRuntime;
 }
@@ -58,7 +60,12 @@ export async function getContainerRuntimeSocket(): Promise<string | null> {
     try {
       const {stdout} = await execa(
         'podman',
-        ['machine', 'inspect', '--format', '{{.ConnectionInfo.PodmanSocket.Path}}'],
+        [
+          'machine',
+          'inspect',
+          '--format',
+          '{{.ConnectionInfo.PodmanSocket.Path}}',
+        ],
         {reject: false},
       );
       const path = stdout.trim();
@@ -102,10 +109,7 @@ export async function getContainerRuntimeSocket(): Promise<string | null> {
   }
 
   // Check default docker socket locations
-  const defaultSockets = [
-    '/var/run/docker.sock',
-    '/run/docker.sock',
-  ];
+  const defaultSockets = ['/var/run/docker.sock', '/run/docker.sock'];
   for (const socket of defaultSockets) {
     try {
       await access(socket);

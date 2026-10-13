@@ -13,11 +13,18 @@ export function buildTag(appName: string, ref: string): string {
   return `${REGISTRY_HOST}/${appName}:${ref}`;
 }
 
-export function buildPushTag(appName: string, ref: string, port: number): string {
+export function buildPushTag(
+  appName: string,
+  ref: string,
+  port: number,
+): string {
   return `${getRegistryPushHost(port)}/${appName}:${ref}`;
 }
 
-export async function pushImage(tag: string, registryHost?: string): Promise<void> {
+export async function pushImage(
+  tag: string,
+  registryHost?: string,
+): Promise<void> {
   const runtime = await detectContainerRuntime();
   info(t('deploy.pushingImage'));
 

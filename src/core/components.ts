@@ -22,19 +22,27 @@ export interface ResolvedComponent {
 }
 
 function isGitUrl(source: string): boolean {
-  return /^(git@|https?:\/\/.*\.git$)/.test(source) || source.startsWith('git@');
+  return (
+    /^(git@|https?:\/\/.*\.git$)/.test(source) || source.startsWith('git@')
+  );
 }
 
-async function cloneComponent(spec: ComponentSpec): Promise<{dir: string; cleanup: () => Promise<void>}> {
+async function cloneComponent(
+  spec: ComponentSpec,
+): Promise<{dir: string; cleanup: () => Promise<void>}> {
   const dir = await mkdtemp(join(tmpdir(), 'kustron-component-'));
-  await exec('git', ['clone', '--depth', '1', spec.source, dir], {silent: true});
+  await exec('git', ['clone', '--depth', '1', spec.source, dir], {
+    silent: true,
+  });
   return {
     dir,
     cleanup: () => rm(dir, {recursive: true, force: true}),
   };
 }
 
-async function resolveLocalComponent(spec: ComponentSpec): Promise<{dir: string; cleanup: () => Promise<void>}> {
+async function resolveLocalComponent(
+  spec: ComponentSpec,
+): Promise<{dir: string; cleanup: () => Promise<void>}> {
   try {
     await access(spec.source);
     return {dir: spec.source, cleanup: async () => {}};
@@ -50,7 +58,9 @@ async function loadKustronfile(dir: string): Promise<Kustronfile> {
   try {
     await access(path);
   } catch {
-    throw new Error(`Kustronfile not found at '${path}'. Components must define one.`);
+    throw new Error(
+      `Kustronfile not found at '${path}'. Components must define one.`,
+    );
   }
   const raw = await readFile(path, 'utf-8');
   const parsed = load(raw) as Kustronfile;
@@ -66,7 +76,9 @@ async function loadKustronfile(dir: string): Promise<Kustronfile> {
  * the component name so multiple components (or two instances of one) don't
  * collide.
  */
-export async function resolveComponent(spec: ComponentSpec): Promise<ResolvedComponent> {
+export async function resolveComponent(
+  spec: ComponentSpec,
+): Promise<ResolvedComponent> {
   const handle = isGitUrl(spec.source)
     ? await cloneComponent(spec)
     : await resolveLocalComponent(spec);
@@ -92,13 +104,19 @@ export async function resolveComponent(spec: ComponentSpec): Promise<ResolvedCom
       env:
         app.env && Object.keys(app.env).length > 0
           ? Object.fromEntries(
-              Object.entries(app.env).map(([k, v]) => [k, replaceVars(v, vars)]),
+              Object.entries(app.env).map(([k, v]) => [
+                k,
+                replaceVars(v, vars),
+              ]),
             )
           : app.env,
       secret:
         app.secret && Object.keys(app.secret).length > 0
           ? Object.fromEntries(
-              Object.entries(app.secret).map(([k, v]) => [k, replaceVars(v, vars)]),
+              Object.entries(app.secret).map(([k, v]) => [
+                k,
+                replaceVars(v, vars),
+              ]),
             )
           : app.secret,
       image: app.image ? replaceVars(app.image, vars) : app.image,
@@ -129,7 +147,10 @@ export async function resolveComponent(spec: ComponentSpec): Promise<ResolvedCom
 }
 
 function replaceVars(value: string, vars: Record<string, string>): string {
-  return value.replace(/\$\{([a-zA-Z0-9_.-]+)\}/g, (match, key: string) => vars[key] ?? match);
+  return value.replace(
+    /\$\{([a-zA-Z0-9_.-]+)\}/g,
+    (match, key: string) => vars[key] ?? match,
+  );
 }
 
 export interface ExpandedEnv {

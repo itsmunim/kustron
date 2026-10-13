@@ -44,19 +44,36 @@ export async function waitForDependency(
     case 'command': {
       const command = wait?.command ?? '';
       if (!command) {
-        throw new Error(`App '${appName}' wait.type=command requires wait.command`);
+        throw new Error(
+          `App '${appName}' wait.type=command requires wait.command`,
+        );
       }
       const deadline = Date.now() + timeoutMs;
       // shell via 'sh -c' so pipes/redirects work
       while (Date.now() < deadline) {
-        const result = await kubectl(clusterName, ['exec', 'deployment/' + appName, '-n', namespace, '--', 'sh', '-c', command], {
-          silent: true,
-          reject: false,
-        });
+        const result = await kubectl(
+          clusterName,
+          [
+            'exec',
+            'deployment/' + appName,
+            '-n',
+            namespace,
+            '--',
+            'sh',
+            '-c',
+            command,
+          ],
+          {
+            silent: true,
+            reject: false,
+          },
+        );
         if (result.exitCode === 0) return;
         await sleep(DEFAULT_POLL_MS);
       }
-      throw new Error(`Dependency '${appName}' did not become ready: ${command}`);
+      throw new Error(
+        `Dependency '${appName}' did not become ready: ${command}`,
+      );
     }
 
     case 'rollout':
@@ -76,11 +93,15 @@ export async function waitForDependency(
           ],
           {silent: true, reject: false},
         );
-        const [available, desired] = stdout.split('/').map((s) => parseInt(s.trim(), 10));
+        const [available, desired] = stdout
+          .split('/')
+          .map((s) => parseInt(s.trim(), 10));
         if (Number.isFinite(available) && available >= (desired ?? 1)) return;
         await sleep(DEFAULT_POLL_MS);
       }
-      throw new Error(`Dependency '${appName}' rollout did not complete in time`);
+      throw new Error(
+        `Dependency '${appName}' rollout did not complete in time`,
+      );
     }
   }
 }

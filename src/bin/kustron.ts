@@ -178,7 +178,10 @@ registerRegistryCommand(program);
 
 // Show banner for help output
 const originalOutputHelp = program.outputHelp.bind(program);
-(program as any).outputHelp = function (options?: { error?: boolean; exitCode?: number }) {
+(program as any).outputHelp = function (options?: {
+  error?: boolean;
+  exitCode?: number;
+}) {
   printBanner();
   return originalOutputHelp(options as any);
 };
@@ -187,7 +190,9 @@ const originalOutputHelp = program.outputHelp.bind(program);
 const args = process.argv.slice(2);
 const isHelp =
   args.length === 0 ||
-  args.some((a) => a === '-h' || a === '--help' || a === '-V' || a === '--version');
+  args.some(
+    (a) => a === '-h' || a === '--help' || a === '-V' || a === '--version',
+  );
 
 if (!isHelp) {
   printBanner();

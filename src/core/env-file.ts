@@ -36,8 +36,12 @@ const appEntrySchema = z
     args: z.array(z.string()).optional(),
     resources: z
       .object({
-        requests: z.object({cpu: z.string().optional(), memory: z.string().optional()}).optional(),
-        limits: z.object({cpu: z.string().optional(), memory: z.string().optional()}).optional(),
+        requests: z
+          .object({cpu: z.string().optional(), memory: z.string().optional()})
+          .optional(),
+        limits: z
+          .object({cpu: z.string().optional(), memory: z.string().optional()})
+          .optional(),
       })
       .optional(),
     patch: z.record(z.string(), z.unknown()).optional(),
@@ -106,12 +110,19 @@ const appEntrySchema = z
 const componentSpecSchema = z.object({
   name: z.string().min(1),
   source: z.string().min(1),
-  inputs: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional(),
+  inputs: z
+    .record(z.string(), z.union([z.string(), z.number(), z.boolean()]))
+    .optional(),
 });
 
 const envFileSchema = z
   .object({
-    config: z.object({namespace: z.string().optional(), clusterName: z.string().optional()}).optional(),
+    config: z
+      .object({
+        namespace: z.string().optional(),
+        clusterName: z.string().optional(),
+      })
+      .optional(),
     components: z.array(componentSpecSchema).optional(),
     apps: z.array(appEntrySchema),
   })

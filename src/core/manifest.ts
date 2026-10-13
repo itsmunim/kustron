@@ -109,8 +109,10 @@ export function buildDeployment(opts: ManifestOptions): string {
     container.args = opts.args;
   }
 
-
-  if (Object.keys(opts.env).length > 0 || Object.keys(opts.secret ?? {}).length > 0) {
+  if (
+    Object.keys(opts.env).length > 0 ||
+    Object.keys(opts.secret ?? {}).length > 0
+  ) {
     container.envFrom = [];
     if (Object.keys(opts.env).length > 0) {
       container.envFrom.push({configMapRef: {name: opts.name}});
@@ -138,9 +140,18 @@ export function buildDeployment(opts: ManifestOptions): string {
     // readiness/liveness stay disabled until startup succeeds.
     container.startupProbe = {...probe, periodSeconds: 5, failureThreshold: 30};
     // Readiness: gates Service traffic + rollout completion.
-    container.readinessProbe = {...probe, periodSeconds: 5, failureThreshold: 3, successThreshold: 1};
+    container.readinessProbe = {
+      ...probe,
+      periodSeconds: 5,
+      failureThreshold: 3,
+      successThreshold: 1,
+    };
     // Liveness: restarts dead containers once startup succeeded.
-    container.livenessProbe = {...probe, periodSeconds: 10, failureThreshold: 3};
+    container.livenessProbe = {
+      ...probe,
+      periodSeconds: 10,
+      failureThreshold: 3,
+    };
   }
 
   const envHash = createHash('sha256')

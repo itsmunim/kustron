@@ -9,7 +9,11 @@ describe('hashSourceDir', () => {
     const dir = await mkdtemp(join(tmpdir(), 'kustron-hash-test-'));
     await writeFile(join(dir, 'main.js'), 'console.log("hello");', 'utf-8');
     await mkdir(join(dir, 'src'));
-    await writeFile(join(dir, 'src', 'utils.js'), 'export const x = 1;', 'utf-8');
+    await writeFile(
+      join(dir, 'src', 'utils.js'),
+      'export const x = 1;',
+      'utf-8',
+    );
 
     const hash1 = await hashSourceDir(dir);
     const hash2 = await hashSourceDir(dir);

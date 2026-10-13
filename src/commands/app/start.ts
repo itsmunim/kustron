@@ -41,10 +41,15 @@ export async function appStart(appName: string): Promise<void> {
   }
 
   const replicas = app.ha ? 2 : (app.replicas ?? 1);
-  await kubectl(
-    clusterName,
-    ['scale', 'deployment', app.name, '--replicas', String(replicas), '-n', namespace],
-  );
+  await kubectl(clusterName, [
+    'scale',
+    'deployment',
+    app.name,
+    '--replicas',
+    String(replicas),
+    '-n',
+    namespace,
+  ]);
 
   success(t('app.started', {name: appName}));
 }

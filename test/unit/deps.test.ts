@@ -34,11 +34,7 @@ describe('appDeploymentName', () => {
 
 describe('topoSortApps', () => {
   it('returns apps in file order when no dependencies', () => {
-    const apps = [
-      {name: 'a'},
-      {name: 'b'},
-      {name: 'c'},
-    ] as AppEntry[];
+    const apps = [{name: 'a'}, {name: 'b'}, {name: 'c'}] as AppEntry[];
     const sorted = topoSortApps(apps);
     expect(sorted.map((a) => a.name)).toEqual(['a', 'b', 'c']);
   });
@@ -65,7 +61,9 @@ describe('topoSortApps', () => {
 
   it('throws on missing dependency', () => {
     const apps = [{name: 'a', dependsOn: ['missing']}] as AppEntry[];
-    expect(() => topoSortApps(apps)).toThrow("dependsOn 'missing' which is not defined");
+    expect(() => topoSortApps(apps)).toThrow(
+      "dependsOn 'missing' which is not defined",
+    );
   });
 
   it('handles instance-qualified names', () => {
@@ -91,9 +89,9 @@ describe('interpolate', () => {
   });
 
   it('replaces multiple variables', () => {
-    expect(
-      interpolate('${a} and ${b}', {a: 'foo', b: 'bar'}),
-    ).toBe('foo and bar');
+    expect(interpolate('${a} and ${b}', {a: 'foo', b: 'bar'})).toBe(
+      'foo and bar',
+    );
   });
 
   it('falls back to process.env for unknown vars', () => {
@@ -103,9 +101,9 @@ describe('interpolate', () => {
   });
 
   it('handles dotted variable names', () => {
-    expect(
-      interpolate('${app.endpoint}', {'app.endpoint': 'api:3000'}),
-    ).toBe('api:3000');
+    expect(interpolate('${app.endpoint}', {'app.endpoint': 'api:3000'})).toBe(
+      'api:3000',
+    );
   });
 });
 

@@ -94,7 +94,10 @@ export async function deleteCluster(name?: string): Promise<void> {
 
 async function listClusters(): Promise<ClusterInfo[]> {
   const env = await getK3dEnv();
-  const {stdout} = await exec('k3d', ['cluster', 'list', '-o', 'json'], {silent: true, env});
+  const {stdout} = await exec('k3d', ['cluster', 'list', '-o', 'json'], {
+    silent: true,
+    env,
+  });
   return JSON.parse(stdout) as ClusterInfo[];
 }
 
@@ -130,14 +133,20 @@ export async function startCluster(name?: string): Promise<void> {
  * Idempotent: a registry created by `k3d cluster create --registry-create`
  * (or a previous run) is left untouched.
  */
-export async function ensureRegistry(clusterName?: string, registryPort?: number): Promise<void> {
+export async function ensureRegistry(
+  clusterName?: string,
+  registryPort?: number,
+): Promise<void> {
   const name = clusterName ?? DEFAULT_CLUSTER_NAME;
   const port = registryPort ?? DEFAULT_REGISTRY_PORT;
   const env = await getK3dEnv();
 
   let exists = false;
   try {
-    const {stdout} = await exec('k3d', ['registry', 'list', '-o', 'json'], {silent: true, env});
+    const {stdout} = await exec('k3d', ['registry', 'list', '-o', 'json'], {
+      silent: true,
+      env,
+    });
     const registries = JSON.parse(stdout) as Array<{name: string}>;
     exists = registries.some((r) => r.name === REGISTRY_NAME);
   } catch {
@@ -148,7 +157,13 @@ export async function ensureRegistry(clusterName?: string, registryPort?: number
 
   await exec(
     'k3d',
-    ['registry', 'create', REGISTRY_NAME, '-p', `127.0.0.1:${port}:${DEFAULT_REGISTRY_PORT}`],
+    [
+      'registry',
+      'create',
+      REGISTRY_NAME,
+      '-p',
+      `127.0.0.1:${port}:${DEFAULT_REGISTRY_PORT}`,
+    ],
     {env},
   );
   await exec('k3d', ['registry', 'connect', REGISTRY_NAME, name], {env});
@@ -160,6 +175,8 @@ export async function ensureRegistry(clusterName?: string, registryPort?: number
  * services are reachable via localhost:<nodePort> instead, so callers
  * should fall back to localhost URLs.
  */
-export async function getK3dNodeIp(clusterName: string): Promise<string | null> {
+export async function getK3dNodeIp(
+  clusterName: string,
+): Promise<string | null> {
   return null;
 }

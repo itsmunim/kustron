@@ -8,7 +8,10 @@ import {t} from '../../utils/i18n.js';
 const DEFAULT_CLUSTER_NAME = 'kustron';
 const DEFAULT_NAMESPACE = 'kustron-env';
 
-export async function appLogs(appName: string, options: {follow?: boolean; tail?: number} = {}): Promise<void> {
+export async function appLogs(
+  appName: string,
+  options: {follow?: boolean; tail?: number} = {},
+): Promise<void> {
   const filePath = './kustron-env.yaml';
   try {
     await access(filePath);
@@ -35,7 +38,13 @@ export async function appLogs(appName: string, options: {follow?: boolean; tail?
 
   step(t('app.logs', {name: appName}));
 
-  const args = ['logs', '-l', `app.kubernetes.io/name=${app.name}`, '-n', namespace];
+  const args = [
+    'logs',
+    '-l',
+    `app.kubernetes.io/name=${app.name}`,
+    '-n',
+    namespace,
+  ];
   if (options.follow) args.push('-f');
   if (options.tail) args.push('--tail', String(options.tail));
   args.push('--all-containers=true');

@@ -1,7 +1,11 @@
 import {access} from 'fs/promises';
 import chalk from 'chalk';
 import {readAndParseEnvFile} from '../../core/env-file.js';
-import {clusterExists, isClusterRunning, getK3dNodeIp} from '../../core/cluster.js';
+import {
+  clusterExists,
+  isClusterRunning,
+  getK3dNodeIp,
+} from '../../core/cluster.js';
 import {kubectl} from '../../core/kubectl.js';
 import {error, info, warn} from '../../utils/logger.js';
 import {t} from '../../utils/i18n.js';
@@ -17,7 +21,8 @@ interface DeploymentInfo {
 }
 
 interface PodState {
-  label: 'running' | 'starting' | 'imagepull' | 'crashloop' | 'pending' | 'unknown';
+  label:
+    'running' | 'starting' | 'imagepull' | 'crashloop' | 'pending' | 'unknown';
 }
 
 function statusColor(state: PodState['label']): (s: string) => string {
@@ -36,7 +41,11 @@ function statusColor(state: PodState['label']): (s: string) => string {
   }
 }
 
-async function getDeploymentInfo(appName: string, namespace: string, clusterName: string): Promise<DeploymentInfo> {
+async function getDeploymentInfo(
+  appName: string,
+  namespace: string,
+  clusterName: string,
+): Promise<DeploymentInfo> {
   const result = await kubectl(
     clusterName,
     ['get', 'deployment', appName, '-n', namespace, '-o', 'json'],
@@ -60,10 +69,23 @@ async function getDeploymentInfo(appName: string, namespace: string, clusterName
   }
 }
 
-async function getPodState(appName: string, namespace: string, clusterName: string): Promise<PodState> {
+async function getPodState(
+  appName: string,
+  namespace: string,
+  clusterName: string,
+): Promise<PodState> {
   const result = await kubectl(
     clusterName,
-    ['get', 'pods', '-l', `app.kubernetes.io/name=${appName}`, '-n', namespace, '-o', 'json'],
+    [
+      'get',
+      'pods',
+      '-l',
+      `app.kubernetes.io/name=${appName}`,
+      '-n',
+      namespace,
+      '-o',
+      'json',
+    ],
     {silent: true, reject: false},
   );
   if (result.exitCode !== 0) {
@@ -83,7 +105,10 @@ async function getPodState(appName: string, namespace: string, clusterName: stri
         if (reason) waitingReasons.push(reason);
       }
 
-      if (waitingReasons.includes('ImagePullBackOff') || waitingReasons.includes('ErrImagePull')) {
+      if (
+        waitingReasons.includes('ImagePullBackOff') ||
+        waitingReasons.includes('ErrImagePull')
+      ) {
         return {label: 'imagepull'};
       }
       if (waitingReasons.includes('CrashLoopBackOff')) {
@@ -104,10 +129,22 @@ async function getPodState(appName: string, namespace: string, clusterName: stri
   }
 }
 
-async function getNodePort(appName: string, namespace: string, clusterName: string): Promise<number | null> {
+async function getNodePort(
+  appName: string,
+  namespace: string,
+  clusterName: string,
+): Promise<number | null> {
   const result = await kubectl(
     clusterName,
-    ['get', 'service', appName, '-n', namespace, '-o', 'jsonpath={.spec.ports[0].nodePort}'],
+    [
+      'get',
+      'service',
+      appName,
+      '-n',
+      namespace,
+      '-o',
+      'jsonpath={.spec.ports[0].nodePort}',
+    ],
     {silent: true, reject: false},
   );
   if (result.exitCode !== 0) return null;
@@ -144,9 +181,15 @@ export async function envStatus(): Promise<void> {
 
   const rows = await Promise.all(
     envFile.apps.map(async (app) => {
-      const deployment = await getDeploymentInfo(app.name, namespace, clusterName);
+      const deployment = await getDeploymentInfo(
+        app.name,
+        namespace,
+        clusterName,
+      );
       const podState = await getPodState(app.name, namespace, clusterName);
-      const nodePort = app.exposed ? await getNodePort(app.name, namespace, clusterName) : null;
+      const nodePort = app.exposed
+        ? await getNodePort(app.name, namespace, clusterName)
+        : null;
       const url =
         app.exposed && nodePort && nodeIp
           ? `http://${nodeIp}:${nodePort}`
@@ -182,23 +225,39 @@ export async function envStatus(): Promise<void> {
         }
       }
 
-      const type = app.helm ? 'helm' : app.source ? 'source' : app.image ? 'image' : '?';
-      const imageRef = deployment.exists ? deployment.image.split('/').pop() ?? deployment.image : '';
+      const type = app.helm
+        ? 'helm'
+        : app.source
+          ? 'source'
+          : app.image
+            ? 'image'
+            : '?';
+      const imageRef = deployment.exists
+        ? (deployment.image.split('/').pop() ?? deployment.image)
+        : '';
 
       return {
         name: app.name,
         type,
         state,
         stateText,
-        ready: deployment.exists ? `${deployment.ready}/${deployment.desired}` : '-',
+        ready: deployment.exists
+          ? `${deployment.ready}/${deployment.desired}`
+          : '-',
         image: imageRef,
         url,
       };
     }),
   );
 
-  const maxNameLen = Math.max(t('env.status.colApp').length, ...rows.map((r) => r.name.length));
-  const maxTypeLen = Math.max(t('env.status.colType').length, ...rows.map((r) => r.type.length));
+  const maxNameLen = Math.max(
+    t('env.status.colApp').length,
+    ...rows.map((r) => r.name.length),
+  );
+  const maxTypeLen = Math.max(
+    t('env.status.colType').length,
+    ...rows.map((r) => r.type.length),
+  );
   const maxStateLen = Math.max(
     t('env.status.colStatus').length,
     ...rows.map((r) => r.stateText.length),

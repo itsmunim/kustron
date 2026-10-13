@@ -7,7 +7,12 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
+    "test": "vitest run",
+    "test:unit": "vitest run test/unit --reporter=verbose",
+    "test:e2e": "vitest run test/e2e --reporter=verbose",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
@@ -42,8 +47,10 @@
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.20.1",
+    "@vitest/coverage-v8": "^5.0.4",
     "prettier": "^3.9.6",
     "tsup": "^8.4.0",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "vitest": "^5.0.4"
   }
 }

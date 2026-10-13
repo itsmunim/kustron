@@ -1,5 +1,10 @@
 import {describe, it, expect} from 'vitest';
-import {isPlainObject, deepMerge, setPath, getPath} from '../../src/utils/merge.js';
+import {
+  isPlainObject,
+  deepMerge,
+  setPath,
+  getPath,
+} from '../../src/utils/merge.js';
 
 describe('isPlainObject', () => {
   it('returns true for plain objects', () => {
@@ -35,18 +40,12 @@ describe('deepMerge', () => {
   });
 
   it('recursively merges nested objects', () => {
-    const result = deepMerge(
-      {a: {x: 1, y: 2}},
-      {a: {y: 3, z: 4}},
-    );
+    const result = deepMerge({a: {x: 1, y: 2}}, {a: {y: 3, z: 4}});
     expect(result).toEqual({a: {x: 1, y: 3, z: 4}});
   });
 
   it('replaces arrays (does not merge them)', () => {
-    const result = deepMerge(
-      {a: [1, 2]},
-      {a: [3]},
-    );
+    const result = deepMerge({a: [1, 2]}, {a: [3]});
     expect(result).toEqual({a: [3]});
   });
 

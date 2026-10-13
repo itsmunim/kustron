@@ -39,7 +39,9 @@ export function topoSortApps(apps: AppEntry[]): AppEntry[] {
     for (const dep of app.dependsOn ?? []) {
       const depApp = byName.get(dep);
       if (!depApp) {
-        throw new Error(`App '${key(app)}' dependsOn '${dep}' which is not defined`);
+        throw new Error(
+          `App '${key(app)}' dependsOn '${dep}' which is not defined`,
+        );
       }
       visit(depApp, [...chain, key(app)]);
     }

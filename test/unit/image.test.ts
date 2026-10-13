@@ -1,5 +1,9 @@
 import {describe, it, expect} from 'vitest';
-import {parseImageRef, getImageTag, getImageRepository} from '../../src/utils/image.js';
+import {
+  parseImageRef,
+  getImageTag,
+  getImageRepository,
+} from '../../src/utils/image.js';
 
 describe('parseImageRef', () => {
   it('parses simple name without tag', () => {
@@ -75,6 +79,8 @@ describe('getImageRepository', () => {
   });
 
   it('returns full repository for registry port', () => {
-    expect(getImageRepository('localhost:5000/app:v1')).toBe('localhost:5000/app');
+    expect(getImageRepository('localhost:5000/app:v1')).toBe(
+      'localhost:5000/app',
+    );
   });
 });

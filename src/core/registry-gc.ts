@@ -15,10 +15,11 @@ export async function pruneRegistry(
 
   // List all images in the local registry
   try {
-    const {stdout} = await exec('curl', [
-      '-s',
-      `http://localhost:${registryPort}/v2/_catalog`,
-    ], {silent: true, reject: false});
+    const {stdout} = await exec(
+      'curl',
+      ['-s', `http://localhost:${registryPort}/v2/_catalog`],
+      {silent: true, reject: false},
+    );
 
     if (!stdout.trim()) return;
 
@@ -27,10 +28,11 @@ export async function pruneRegistry(
 
     for (const repo of repos) {
       try {
-        const {stdout: tagsStdout} = await exec('curl', [
-          '-s',
-          `http://localhost:${registryPort}/v2/${repo}/tags/list`,
-        ], {silent: true, reject: false});
+        const {stdout: tagsStdout} = await exec(
+          'curl',
+          ['-s', `http://localhost:${registryPort}/v2/${repo}/tags/list`],
+          {silent: true, reject: false},
+        );
 
         if (!tagsStdout.trim()) continue;
 
@@ -45,7 +47,10 @@ export async function pruneRegistry(
           if (!inUse) {
             info(t('registry.pruning', {image: imageRef}));
             try {
-              await exec(runtime, ['rmi', imageRef], {silent: true, reject: false});
+              await exec(runtime, ['rmi', imageRef], {
+                silent: true,
+                reject: false,
+              });
             } catch {
               // ignore individual prune failures
             }
@@ -60,20 +65,29 @@ export async function pruneRegistry(
   }
 }
 
-async function isImageInUse(imageRef: string, clusterName: string): Promise<boolean> {
+async function isImageInUse(
+  imageRef: string,
+  clusterName: string,
+): Promise<boolean> {
   try {
-    const {stdout} = await exec('kubectl', [
-      'get',
-      'pods',
-      '--all-namespaces',
-      '--context',
-      `k3d-${clusterName}`,
-      '-o',
-      'jsonpath={.items[*].spec.containers[*].image}',
-    ], {silent: true, reject: false});
+    const {stdout} = await exec(
+      'kubectl',
+      [
+        'get',
+        'pods',
+        '--all-namespaces',
+        '--context',
+        `k3d-${clusterName}`,
+        '-o',
+        'jsonpath={.items[*].spec.containers[*].image}',
+      ],
+      {silent: true, reject: false},
+    );
 
     const usedImages = stdout.split(/\s+/).filter(Boolean);
-    return usedImages.some((img) => img === imageRef || img.includes(imageRef.split(':')[0]));
+    return usedImages.some(
+      (img) => img === imageRef || img.includes(imageRef.split(':')[0]),
+    );
   } catch {
     return true; // assume in use if we can't check
   }

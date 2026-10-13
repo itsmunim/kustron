@@ -5,7 +5,13 @@ import {
   cleanupSource,
 } from './source.js';
 import {detectBuildStrategy, buildImage} from './build.js';
-import {buildTag, buildPushTag, pushImage, REGISTRY_HOST, getRegistryPushHost} from './push.js';
+import {
+  buildTag,
+  buildPushTag,
+  pushImage,
+  REGISTRY_HOST,
+  getRegistryPushHost,
+} from './push.js';
 import {hashSourceDir} from './hash.js';
 import {
   buildConfigMap,
@@ -16,11 +22,7 @@ import {
   buildHPA,
   assembleManifests,
 } from './manifest.js';
-import {
-  applyManifests,
-  waitForRollout,
-  getServiceNodePort,
-} from './apply.js';
+import {applyManifests, waitForRollout, getServiceNodePort} from './apply.js';
 import {
   helmInstall,
   createHelmExposureService,
@@ -31,7 +33,13 @@ import {checkDependency} from '../utils/checks.js';
 import {info, success, warn, step, error} from '../utils/logger.js';
 import {t} from '../utils/i18n.js';
 import type {AppEntry, DeployContext} from '../types/index.js';
-import {topoSortApps, appNamespace, appDeploymentName, buildVars, interpolate} from './deps.js';
+import {
+  topoSortApps,
+  appNamespace,
+  appDeploymentName,
+  buildVars,
+  interpolate,
+} from './deps.js';
 import {waitForDependency} from './wait-deps.js';
 import {ensureNamespace} from './apply.js';
 import {ensurePullSecret} from './registry.js';
@@ -42,7 +50,10 @@ export interface DeployResult {
   url: string | null;
 }
 
-function buildExposureUrl(nodeIp: string | undefined, nodePort: number): string {
+function buildExposureUrl(
+  nodeIp: string | undefined,
+  nodePort: number,
+): string {
   if (nodeIp) {
     return `http://${nodeIp}:${nodePort}`;
   }
@@ -75,7 +86,11 @@ async function deployFromImage(
   // the cluster can pull the image; attach it to the Deployment.
   let imagePullSecrets: string[] | undefined;
   if (app.registry?.server && app.registry.username) {
-    const secretName = await ensurePullSecret(app, ctx.namespace, ctx.clusterName);
+    const secretName = await ensurePullSecret(
+      app,
+      ctx.namespace,
+      ctx.clusterName,
+    );
     if (secretName) imagePullSecrets = [secretName];
   }
 
@@ -104,7 +119,13 @@ async function deployFromImage(
   const service = buildService(opts);
   const hpa = app.ha ? buildHPA(opts) : null;
 
-  const manifestYaml = assembleManifests([cm, secretManifest, deployment, service, hpa]);
+  const manifestYaml = assembleManifests([
+    cm,
+    secretManifest,
+    deployment,
+    service,
+    hpa,
+  ]);
   info(`[${app.name}] ${t('deploy.manifestsGenerated')}`);
 
   info(`[${app.name}] ${t('deploy.applyingManifests')}`);
@@ -117,7 +138,11 @@ async function deployFromImage(
 
   let finalUrl = url;
   if (app.exposed) {
-    const nodePort = await getServiceNodePort(effectiveName, ctx.namespace, ctx.clusterName);
+    const nodePort = await getServiceNodePort(
+      effectiveName,
+      ctx.namespace,
+      ctx.clusterName,
+    );
     if (nodePort) {
       finalUrl = buildExposureUrl(ctx.nodeIp, nodePort);
     }
@@ -204,7 +229,11 @@ async function deploySourceApp(
   url: string | null,
 ): Promise<DeployResult> {
   const {image} = await buildSourceImage(app, ctx, async (image) => {
-    const deployedImage = await getDeployedImage(app.name, ctx.namespace, ctx.clusterName);
+    const deployedImage = await getDeployedImage(
+      app.name,
+      ctx.namespace,
+      ctx.clusterName,
+    );
     return deployedImage === image;
   });
   return await deployFromImage(app, ctx, image, url);
@@ -243,7 +272,11 @@ async function deployHelmApp(
     await applyManifests(serviceYaml, ctx.clusterName);
     info(`[${app.name}] ${t('deploy.exposureServiceCreated')}`);
 
-    const nodePort = await getServiceNodePort(app.name, ctx.namespace, ctx.clusterName);
+    const nodePort = await getServiceNodePort(
+      app.name,
+      ctx.namespace,
+      ctx.clusterName,
+    );
     if (nodePort) {
       finalUrl = buildExposureUrl(ctx.nodeIp, nodePort);
     }
@@ -261,7 +294,11 @@ async function deploySourceAsHelmApp(
   url: string | null,
 ): Promise<DeployResult> {
   const {image} = await buildSourceImage(app, ctx, async (image) => {
-    const releaseImage = await helmReleaseImage(app, ctx.namespace, ctx.clusterName);
+    const releaseImage = await helmReleaseImage(
+      app,
+      ctx.namespace,
+      ctx.clusterName,
+    );
     return releaseImage === image;
   });
   return await deployHelmApp(app, ctx, url, image);

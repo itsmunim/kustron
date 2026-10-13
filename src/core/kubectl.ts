@@ -22,5 +22,9 @@ export async function helm(
   args: string[],
   options?: Parameters<typeof exec>[2],
 ): Promise<ExecResult> {
-  return exec('helm', [...args, '--kube-context', `k3d-${clusterName}`], options);
+  return exec(
+    'helm',
+    [...args, '--kube-context', `k3d-${clusterName}`],
+    options,
+  );
 }

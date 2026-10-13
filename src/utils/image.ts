@@ -29,7 +29,11 @@ export function parseImageRef(ref: string): {
     // Simple heuristic: if there's no '/' in the potential tag, it's a tag.
     // Also handle registry ports: localhost:5000/image — the ':' before '5000' is part of the registry.
     const beforeColon = rest.slice(0, tagIdx);
-    if (!potentialTag.includes('/') && !beforeColon.endsWith('http') && !beforeColon.endsWith('https')) {
+    if (
+      !potentialTag.includes('/') &&
+      !beforeColon.endsWith('http') &&
+      !beforeColon.endsWith('https')
+    ) {
       // Additional check: if the potential tag looks like a port (all digits), and there's a '/' after it,
       // then it's not a tag but part of registry:port/path
       const isPort = /^\d+$/.test(potentialTag);
