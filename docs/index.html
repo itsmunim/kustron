@@ -1005,7 +1005,7 @@
       Works with Podman &amp; Docker
     </div>
     <h1>Local dev environment,<br>up in minutes.</h1>
-    <p>Define your apps in one file. Kustron handles the rest: local cluster, registry, build, deploy.</p>
+    <p>Define your apps in one file. Kustron handles the rest: local cluster, registry, build, deploy. Your kubectl context is never touched.</p>
 
     <div>
       <div class="install-block">
@@ -1073,7 +1073,7 @@
         </div>
         <div class="use-item">
           <h3>Sandboxes on demand</h3>
-          <p>An isolated stack for a demo, a test, or a brief experiment. <code>env down</code> when it's done and nothing lingers.</p>
+          <p>An isolated stack for a demo, a test, or a brief experiment. <code>cluster destroy</code> when it's done and nothing lingers.</p>
         </div>
         <div class="use-item">
           <h3>A dev box in the cloud</h3>
@@ -1098,7 +1098,7 @@
     <div class="section-inner">
       <div class="section-label">kustron-env.yaml</div>
       <h2>Your whole environment in one file.</h2>
-      <p class="section-sub">Apps find each other by name. Exposed apps are reachable at the cluster node IP.</p>
+      <p class="section-sub">Apps find each other by name. Exposed apps are reachable at <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">localhost:&lt;nodePort&gt;</code>.</p>
 
       <div class="yaml-window">
         <div class="yaml-titlebar">
@@ -1117,7 +1117,7 @@
             - name: api
               source: ./services/api      # or: git@github.com:org/repo.git
               port: 3000
-              exposed: true               # reachable at the k3d node IP
+              exposed: true               # reachable at localhost:<nodePort>
               ha: true                    # min 2 replicas, autoscales to 5
               env:
                 NODE_ENV: production
@@ -1243,13 +1243,43 @@
         </tr>
         <tr>
           <td><code class="cmd-code"><span class="kw">kustron</span> env reload</code></td>
+          <td><span class="cmd-desc">Stop all apps and bring them back up. Run this after changing
+              <code>kustron-env.yaml</code>. The cluster itself is not destroyed.</span></td>
           <td><span class="cmd-desc">Tear down and rebuild the entire environment. Run this after changing
               <code>kustron-env.yaml</code>.</span></td>
         </tr>
         <tr>
-          <td><code class="cmd-code"><span class="kw">kustron</span> env down</code></td>
-          <td><span class="cmd-desc">Tear everything down. The yaml file is untouched.</span></td>
+          <td><code class="cmd-code"><span class="kw">kustron</span> env stop</code></td>
+          <td><span class="cmd-desc">Stop all apps (scale to 0, uninstall helm) without destroying the cluster.
+              Fast to restart with <code>env up</code>.</span></td>
         </tr>
+        <tr>
+          <td><code class="cmd-code"><span class="kw">kustron</span> env down</code></td>
+          <td><span class="cmd-desc"><strong>Deprecated.</strong> Destroys the entire cluster. Use <code>env stop</code> to pause,
+              or <code>cluster destroy</code> to explicitly delete everything.</span></td>
+        </tr>
+        <tr>
+          <td colspan="2" class="cmd-group">cluster</td>
+        </tr>
+        <tr>
+          <td><code class="cmd-code"><span class="kw">kustron</span> cluster destroy <span class="flag">[--yes]</span></code></td>
+          <td><span class="cmd-desc">Delete the k3d cluster and all data in it. Confirmation prompt unless
+              <code>--yes</code> is passed.</span></td>
+        </tr>
+        <tr>
+          <td colspan="2" class="cmd-group">app</td>
+        </tr>
+        <tr>
+          <td><code class="cmd-code"><span class="kw">kustron</span> app stop <span class="arg">&lt;name&gt;</span></code></td>
+          <td><span class="cmd-desc">Stop a single app without affecting the rest of the environment.</span></td>
+        </tr>
+        <tr>
+          <td><code class="cmd-code"><span class="kw">kustron</span> app start <span class="arg">&lt;name&gt;</span></code></td>
+          <td><span class="cmd-desc">Start a single app that was previously stopped.</span></td>
+        </tr>
+        <tr>
+          <td><code class="cmd-code"><span class="kw">kustron</span> app logs <span class="arg">&lt;name&gt;</span> <span class="flag">[-f]</span></code></td>
+          <td><span class="cmd-desc">Stream logs for a single app. Use <code>-f</code> to follow, <code>--tail N</code> for last N lines.</span></td>
         <tr>
           <td><code class="cmd-code"><span class="kw">kustron</span> env show-spec</code></td>
           <td><span class="cmd-desc">Pretty-print the full <code>kustron-env.yaml</code> schema with annotations.</span>
@@ -1286,10 +1316,8 @@
               pulled and pushed.</span></td>
         </tr>
         <tr>
-          <td><code class="cmd-code"><span class="kw">kustron</span> registry import <span
-                class="arg">&lt;image&gt;</span></code></td>
-          <td><span class="cmd-desc">Import a local image directly into the cluster without pushing to the
-              registry.</span></td>
+          <td><code class="cmd-code"><span class="kw">kustron</span> registry prune</code></td>
+          <td><span class="cmd-desc">Remove unused images from the local registry to reclaim disk space.</span></td>
         </tr>
       </table>
     </div>
@@ -1504,11 +1532,18 @@
 
         <div class="faq-item">
           <h4>Port 5000 is already in use</h4>
+          <p>Kustron auto-detects an available port starting from 5000. If macOS AirPlay or another service is listening there, it picks the next free port automatically. You can also set a specific port via <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">config.registryPort</code> in <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">kustron-env.yaml</code>.</p>
           <p>Kustron binds the local image registry to <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">localhost:5000</code>. If something else is listening there, free the port and re-run <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">kustron env up</code>.</p>
         </div>
 
         <div class="faq-item">
           <h4>Podman machine runs out of memory while k3d runs</h4>
+          <p>A k3d cluster wants around 4GB in the podman VM. On macOS: <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">podman machine init --rootful --cpus 4 --memory 4096</code> for a new machine, or <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">podman machine set --memory 4096</code> + restart for an existing one.</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>Will Kustron change my kubectl context?</h4>
+          <p>No. Kustron never calls <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">kubectl config use-context</code>. Every kubectl and helm command includes <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">--context=k3d-&lt;clusterName&gt;</code> (or <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">--kube-context</code> for helm), so your global kubectl context is never touched. You can safely run <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">kustron env up</code> while working with production clusters in other terminals.</p>
           <p>A k3d cluster wants around 4GB in the podman VM. On macOS: <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">podman machine init --rootful --cpus 4 --memory 4096</code> for a new machine, or <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">podman machine set --memory 4096</code> + restart for an existing one.</p>
         </div>
       </div>
