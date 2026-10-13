@@ -8,7 +8,7 @@ import {t} from '../../utils/i18n.js';
 
 const DEFAULT_CLUSTER_NAME = 'kustron';
 
-export async function clusterDestroy(options: {yes?: boolean} = {}): Promise<void> {
+export async function envDestroy(options: {yes?: boolean} = {}): Promise<void> {
   const filePath = './kustron-env.yaml';
   let clusterName = DEFAULT_CLUSTER_NAME;
   try {
@@ -21,10 +21,10 @@ export async function clusterDestroy(options: {yes?: boolean} = {}): Promise<voi
 
   if (!options.yes) {
     const shouldDelete = await confirm({
-      message: t('env.down.confirm', {name: clusterName}),
+      message: t('env.destroy.confirm', {name: clusterName}),
     });
     if (!shouldDelete) {
-      warn(t('env.down.cancelled'));
+      warn(t('env.destroy.cancelled'));
       return;
     }
   }
@@ -32,8 +32,8 @@ export async function clusterDestroy(options: {yes?: boolean} = {}): Promise<voi
   try {
     await deleteCluster(clusterName);
     await deleteContext(clusterName);
-    success(t('env.down.success', {name: clusterName}));
+    success(t('env.destroy.success', {name: clusterName}));
   } catch {
-    warn(t('env.down.notFound', {name: clusterName}));
+    warn(t('env.destroy.notFound', {name: clusterName}));
   }
 }

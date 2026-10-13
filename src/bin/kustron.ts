@@ -4,7 +4,7 @@ import {envInit} from '../commands/env/init.js';
 import {envUp} from '../commands/env/up.js';
 import {envDown} from '../commands/env/down.js';
 import {envStop} from '../commands/env/stop.js';
-import {clusterDestroy} from '../commands/cluster/destroy.js';
+import {envDestroy} from '../commands/env/destroy.js';
 import {envReload} from '../commands/env/reload.js';
 import {envShowSpec} from '../commands/env/show-spec.js';
 import {envStatus} from '../commands/env/status.js';
@@ -98,15 +98,15 @@ env
     await envStatus();
   });
 
-const cluster = program.command('cluster').description(t('cli.clusterDescription'));
-
-cluster
+env
   .command('destroy')
   .description(t('cli.destroyDescription'))
   .option('--yes', t('cli.yesOption'))
   .action(async (options) => {
-    await clusterDestroy(options);
+    await envDestroy(options);
   });
+
+const app = program.command('app').description(t('cli.appDescription'));
 
 const app = program.command('app').description(t('cli.appDescription'));
 

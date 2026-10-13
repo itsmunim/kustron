@@ -1073,7 +1073,7 @@
         </div>
         <div class="use-item">
           <h3>Sandboxes on demand</h3>
-          <p>An isolated stack for a demo, a test, or a brief experiment. <code>cluster destroy</code> when it's done and nothing lingers.</p>
+          <p>An isolated stack for a demo, a test, or a brief experiment. <code>env destroy</code> when it's done and nothing lingers.</p>
         </div>
         <div class="use-item">
           <h3>A dev box in the cloud</h3>
@@ -1256,13 +1256,13 @@
         <tr>
           <td><code class="cmd-code"><span class="kw">kustron</span> env down</code></td>
           <td><span class="cmd-desc"><strong>Deprecated.</strong> Destroys the entire cluster. Use <code>env stop</code> to pause,
-              or <code>cluster destroy</code> to explicitly delete everything.</span></td>
+              or <code>env destroy</code> to explicitly delete everything.</span></td>
         </tr>
         <tr>
           <td colspan="2" class="cmd-group">cluster</td>
         </tr>
         <tr>
-          <td><code class="cmd-code"><span class="kw">kustron</span> cluster destroy <span class="flag">[--yes]</span></code></td>
+          <td><code class="cmd-code"><span class="kw">kustron</span> env destroy <span class="flag">[--yes]</span></code></td>
           <td><span class="cmd-desc">Delete the k3d cluster and all data in it. Confirmation prompt unless
               <code>--yes</code> is passed.</span></td>
         </tr>

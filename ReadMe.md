@@ -258,13 +258,13 @@ apps:
 | `kustron env up` | Bring up the environment and deploy all apps |
 | `kustron env stop` | Stop all apps (scale to 0, uninstall helm) without destroying the cluster |
 | `kustron env reload` | Stop + up (pick up any yaml changes) |
-| `kustron env down` | **Deprecated alias for `cluster destroy`** — deletes the entire cluster |
+| `kustron env down` | **Deprecated alias for `env destroy`** — deletes the entire cluster |
 | `kustron env show-spec` | Pretty-print the `kustron-env.yaml` schema |
 | `kustron env status` | Show cluster + app states in a table |
 | `kustron app stop <name>` | Stop a single app |
 | `kustron app start <name>` | Start a single app |
 | `kustron app logs <name>` | Stream logs for a single app (`-f` to follow, `--tail N`) |
-| `kustron cluster destroy` | Delete the k3d cluster and all data in it |
+| `kustron env destroy` | Delete the k3d cluster and all data in it |
 | `kustron registry login <server>` | Login to a container registry (docker/podman), then push images to it |
 | `kustron registry import <images...>` | Import local images into the k3d cluster (alternative to push) |
 | `kustron registry prune` | Remove unused images from the local registry |

@@ -14,7 +14,7 @@ src/
   commands/               # CLI command handlers
     env/                  # env up, down, stop, reload, status
     app/                  # app stop, start, logs
-    cluster/              # cluster destroy
+    cluster/              # cluster destroy (now env destroy)
     registry/             # registry login, prune
   core/                   # Business logic
     kubectl.ts            # Scoped kubectl/helm wrappers (NEVER mutate global context)
@@ -103,7 +103,7 @@ When adding tests:
 | Decision | Rationale |
 |----------|-----------|
 | Scoped kubectl instead of kubeconfig copy | Simpler, no file mutation, explicit per-call |
-| `env down` → `cluster destroy` | "down" sounded like stopping apps, not deleting infrastructure |
+| `env down` → `env destroy` | "down" sounded like stopping apps, not deleting infrastructure |
 | `env reload` = `env stop` + `env up` | Preserves cluster, just restarts apps |
 | NodePort + loadbalancer port mapping | Simplest cross-platform exposed service approach |
 | Content-hash skip instead of timestamp | Deterministic, survives clock changes |
