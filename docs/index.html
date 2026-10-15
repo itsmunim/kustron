@@ -1246,6 +1246,10 @@
           <td><span class="cmd-desc">Stop all apps and bring them back up. Run this after changing
               <code>kustron-env.yaml</code>. The cluster itself is not destroyed.</span></td>
           <td><span class="cmd-desc">Tear down and rebuild the entire environment. Run this after changing
+        <tr>
+          <td><code class="cmd-code"><span class="kw">kustron</span> env watch</code></td>
+          <td><span class="cmd-desc">Watch local source directories and auto-redeploy on file changes.</span></td>
+        </tr>
               <code>kustron-env.yaml</code>.</span></td>
         </tr>
         <tr>
@@ -1279,6 +1283,14 @@
         </tr>
         <tr>
           <td><code class="cmd-code"><span class="kw">kustron</span> app logs <span class="arg">&lt;name&gt;</span> <span class="flag">[-f]</span></code></td>
+        <tr>
+          <td><code class="cmd-code"><span class="kw">kustron</span> app exec <span class="arg">&lt;name&gt;</span> <span class="flag">[command...]</span></code></td>
+          <td><span class="cmd-desc">Run a command inside a running app container. Defaults to <code>sh</code> if no command given.</span></td>
+        </tr>
+        <tr>
+          <td><code class="cmd-code"><span class="kw">kustron</span> app forward <span class="arg">&lt;name&gt;</span> <span class="arg">&lt;localPort&gt;</span> <span class="flag">[remotePort]</span></code></td>
+          <td><span class="cmd-desc">Forward a local port to an app. Useful for services that are not exposed via NodePort.</span></td>
+        </tr>
           <td><span class="cmd-desc">Stream logs for a single app. Use <code>-f</code> to follow, <code>--tail N</code> for last N lines.</span></td>
         <tr>
           <td><code class="cmd-code"><span class="kw">kustron</span> env show-spec</code></td>
