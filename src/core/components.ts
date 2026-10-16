@@ -33,7 +33,10 @@ function isGitUrl(source: string): boolean {
 
 async function resolveComponentSource(spec: ComponentSpec): Promise<string> {
   if (isGitUrl(spec.source)) {
-    const hash = createHash('sha256').update(spec.source).digest('hex').slice(0, 16);
+    const hash = createHash('sha256')
+      .update(spec.source)
+      .digest('hex')
+      .slice(0, 16);
     const dir = join(COMPONENT_CACHE_DIR, hash);
     await mkdir(COMPONENT_CACHE_DIR, {recursive: true});
 
@@ -41,10 +44,14 @@ async function resolveComponentSource(spec: ComponentSpec): Promise<string> {
       await access(join(dir, 'Kustronfile'));
       // Already cached — pull latest
       await exec('git', ['-C', dir, 'fetch', 'origin'], {silent: true});
-      await exec('git', ['-C', dir, 'reset', '--hard', 'origin/HEAD'], {silent: true});
+      await exec('git', ['-C', dir, 'reset', '--hard', 'origin/HEAD'], {
+        silent: true,
+      });
     } catch {
       // Not cached — clone
-      await exec('git', ['clone', '--depth', '1', spec.source, dir], {silent: true});
+      await exec('git', ['clone', '--depth', '1', spec.source, dir], {
+        silent: true,
+      });
     }
     return dir;
   }
@@ -107,10 +114,7 @@ export async function resolveComponent(
     env:
       app.env && Object.keys(app.env).length > 0
         ? Object.fromEntries(
-            Object.entries(app.env).map(([k, v]) => [
-              k,
-              replaceVars(v, vars),
-            ]),
+            Object.entries(app.env).map(([k, v]) => [k, replaceVars(v, vars)]),
           )
         : app.env,
     secret:

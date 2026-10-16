@@ -34,7 +34,16 @@ export async function helmReleaseImage(
   try {
     const {stdout} = await helm(
       clusterName,
-      ['get', 'values', releaseName ?? app.name, '-n', namespace, '--all', '-o', 'json'],
+      [
+        'get',
+        'values',
+        releaseName ?? app.name,
+        '-n',
+        namespace,
+        '--all',
+        '-o',
+        'json',
+      ],
       {silent: true, reject: false},
     );
     if (!stdout.trim()) return null;
@@ -42,11 +51,20 @@ export async function helmReleaseImage(
     const values = JSON.parse(stdout) as any;
     // Simple path traversal for backward compat
     const get = (obj: unknown, path: string): unknown => {
-      return path.split('.').reduce((o, k) => (o && typeof o === 'object' ? (o as Record<string, unknown>)[k] : undefined), obj);
+      return path
+        .split('.')
+        .reduce(
+          (o, k) =>
+            o && typeof o === 'object'
+              ? (o as Record<string, unknown>)[k]
+              : undefined,
+          obj,
+        );
     };
     const repo = imageRef.repository ? get(values, imageRef.repository) : null;
     const tag = imageRef.tag ? get(values, imageRef.tag) : null;
-    if (typeof repo === 'string' && typeof tag === 'string') return `${repo}:${tag}`;
+    if (typeof repo === 'string' && typeof tag === 'string')
+      return `${repo}:${tag}`;
     return null;
   } catch {
     return null;

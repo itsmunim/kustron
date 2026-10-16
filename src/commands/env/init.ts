@@ -54,7 +54,8 @@ export async function envInit(): Promise<void> {
     placeholder: 'myapp',
     validate: (value) => {
       if (!value) return 'Name is required';
-      if (!/^[a-z0-9-]+$/.test(value)) return 'Use lowercase letters, numbers, and hyphens';
+      if (!/^[a-z0-9-]+$/.test(value))
+        return 'Use lowercase letters, numbers, and hyphens';
     },
   });
   if (isCancel(name)) {

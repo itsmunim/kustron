@@ -105,9 +105,15 @@ export async function exec(
       command?: string;
       exitCode?: number;
     };
-    const stdout = verboseMode ? captureStdout.join('') : String(ex.stdout ?? '');
-    const stderr = verboseMode ? captureStderr.join('') : String(ex.stderr ?? '');
-    const message = String(stderr ?? stdout ?? ex.message ?? t('errors.unknownError'));
+    const stdout = verboseMode
+      ? captureStdout.join('')
+      : String(ex.stdout ?? '');
+    const stderr = verboseMode
+      ? captureStderr.join('')
+      : String(ex.stderr ?? '');
+    const message = String(
+      stderr ?? stdout ?? ex.message ?? t('errors.unknownError'),
+    );
     // Sanitize before logging so passwords don't leak
     error(
       t('errors.commandFailed', {

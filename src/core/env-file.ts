@@ -128,7 +128,7 @@ const envFileSchema = z
   })
   .strict();
 
-function validatePortPlaceholders(envFile: EnvFile): void {
+export function validatePortPlaceholders(envFile: EnvFile): void {
   for (const app of envFile.apps) {
     if (app.port === 'PORT') {
       throw new Error(

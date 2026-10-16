@@ -73,7 +73,7 @@ async function isInstalled(command: string): Promise<boolean> {
 async function isRuntimeInstalled(): Promise<boolean> {
   // container-runtime is satisfied by either podman or docker (or the
   // podman-docker shim that provides a docker binary)
-  return isInstalled('podman') || isInstalled('docker');
+  return (await isInstalled('podman')) || (await isInstalled('docker'));
 }
 
 export async function checkDependency(

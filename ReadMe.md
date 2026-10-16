@@ -1,7 +1,6 @@
 # Kustron
-# Kustron
 
-![Coverage](https://img.shields.io/badge/coverage-19%25-yellow)
+![Coverage](https://img.shields.io/badge/coverage-51%25-green)
 [![CI](https://github.com/dibosh/kustron/actions/workflows/ci.yml/badge.svg)](https://github.com/dibosh/kustron/actions/workflows/ci.yml)
 
 [itsmunim.github.io/kustron](https://itsmunim.github.io/kustron)
@@ -34,16 +33,6 @@ Think docker-compose, but for Kubernetes. You define your apps in a `kustron-env
 - **Reusable components.** A `components:` block pulls in a `Kustronfile` (local dir or git URL) with inputs, outputs, and apps. Values wire together via interpolation: `${component.bootstrap}`, `${app.endpoint}`.
 - **One command to see everything.** `kustron env status` lists every app, its readiness, and its URL in a table. No kubectl required.
 - **App-level lifecycle.** Stop, start, and stream logs for individual apps without tearing down the whole cluster.
-- **Deterministic, idempotent `env up`.** Image tags are content hashes, not timestamps. Re-running `env up` with no changes is a fast no-op: same tag, build skipped, manifests unchanged. A source edit rebuilds and rolls out only what changed.
-- **Healthchecks that match the protocol.** `healthcheck: /health` does an HTTP GET, `healthcheck: tcp` probes the port, omit it for no probes. TCP-only services (redis, postgres, DynamoDB) stop stalling rollouts.
-- **Split build from deploy.** A built image can feed a Helm chart (via `helm.imageValues`) or the built-in template, whichever the app needs.
-- **Deploy ordering.** `dependsOn` deploys apps in topological order, with three readiness modes per dependency: `rollout`, `established` (CRDs), or a custom `command`. Plus `hooks.pre` / `hooks.post` for seeding, migrations, and side effects.
-- **Escape hatches.** `command`, `args`, `resources` as first-class fields, and a generic `patch` that deep-merges onto the generated Deployment. One missing field no longer means leaving Kustron.
-- **Helm done right.** Nested `values` (passed as a real `--values` file), extra `valuesFiles`, local chart paths, OCI charts, and `helm.imageValues` to inject a built image.
-- **Private registries.** Per-app `registry` creds create and attach an imagePullSecret, plus `kustron registry login` and `kustron registry import` for local images.
-- **Per-app namespaces & instances.** Deploy the same app twice (`kafka-primary`, `kafka-secondary`) or into its own namespace.
-- **Reusable components.** A `components:` block pulls in a `Kustronfile` (local dir or git URL) with inputs, outputs, and apps. Values wire together via interpolation: `${component.bootstrap}`, `${app.endpoint}`.
-- **One command to see everything.** `kustron env status` lists every app, its readiness, and its URL in a table. No kubectl required.
 
 ## Use cases: where Kustron shines
 
@@ -181,7 +170,6 @@ The one file that defines everything. Like `docker-compose.yml`, but it targets 
 config:
   namespace: kustron-env      # default; all apps share this namespace
   clusterName: myapp          # optional; default is 'kustron'
-  namespace: kustron-env   # default; all apps share this namespace
 
 apps:
   # --- Type 1: Source build ---
@@ -286,13 +274,6 @@ apps:
 - **YAML-only changes** (env vars, replicas, exposure, secrets) are picked up by `kubectl apply` even when the image tag is unchanged. Removed apps are cleaned up automatically.
 - **Pruning:** apps removed from `kustron-env.yaml` since the last `env up` are deleted from the cluster automatically.
 
-`kustron env up` reconciles your local environment to the desired state in `kustron-env.yaml`. Running it repeatedly is a no-op when nothing changed:
-
-- **Cluster:** if `kustron` already exists and is running, it is not touched. If it exists but is stopped, it is started. If it does not exist, it is created.
-- **kubectl access:** the k3d kubeconfig and context are merged every run (idempotent), so `env up` never fails on a missing context.
-- **Registry:** the in-cluster registry is ensured every run; a pre-existing cluster without one is wired up automatically.
-- **Images:** source apps are tagged with a **content hash** (`<registry>/<app>:<sha>`), not a timestamp. Unchanged source produces the same tag, the build is skipped, and the deployment manifest applies as a no-op. Change the source and the next `env up` builds and rolls out a new version.
-- **YAML-only changes** (env vars, replicas, exposure) are picked up by `kubectl apply` even when the image tag is unchanged.
 
 **Tip:** After editing `kustron-env.yaml` (manually or via `apps add/remove`), run `kustron env reload` to apply changes.
 
@@ -372,11 +353,6 @@ Exposed apps get a `NodePort` service on the k3d node, so the VM's public IP wor
 4. **Deploy:** Kubernetes manifests (ConfigMap, Secret, Deployment, Service, HPA) are generated and applied. Every kubectl/helm call uses `--context=k3d-<clusterName>`.
 5. **Expose:** Apps with `exposed: true` get a `NodePort` service reachable at `http://localhost:<nodePort>`.
 
-1. **Cluster:** k3d creates a lightweight local Kubernetes cluster with a built-in container registry
-2. **Build:** Source apps are built with the detected container runtime (if `Dockerfile` exists) or Railpack (fallback)
-3. **Push:** Images are pushed to the local registry (`localhost:5000`), referenced in-cluster as `kustron-registry:5000`
-4. **Deploy:** Kubernetes manifests (ConfigMap, Deployment, Service, HPA) are generated and applied
-5. **Expose:** Apps with `exposed: true` get a `NodePort` service reachable at the k3d node IP
 
 ---
 

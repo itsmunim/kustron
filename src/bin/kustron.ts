@@ -152,7 +152,11 @@ app
   .command('forward <name> <localPort> [remotePort]')
   .description(t('cli.appForwardDescription'))
   .action(async (name, localPort, remotePort) => {
-    await appForward(name, parseInt(localPort, 10), remotePort ? parseInt(remotePort, 10) : undefined);
+    await appForward(
+      name,
+      parseInt(localPort, 10),
+      remotePort ? parseInt(remotePort, 10) : undefined,
+    );
   });
 
 const apps = program.command('apps').description(t('cli.appsDescription'));

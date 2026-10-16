@@ -17,7 +17,6 @@ import {
   buildConfigMap,
   buildSecret,
   buildDeployment,
-  buildDeployment,
   buildService,
   buildHPA,
   assembleManifests,
@@ -32,7 +31,7 @@ import {getDeployedImage} from './apply.js';
 import {checkDependency} from '../utils/checks.js';
 import {info, success, warn, step, error} from '../utils/logger.js';
 import {t} from '../utils/i18n.js';
-import type {AppEntry, DeployContext} from '../types/index.js';
+import {AppEntry, DeployContext} from '../types/index.js';
 import {
   topoSortApps,
   appNamespace,
@@ -256,7 +255,12 @@ async function deployHelmApp(
   url: string | null,
 ): Promise<DeployResult> {
   info(`[${app.name}] ${t('deploy.installingHelm')}`);
-  await helmInstall(app, ctx.namespace, ctx.clusterName, appDeploymentName(app));
+  await helmInstall(
+    app,
+    ctx.namespace,
+    ctx.clusterName,
+    appDeploymentName(app),
+  );
   info(`[${app.name}] ${t('deploy.helmInstalled')}`);
 
   let finalUrl = url;

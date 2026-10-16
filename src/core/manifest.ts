@@ -29,9 +29,6 @@ export interface ManifestOptions {
   ha?: boolean;
   /** imagePullSecrets attached to the Deployment, needed for private registries (idea 6). */
   imagePullSecrets?: string[];
-  patch?: Record<string, unknown>;
-  /** imagePullSecrets attached to the Deployment, needed for private registries (idea 6). */
-  imagePullSecrets?: string[];
 }
 
 function managedLabels(name: string): Record<string, string> {

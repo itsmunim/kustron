@@ -37,8 +37,15 @@ export async function appForward(
     return;
   }
 
-  const targetPort = remotePort ?? (typeof app.port === 'number' ? app.port : 80);
-  step(t('app.forward', {name: appName, local: String(localPort), remote: String(targetPort)}));
+  const targetPort =
+    remotePort ?? (typeof app.port === 'number' ? app.port : 80);
+  step(
+    t('app.forward', {
+      name: appName,
+      local: String(localPort),
+      remote: String(targetPort),
+    }),
+  );
 
   await exec('kubectl', [
     'port-forward',
