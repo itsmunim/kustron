@@ -1064,28 +1064,32 @@
     <div class="section-inner">
       <div class="section-label">Use kustron for</div>
       <h2>Where it takes an hour, Kustron takes one command.</h2>
-      <p class="section-sub">Five situations where the environment is the whole job.</p>
+      <p class="section-sub">Six situations where the environment is the whole job.</p>
 
       <div class="use-grid">
         <div class="use-item">
-          <h3>Full-stack local dev</h3>
-          <p>App, database, cache, object store, workers. Everything running together, reachable by name, <code>env up</code> when you start work.</p>
+          <h3>Full-stack local development</h3>
+          <p>Frontend, API, database, cache, workers — everything running together in one namespace, reachable by name. <code>env watch</code> auto-redeploys on every save.</p>
         </div>
         <div class="use-item">
-          <h3>Sandboxes on demand</h3>
-          <p>An isolated stack for a demo, a test, or a brief experiment. <code>env destroy</code> when it's done and nothing lingers.</p>
+          <h3>Onboarding new team members</h3>
+          <p>The <code>kustron-env.yaml</code> is the environment documentation. Clone the repo, run <code>env up</code>, and you're productive in minutes instead of hours.</p>
         </div>
         <div class="use-item">
-          <h3>A dev box in the cloud</h3>
-          <p>The same <code>kustron-env.yaml</code> on a cheap Linux VM gives you an identical environment on the real internet. Demos, staging, workshops.</p>
+          <h3>Reproducible environments anywhere</h3>
+          <p>The same file gives you an identical stack on your laptop, a teammate's machine, or a $6/month cloud VM. No "works on my machine."</p>
         </div>
         <div class="use-item">
-          <h3>Prod-like parity</h3>
-          <p>Helm charts, private registries, per-app namespaces, deploy ordering. What production runs, runs the same way locally.</p>
+          <h3>Production parity before shipping</h3>
+          <p>Test Helm charts, private registry auth, deploy ordering with <code>dependsOn</code>, HPA autoscaling, and namespace isolation locally.</p>
         </div>
         <div class="use-item">
-          <h3>Agent-friendly iteration</h3>
-          <p>An agent scaffolds the code; Kustron supplies a reproducible environment to run and test it in, and tears it down after.</p>
+          <h3>Ephemeral sandboxes and demos</h3>
+          <p>Spin up an isolated stack for a spike, a customer demo, or integration testing. <code>env destroy</code> when done and nothing lingers.</p>
+        </div>
+        <div class="use-item">
+          <h3>Safe experimentation</h3>
+          <p>Kustron never calls <code>kubectl config use-context</code>. Every command uses <code>--context=k3d-&lt;clusterName&gt;</code>, so your production clusters stay untouched.</p>
         </div>
       </div>
     </div>
@@ -1245,12 +1249,10 @@
           <td><code class="cmd-code"><span class="kw">kustron</span> env reload</code></td>
           <td><span class="cmd-desc">Stop all apps and bring them back up. Run this after changing
               <code>kustron-env.yaml</code>. The cluster itself is not destroyed.</span></td>
-          <td><span class="cmd-desc">Tear down and rebuild the entire environment. Run this after changing
+        </tr>
         <tr>
           <td><code class="cmd-code"><span class="kw">kustron</span> env watch</code></td>
           <td><span class="cmd-desc">Watch local source directories and auto-redeploy on file changes.</span></td>
-        </tr>
-              <code>kustron-env.yaml</code>.</span></td>
         </tr>
         <tr>
           <td><code class="cmd-code"><span class="kw">kustron</span> env stop</code></td>
@@ -1283,6 +1285,8 @@
         </tr>
         <tr>
           <td><code class="cmd-code"><span class="kw">kustron</span> app logs <span class="arg">&lt;name&gt;</span> <span class="flag">[-f]</span></code></td>
+          <td><span class="cmd-desc">Stream logs for a single app. Use <code>-f</code> to follow, <code>--tail N</code> for last N lines.</span></td>
+        </tr>
         <tr>
           <td><code class="cmd-code"><span class="kw">kustron</span> app exec <span class="arg">&lt;name&gt;</span> <span class="flag">[command...]</span></code></td>
           <td><span class="cmd-desc">Run a command inside a running app container. Defaults to <code>sh</code> if no command given.</span></td>
@@ -1291,8 +1295,6 @@
           <td><code class="cmd-code"><span class="kw">kustron</span> app forward <span class="arg">&lt;name&gt;</span> <span class="arg">&lt;localPort&gt;</span> <span class="flag">[remotePort]</span></code></td>
           <td><span class="cmd-desc">Forward a local port to an app. Useful for services that are not exposed via NodePort.</span></td>
         </tr>
-          <td><span class="cmd-desc">Stream logs for a single app. Use <code>-f</code> to follow, <code>--tail N</code> for last N lines.</span></td>
-        <tr>
           <td><code class="cmd-code"><span class="kw">kustron</span> env show-spec</code></td>
           <td><span class="cmd-desc">Pretty-print the full <code>kustron-env.yaml</code> schema with annotations.</span>
           </td>
@@ -1556,7 +1558,6 @@
         <div class="faq-item">
           <h4>Will Kustron change my kubectl context?</h4>
           <p>No. Kustron never calls <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">kubectl config use-context</code>. Every kubectl and helm command includes <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">--context=k3d-&lt;clusterName&gt;</code> (or <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">--kube-context</code> for helm), so your global kubectl context is never touched. You can safely run <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">kustron env up</code> while working with production clusters in other terminals.</p>
-          <p>A k3d cluster wants around 4GB in the podman VM. On macOS: <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">podman machine init --rootful --cpus 4 --memory 4096</code> for a new machine, or <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">podman machine set --memory 4096</code> + restart for an existing one.</p>
         </div>
       </div>
     </div>
