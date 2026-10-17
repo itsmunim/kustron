@@ -1273,7 +1273,8 @@
                 repo: https://prometheus-community.github.io/helm-charts
                 version: "45.0.0"
                 values:
-                  grafana.enabled: "true"
+                  grafana:
+                    enabled: true
           </code>
         </pre>
         </div>
@@ -1570,6 +1571,35 @@
                 ><strong>Deprecated.</strong> Destroys the entire cluster. Use
                 <code>env stop</code> to pause, or <code>env destroy</code> to
                 explicitly delete everything.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" class="cmd-group">env</td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> env show-spec</code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Pretty-print the full <code>kustron-env.yaml</code> schema with
+                annotations.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> env status</code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Show the cluster and every app's state (Running, image pull
+                failed, crash loop) in one table.</span
               >
             </td>
           </tr>
@@ -2037,7 +2067,7 @@
                   "
                   >redis</code
                 >
-                stay internal. Never them.</span
+                stay internal. Never expose them.</span
               >
             </div>
           </div>

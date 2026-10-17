@@ -1,449 +1,512 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="google-site-verification" content="lcQ1Xwf6F07fGqKHd8tK9favfrdSmfv6t8-G1OJ4IA8" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="google-site-verification"
+      content="lcQ1Xwf6F07fGqKHd8tK9favfrdSmfv6t8-G1OJ4IA8"
+    />
 
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NY00GC92QL"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-NY00GC92QL"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
 
-    gtag('config', 'G-NY00GC92QL');
-  </script>
+      gtag('config', 'G-NY00GC92QL');
+    </script>
 
-  <title>Features & Examples — Kustron</title>
-  <link rel="canonical" href="https://itsmunim.github.io/kustron/features.html">
-  <meta name="description"
-    content="Every Kustron feature with example use cases, plus a full kustron-env.yaml showing them all working together.">
-  <meta name="theme-color" content="#F1F4FA">
+    <title>Features & Examples — Kustron</title>
+    <link
+      rel="canonical"
+      href="https://itsmunim.github.io/kustron/features.html"
+    />
+    <meta
+      name="description"
+      content="Every Kustron feature with example use cases, plus a full kustron-env.yaml showing them all working together."
+    />
+    <meta name="theme-color" content="#F1F4FA" />
 
-  <!-- Open Graph -->
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Kustron">
-  <meta property="og:url" content="https://itsmunim.github.io/kustron/features.html">
-  <meta property="og:title" content="Features & Examples — Kustron">
-  <meta property="og:description"
-    content="Every Kustron feature with example use cases, plus a full kustron-env.yaml showing them all working together.">
-  <meta property="og:image" content="https://itsmunim.github.io/kustron/og-preview.jpg">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Kustron — Features and examples">
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Kustron" />
+    <meta
+      property="og:url"
+      content="https://itsmunim.github.io/kustron/features.html"
+    />
+    <meta property="og:title" content="Features & Examples — Kustron" />
+    <meta
+      property="og:description"
+      content="Every Kustron feature with example use cases, plus a full kustron-env.yaml showing them all working together."
+    />
+    <meta
+      property="og:image"
+      content="https://itsmunim.github.io/kustron/og-preview.jpg"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Kustron — Features and examples" />
 
-  <!-- Twitter / X -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Features & Examples — Kustron">
-  <meta name="twitter:description"
-    content="Every Kustron feature with example use cases, plus a full kustron-env.yaml showing them all working together.">
-  <meta name="twitter:image" content="https://itsmunim.github.io/kustron/og-preview.jpg">
-  <meta name="twitter:image:alt" content="Kustron — Features and examples">
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Features & Examples — Kustron" />
+    <meta
+      name="twitter:description"
+      content="Every Kustron feature with example use cases, plus a full kustron-env.yaml showing them all working together."
+    />
+    <meta
+      name="twitter:image"
+      content="https://itsmunim.github.io/kustron/og-preview.jpg"
+    />
+    <meta name="twitter:image:alt" content="Kustron — Features and examples" />
 
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #f1f4fa;
-      --surface: #ffffff;
-      --surface2: #e5eaf3;
-      --border: #c9d4e6;
-      --text: #16233c;
-      --muted: #5b6a82;
-      --accent: #1d4ed8;
-      --accent-dim: rgba(29, 78, 216, .08);
-      --green: #2e7d4f;
-      --amber: #a97f1f;
-      --radius: 10px;
-    }
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f1f4fa;
+        --surface: #ffffff;
+        --surface2: #e5eaf3;
+        --border: #c9d4e6;
+        --text: #16233c;
+        --muted: #5b6a82;
+        --accent: #1d4ed8;
+        --accent-dim: rgba(29, 78, 216, 0.08);
+        --green: #2e7d4f;
+        --amber: #a97f1f;
+        --radius: 10px;
+      }
 
-    html {
-      scroll-behavior: smooth;
-    }
+      html {
+        scroll-behavior: smooth;
+      }
 
-    body {
-      background-color: var(--bg);
-      background-image:
-        linear-gradient(to right, rgba(22, 35, 60, .028) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(22, 35, 60, .028) 1px, transparent 1px);
-      background-size: 28px 28px;
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      font-size: 16px;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-      margin: 0;
-    }
+      body {
+        background-color: var(--bg);
+        background-image:
+          linear-gradient(
+            to right,
+            rgba(22, 35, 60, 0.028) 1px,
+            transparent 1px
+          ),
+          linear-gradient(
+            to bottom,
+            rgba(22, 35, 60, 0.028) 1px,
+            transparent 1px
+          );
+        background-size: 28px 28px;
+        color: var(--text);
+        font-family: 'Inter', sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        margin: 0;
+      }
 
-    a {
-      color: var(--accent);
-      text-decoration: none;
-    }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
 
-    a:hover {
-      text-decoration: underline;
-    }
+      a:hover {
+        text-decoration: underline;
+      }
 
-    /* ── Nav ── */
-    nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(241, 244, 250, .85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px;
-    }
-
-    .nav-inner {
-      max-width: 980px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 56px;
-    }
-
-    .nav-logo {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 18px;
-      font-weight: 500;
-      color: var(--text);
-      letter-spacing: -0.5px;
-    }
-
-    .nav-logo span {
-      color: var(--accent);
-    }
-
-    .nav-logo a {
-      color: inherit;
-    }
-
-    .nav-logo a:hover {
-      text-decoration: none;
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 14px;
-      border-radius: 7px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background .15s, border-color .15s;
-      border: 1px solid transparent;
-    }
-
-    .btn-outline {
-      background: transparent;
-      border-color: var(--border);
-      color: var(--text);
-    }
-
-    .btn-outline:hover {
-      background: var(--surface2);
-      border-color: var(--muted);
-      text-decoration: none;
-    }
-
-    /* ── Content ── */
-    .wrap {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-
-    .page-head {
-      padding: 64px 0 48px;
-      text-align: center;
-    }
-
-    .page-head .section-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      font-weight: 500;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 12px;
-    }
-
-    .page-head h1 {
-      font-size: clamp(30px, 5vw, 48px);
-      font-weight: 700;
-      letter-spacing: -1px;
-      margin: 0 0 12px;
-    }
-
-    .page-head p {
-      color: var(--muted);
-      max-width: 560px;
-      margin: 0 auto;
-    }
-
-    .divider {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 0;
-    }
-
-    .feature {
-      padding: 56px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .feature:last-of-type {
-      border-bottom: none;
-    }
-
-    .feature-inner {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 48px;
-      align-items: start;
-    }
-
-    .feature-text .section-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      font-weight: 500;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 10px;
-    }
-
-    .feature-text h3 {
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      margin: 0 0 10px;
-    }
-
-    .feature-text p {
-      color: var(--muted);
-      font-size: 15px;
-      margin: 0 0 14px;
-    }
-
-    .feature-text .feature-meta {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      color: var(--text);
-      background: var(--accent-dim);
-      border: 1px solid rgba(29, 78, 216, .22);
-      border-radius: 5px;
-      padding: 2px 8px;
-      display: inline-block;
-    }
-
-    .yaml-window {
-      background: #10193a;
-      border: 1px solid #22315c;
-      border-radius: var(--radius);
-      overflow: hidden;
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    .yaml-titlebar {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 10px 14px;
-      background: #0d1529;
-      border-bottom: 1px solid #22315c;
-    }
-
-    .dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-    }
-    .dot-red { background: #ff5f57; }
-    .dot-yellow { background: #febc2e; }
-    .dot-green { background: #28c840; }
-
-    .yaml-filename {
-      margin-left: 8px;
-      font-size: 12px;
-      color: #93a3c8;
-    }
-
-    .yaml-window pre {
-      margin: 0;
-      padding: 18px 20px;
-      overflow-x: auto;
-    }
-
-    .yaml-window code {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      line-height: 1.6;
-      color: #e3e9f6;
-    }
-
-    .yaml-window code .c {
-      color: #5b6a82;
-    }
-
-    /* Full example section */
-    .full-example {
-      padding: 64px 0;
-    }
-
-    .full-example h2 {
-      font-size: 28px;
-      letter-spacing: -0.5px;
-      text-align: center;
-      margin-bottom: 12px;
-    }
-
-    .full-example > .wrap > p {
-      color: var(--muted);
-      text-align: center;
-      max-width: 600px;
-      margin: 0 auto 40px;
-    }
-
-    .full-example .yaml-window pre {
-      max-height: 640px;
-      overflow-y: auto;
-    }
-
-    .back-cta {
-      text-align: center;
-      padding: 48px 0 64px;
-    }
-
-    .back-cta .btn {
-      font-size: 15px;
-      padding: 10px 22px;
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-      font-weight: 600;
-    }
-
-    .btn-primary:hover {
-      background: #1d4ed8;
-      text-decoration: none;
-    }
-
-    /* ── Footer ── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 24px 0;
-    }
-
-    .footer-inner {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 0 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 14px;
-      color: var(--muted);
-    }
-
-    .footer-right {
-      display: flex;
-      gap: 16px;
-    }
-
-    .footer-right a {
-      color: var(--muted);
-    }
-
-    .footer-right a:hover {
-      color: var(--accent);
-      text-decoration: none;
-    }
-
-    /* ── Responsive ── */
-    @media (max-width: 760px) {
-      .feature-inner {
-        grid-template-columns: 1fr;
-        gap: 24px;
+      /* ── Nav ── */
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(241, 244, 250, 0.85);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+        padding: 0 24px;
       }
 
       .nav-inner {
-        padding: 0 4px;
+        max-width: 980px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 56px;
+      }
+
+      .nav-logo {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 18px;
+        font-weight: 500;
+        color: var(--text);
+        letter-spacing: -0.5px;
+      }
+
+      .nav-logo span {
+        color: var(--accent);
+      }
+
+      .nav-logo a {
+        color: inherit;
+      }
+
+      .nav-logo a:hover {
+        text-decoration: none;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 7px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          border-color 0.15s;
+        border: 1px solid transparent;
+      }
+
+      .btn-outline {
+        background: transparent;
+        border-color: var(--border);
+        color: var(--text);
+      }
+
+      .btn-outline:hover {
+        background: var(--surface2);
+        border-color: var(--muted);
+        text-decoration: none;
+      }
+
+      /* ── Content ── */
+      .wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+
+      .page-head {
+        padding: 64px 0 48px;
+        text-align: center;
+      }
+
+      .page-head .section-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 12px;
+      }
+
+      .page-head h1 {
+        font-size: clamp(30px, 5vw, 48px);
+        font-weight: 700;
+        letter-spacing: -1px;
+        margin: 0 0 12px;
+      }
+
+      .page-head p {
+        color: var(--muted);
+        max-width: 560px;
+        margin: 0 auto;
+      }
+
+      .divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 0;
+      }
+
+      .feature {
+        padding: 56px 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .feature:last-of-type {
+        border-bottom: none;
+      }
+
+      .feature-inner {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 48px;
+        align-items: start;
+      }
+
+      .feature-text .section-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 10px;
+      }
+
+      .feature-text h3 {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        margin: 0 0 10px;
+      }
+
+      .feature-text p {
+        color: var(--muted);
+        font-size: 15px;
+        margin: 0 0 14px;
+      }
+
+      .feature-text .feature-meta {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        color: var(--text);
+        background: var(--accent-dim);
+        border: 1px solid rgba(29, 78, 216, 0.22);
+        border-radius: 5px;
+        padding: 2px 8px;
+        display: inline-block;
+      }
+
+      .yaml-window {
+        background: #10193a;
+        border: 1px solid #22315c;
+        border-radius: var(--radius);
+        overflow: hidden;
+        font-family: 'JetBrains Mono', monospace;
+      }
+
+      .yaml-titlebar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 14px;
+        background: #0d1529;
+        border-bottom: 1px solid #22315c;
+      }
+
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+      .dot-red {
+        background: #ff5f57;
+      }
+      .dot-yellow {
+        background: #febc2e;
+      }
+      .dot-green {
+        background: #28c840;
+      }
+
+      .yaml-filename {
+        margin-left: 8px;
+        font-size: 12px;
+        color: #93a3c8;
+      }
+
+      .yaml-window pre {
+        margin: 0;
+        padding: 18px 20px;
+        overflow-x: auto;
+      }
+
+      .yaml-window code {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        line-height: 1.6;
+        color: #e3e9f6;
+      }
+
+      .yaml-window code .c {
+        color: #5b6a82;
+      }
+
+      /* Full example section */
+      .full-example {
+        padding: 64px 0;
+      }
+
+      .full-example h2 {
+        font-size: 28px;
+        letter-spacing: -0.5px;
+        text-align: center;
+        margin-bottom: 12px;
+      }
+
+      .full-example > .wrap > p {
+        color: var(--muted);
+        text-align: center;
+        max-width: 600px;
+        margin: 0 auto 40px;
+      }
+
+      .full-example .yaml-window pre {
+        max-height: 640px;
+        overflow-y: auto;
+      }
+
+      .back-cta {
+        text-align: center;
+        padding: 48px 0 64px;
+      }
+
+      .back-cta .btn {
+        font-size: 15px;
+        padding: 10px 22px;
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+        font-weight: 600;
+      }
+
+      .btn-primary:hover {
+        background: #1d4ed8;
+        text-decoration: none;
+      }
+
+      /* ── Footer ── */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 24px 0;
       }
 
       .footer-inner {
-        flex-direction: column;
-        gap: 12px;
-        align-items: flex-start;
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 0 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 14px;
+        color: var(--muted);
       }
-    }
 
-    @media (max-width: 600px) {
-      .page-head {
-        padding: 48px 0 36px;
+      .footer-right {
+        display: flex;
+        gap: 16px;
       }
 
-      .nav-links .btn-outline {
-        padding: 7px 10px;
-        font-size: 13px;
+      .footer-right a {
+        color: var(--muted);
       }
-    }
-  </style>
-</head>
-<body>
 
-  <!-- Nav -->
-  <nav>
-    <div class="nav-inner">
-      <div class="nav-logo"><a href="index.html"><span>k</span>ustron</a></div>
-      <div class="nav-links">
-        <a href="index.html" class="btn btn-outline">Home</a>
-        <a href="https://github.com/itsmunim/kustron" class="btn btn-outline" target="_blank" rel="noopener">GitHub</a>
-      </div>
-    </div>
-  </nav>
+      .footer-right a:hover {
+        color: var(--accent);
+        text-decoration: none;
+      }
 
-  <!-- Page head -->
-  <div class="page-head">
-    <div class="wrap">
-      <div class="section-label">Features &amp; examples</div>
-      <h1>Everything Kustron does,<br>with an example each.</h1>
-      <p>Every feature, what it's for, and how it looks in <code>kustron-env.yaml</code>. Scroll to the bottom for a full worked example that uses them all at once.</p>
-    </div>
-  </div>
+      /* ── Responsive ── */
+      @media (max-width: 760px) {
+        .feature-inner {
+          grid-template-columns: 1fr;
+          gap: 24px;
+        }
 
-  <hr class="divider">
+        .nav-inner {
+          padding: 0 4px;
+        }
 
-  <div class="feature">
-    <div class="wrap feature-inner">
-      <div class="feature-text">
-        <h3>App types: source, image, helm</h3>
-        <p>Deploy from local source (uses your Dockerfile, or Railpack if there isn't one), pull any container image, or install a Helm chart. Mix all three in one environment.</p>
-        <span class="feature-meta">source: ./ &nbsp;·&nbsp; image: postgres:15 &nbsp;·&nbsp; helm: {chart: …}</span>
-      </div>
-      <div class="yaml-window">
-        <div class="yaml-titlebar">
-          <div class="dot dot-red"></div>
-          <div class="dot dot-yellow"></div>
-          <div class="dot dot-green"></div>
-          <span class="yaml-filename">kustron-env.yaml</span>
+        .footer-inner {
+          flex-direction: column;
+          gap: 12px;
+          align-items: flex-start;
+        }
+      }
+
+      @media (max-width: 600px) {
+        .page-head {
+          padding: 48px 0 36px;
+        }
+
+        .nav-links .btn-outline {
+          padding: 7px 10px;
+          font-size: 13px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Nav -->
+    <nav>
+      <div class="nav-inner">
+        <div class="nav-logo">
+          <a href="index.html"><span>k</span>ustron</a>
         </div>
-        <pre><code>apps:
+        <div class="nav-links">
+          <a href="index.html" class="btn btn-outline">Home</a>
+          <a
+            href="https://github.com/itsmunim/kustron"
+            class="btn btn-outline"
+            target="_blank"
+            rel="noopener"
+            >GitHub</a
+          >
+        </div>
+      </div>
+    </nav>
+
+    <!-- Page head -->
+    <div class="page-head">
+      <div class="wrap">
+        <div class="section-label">Features &amp; examples</div>
+        <h1>Everything Kustron does,<br />with an example each.</h1>
+        <p>
+          Every feature, what it's for, and how it looks in
+          <code>kustron-env.yaml</code>. Scroll to the bottom for a full worked
+          example that uses them all at once.
+        </p>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <div class="feature">
+      <div class="wrap feature-inner">
+        <div class="feature-text">
+          <h3>App types: source, image, helm</h3>
+          <p>
+            Deploy from local source (uses your Dockerfile, or Railpack if there
+            isn't one), pull any container image, or install a Helm chart. Mix
+            all three in one environment.
+          </p>
+          <span class="feature-meta"
+            >source: ./ &nbsp;·&nbsp; image: postgres:15 &nbsp;·&nbsp; helm:
+            {chart: …}</span
+          >
+        </div>
+        <div class="yaml-window">
+          <div class="yaml-titlebar">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+            <span class="yaml-filename">kustron-env.yaml</span>
+          </div>
+          <pre><code>apps:
   - name: api
     source: ./services/api      <span class="c"># Dockerfile, or railpack fallback</span>
     port: 3000
@@ -458,48 +521,58 @@
       chart: kube-prometheus-stack
       repo: https://prometheus-community.github.io/helm-charts
       version: "45.0.0"</code></pre>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="feature">
-    <div class="wrap feature-inner">
-      <div class="feature-text">
-        <h3>Deterministic, idempotent deploys</h3>
-        <p>Images are tagged with a content hash of the source, not a timestamp. Run <code>env up</code> twice with no changes and the second run is a fast no-op: same tag, build skipped, nothing redeployed.</p>
-        <span class="feature-meta">kustron env up → skip build</span>
-      </div>
-      <div class="yaml-window">
-        <div class="yaml-titlebar">
-          <div class="dot dot-red"></div>
-          <div class="dot dot-yellow"></div>
-          <div class="dot dot-green"></div>
-          <span class="yaml-filename">terminal</span>
+    <div class="feature">
+      <div class="wrap feature-inner">
+        <div class="feature-text">
+          <h3>Deterministic, idempotent deploys</h3>
+          <p>
+            Images are tagged with a content hash of the source, not a
+            timestamp. Run <code>env up</code> twice with no changes and the
+            second run is a fast no-op: same tag, build skipped, nothing
+            redeployed.
+          </p>
+          <span class="feature-meta">kustron env up → skip build</span>
         </div>
-        <pre><code>$ kustron env up
+        <div class="yaml-window">
+          <div class="yaml-titlebar">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+            <span class="yaml-filename">terminal</span>
+          </div>
+          <pre><code>$ kustron env up
 [api] source hash 9f3ab2c41e07
 [api] image 9f3ab2c41e07 already deployed — skipping build
 [api] Rollout complete
 Done.</code></pre>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="feature">
-    <div class="wrap feature-inner">
-      <div class="feature-text">
-        <h3>Healthchecks that match the protocol</h3>
-        <p>Point an HTTP probe at a TCP-only service like Redis or DynamoDB and rollout stalls forever. So healthchecks are opt-in: <code>tcp</code> for socket probes, a path for HTTP, or nothing for no probes at all.</p>
-        <span class="feature-meta">healthcheck: tcp | /health | none</span>
-      </div>
-      <div class="yaml-window">
-        <div class="yaml-titlebar">
-          <div class="dot dot-red"></div>
-          <div class="dot dot-yellow"></div>
-          <div class="dot dot-green"></div>
-          <span class="yaml-filename">kustron-env.yaml</span>
+    <div class="feature">
+      <div class="wrap feature-inner">
+        <div class="feature-text">
+          <h3>Healthchecks that match the protocol</h3>
+          <p>
+            Point an HTTP probe at a TCP-only service like Redis or DynamoDB and
+            rollout stalls forever. So healthchecks are opt-in:
+            <code>tcp</code> for socket probes, a path for HTTP, or nothing for
+            no probes at all.
+          </p>
+          <span class="feature-meta">healthcheck: tcp | /health | none</span>
         </div>
-        <pre><code>apps:
+        <div class="yaml-window">
+          <div class="yaml-titlebar">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+            <span class="yaml-filename">kustron-env.yaml</span>
+          </div>
+          <pre><code>apps:
   - name: my-api
     image: ghcr.io/me/api:1.0
     port: 80
@@ -509,25 +582,29 @@ Done.</code></pre>
     image: ghcr.io/itsmunim/kivo:v1.5.0
     port: 6379
     healthcheck: tcp        <span class="c"># TCP socket probe</span></code></pre>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="feature">
-    <div class="wrap feature-inner">
-      <div class="feature-text">
-        <h3>Split build from deploy</h3>
-        <p>Build an image from source, then deploy it anywhere: the built-in template, a raw Kustomize/manifests directory, or a Helm chart of your own via <code>helm.imageValues</code>.</p>
-        <span class="feature-meta">source + helm.imageValues</span>
-      </div>
-      <div class="yaml-window">
-        <div class="yaml-titlebar">
-          <div class="dot dot-red"></div>
-          <div class="dot dot-yellow"></div>
-          <div class="dot dot-green"></div>
-          <span class="yaml-filename">kustron-env.yaml</span>
+    <div class="feature">
+      <div class="wrap feature-inner">
+        <div class="feature-text">
+          <h3>Split build from deploy</h3>
+          <p>
+            Build an image from source, then deploy it anywhere: the built-in
+            template, a raw Kustomize/manifests directory, or a Helm chart of
+            your own via <code>helm.imageValues</code>.
+          </p>
+          <span class="feature-meta">source + helm.imageValues</span>
         </div>
-        <pre><code>apps:
+        <div class="yaml-window">
+          <div class="yaml-titlebar">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+            <span class="yaml-filename">kustron-env.yaml</span>
+          </div>
+          <pre><code>apps:
   - name: backend
     source: ./
     helm:
@@ -535,25 +612,30 @@ Done.</code></pre>
       imageValues:              <span class="c"># inject built image</span>
         repository: image.repository
         tag: image.tag</code></pre>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="feature">
-    <div class="wrap feature-inner">
-      <div class="feature-text">
-        <h3>Ordering: dependsOn + hooks</h3>
-        <p>Declare what must be ready before an app deploys, waiting on rollout, a CRD <code>established</code>, or a custom command. Push runs before deploy, and post hooks after — great for seeding a DB or applying CRDs.</p>
-        <span class="feature-meta">dependsOn + wait + hooks.pre/post</span>
-      </div>
-      <div class="yaml-window">
-        <div class="yaml-titlebar">
-          <div class="dot dot-red"></div>
-          <div class="dot dot-yellow"></div>
-          <div class="dot dot-green"></div>
-          <span class="yaml-filename">kustron-env.yaml</span>
+    <div class="feature">
+      <div class="wrap feature-inner">
+        <div class="feature-text">
+          <h3>Ordering: dependsOn + hooks</h3>
+          <p>
+            Declare what must be ready before an app deploys, waiting on
+            rollout, a CRD <code>established</code>, or a custom command. Push
+            runs before deploy, and post hooks after — great for seeding a DB or
+            applying CRDs.
+          </p>
+          <span class="feature-meta">dependsOn + wait + hooks.pre/post</span>
         </div>
-        <pre><code>apps:
+        <div class="yaml-window">
+          <div class="yaml-titlebar">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+            <span class="yaml-filename">kustron-env.yaml</span>
+          </div>
+          <pre><code>apps:
   - name: api
     image: ghcr.io/me/api:1.0
     port: 80
@@ -568,25 +650,30 @@ Done.</code></pre>
     hooks:
       post:
         - "kubectl exec deploy/postgres -- psql -c 'CREATE TABLE IF NOT EXISTS items(id text);'"</code></pre>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="feature">
-    <div class="wrap feature-inner">
-      <div class="feature-text">
-        <h3>Escape hatches: command, args, resources, patch</h3>
-        <p>First-class overrides for the container command, args, and resource limits. When you need more, <code>patch</code> deep-merges arbitrary keys onto the generated Deployment — no more "one missing field means leaving Kustron".</p>
-        <span class="feature-meta">command, args, resources, patch</span>
-      </div>
-      <div class="yaml-window">
-        <div class="yaml-titlebar">
-          <div class="dot dot-red"></div>
-          <div class="dot dot-yellow"></div>
-          <div class="dot dot-green"></div>
-          <span class="yaml-filename">kustron-env.yaml</span>
+    <div class="feature">
+      <div class="wrap feature-inner">
+        <div class="feature-text">
+          <h3>Escape hatches: command, args, resources, patch</h3>
+          <p>
+            First-class overrides for the container command, args, and resource
+            limits. When you need more, <code>patch</code> deep-merges arbitrary
+            keys onto the generated Deployment — no more "one missing field
+            means leaving Kustron".
+          </p>
+          <span class="feature-meta">command, args, resources, patch</span>
         </div>
-        <pre><code>apps:
+        <div class="yaml-window">
+          <div class="yaml-titlebar">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+            <span class="yaml-filename">kustron-env.yaml</span>
+          </div>
+          <pre><code>apps:
   - name: worker
     image: alpine:3
     port: 80
@@ -602,25 +689,31 @@ Done.</code></pre>
           metadata:
             annotations:
               team: platform</code></pre>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="feature">
-    <div class="wrap feature-inner">
-      <div class="feature-text">
-        <h3>Helm, done right</h3>
-        <p>Nested values pass through a real <code>--values</code> file (not flattened <code>--set</code> strings). Add extra local values files, or point at a local chart directory or an OCI registry chart.</p>
-        <span class="feature-meta">values, valuesFiles, ./charts, oci://</span>
-      </div>
-      <div class="yaml-window">
-        <div class="yaml-titlebar">
-          <div class="dot dot-red"></div>
-          <div class="dot dot-yellow"></div>
-          <div class="dot dot-green"></div>
-          <span class="yaml-filename">kustron-env.yaml</span>
+    <div class="feature">
+      <div class="wrap feature-inner">
+        <div class="feature-text">
+          <h3>Helm, done right</h3>
+          <p>
+            Nested values pass through a real <code>--values</code> file (not
+            flattened <code>--set</code> strings). Add extra local values files,
+            or point at a local chart directory or an OCI registry chart.
+          </p>
+          <span class="feature-meta"
+            >values, valuesFiles, ./charts, oci://</span
+          >
         </div>
-        <pre><code>apps:
+        <div class="yaml-window">
+          <div class="yaml-titlebar">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+            <span class="yaml-filename">kustron-env.yaml</span>
+          </div>
+          <pre><code>apps:
   - name: grafana
     helm:
       chart: ./charts/grafana     <span class="c"># or oci://ghcr.io/org/chart</span>
@@ -631,25 +724,29 @@ Done.</code></pre>
           enabled: false
       valuesFiles:
         - ./env-overrides.yaml</code></pre>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="feature">
-    <div class="wrap feature-inner">
-      <div class="feature-text">
-        <h3>Private registries</h3>
-        <p>Login to any container registry, have Kustron create an imagePullSecret per app and attach it to the Deployment, or import images directly into the cluster when push isn't an option.</p>
-        <span class="feature-meta">kustron registry login/import</span>
-      </div>
-      <div class="yaml-window">
-        <div class="yaml-titlebar">
-          <div class="dot dot-red"></div>
-          <div class="dot dot-yellow"></div>
-          <div class="dot dot-green"></div>
-          <span class="yaml-filename">kustron-env.yaml</span>
+    <div class="feature">
+      <div class="wrap feature-inner">
+        <div class="feature-text">
+          <h3>Private registries</h3>
+          <p>
+            Login to any container registry, have Kustron create an
+            imagePullSecret per app and attach it to the Deployment, or import
+            images directly into the cluster when push isn't an option.
+          </p>
+          <span class="feature-meta">kustron registry login/import</span>
         </div>
-        <pre><code>apps:
+        <div class="yaml-window">
+          <div class="yaml-titlebar">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+            <span class="yaml-filename">kustron-env.yaml</span>
+          </div>
+          <pre><code>apps:
   - name: private
     image: ghcr.io/me/private:1.0
     port: 80
@@ -657,25 +754,29 @@ Done.</code></pre>
       server: ghcr.io
       username: itsmunim
       password: ${GH_TOKEN}</code></pre>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="feature">
-    <div class="wrap feature-inner">
-      <div class="feature-text">
-        <h3>Instances & per-app namespaces</h3>
-        <p>Deploy the same app twice with different parameters using <code>instance</code>, or isolate apps into their own namespaces. Great for testing multi-tenant setups locally.</p>
-        <span class="feature-meta">instance + namespace</span>
-      </div>
-      <div class="yaml-window">
-        <div class="yaml-titlebar">
-          <div class="dot dot-red"></div>
-          <div class="dot dot-yellow"></div>
-          <div class="dot dot-green"></div>
-          <span class="yaml-filename">kustron-env.yaml</span>
+    <div class="feature">
+      <div class="wrap feature-inner">
+        <div class="feature-text">
+          <h3>Instances & per-app namespaces</h3>
+          <p>
+            Deploy the same app twice with different parameters using
+            <code>instance</code>, or isolate apps into their own namespaces.
+            Great for testing multi-tenant setups locally.
+          </p>
+          <span class="feature-meta">instance + namespace</span>
         </div>
-        <pre><code>apps:
+        <div class="yaml-window">
+          <div class="yaml-titlebar">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+            <span class="yaml-filename">kustron-env.yaml</span>
+          </div>
+          <pre><code>apps:
   - name: kafka
     instance: primary       <span class="c"># deploys as kafka-primary</span>
     namespace: region-a
@@ -687,25 +788,30 @@ Done.</code></pre>
     namespace: region-b
     image: bitnami/kafka:3
     port: 9092</code></pre>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="feature">
-    <div class="wrap feature-inner">
-      <div class="feature-text">
-        <h3>Reusable components</h3>
-        <p>Bundle apps into a component with a <code>Kustronfile</code> — inputs, outputs, and app entries. Reference it from any environment and wire its outputs into your apps with <code>${component.output}</code>.</p>
-        <span class="feature-meta">components + Kustronfile</span>
-      </div>
-      <div class="yaml-window">
-        <div class="yaml-titlebar">
-          <div class="dot dot-red"></div>
-          <div class="dot dot-yellow"></div>
-          <div class="dot dot-green"></div>
-          <span class="yaml-filename">kustron-env.yaml</span>
+    <div class="feature">
+      <div class="wrap feature-inner">
+        <div class="feature-text">
+          <h3>Reusable components</h3>
+          <p>
+            Bundle apps into a component with a <code>Kustronfile</code> —
+            inputs, outputs, and app entries. Reference it from any environment
+            and wire its outputs into your apps with
+            <code>${component.output}</code>.
+          </p>
+          <span class="feature-meta">components + Kustronfile</span>
         </div>
-        <pre><code>components:
+        <div class="yaml-window">
+          <div class="yaml-titlebar">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+            <span class="yaml-filename">kustron-env.yaml</span>
+          </div>
+          <pre><code>components:
   - name: hub-cache
     source: ./components/cache   <span class="c"># or a git URL</span>
     inputs:
@@ -717,25 +823,30 @@ apps:
     port: 3000
     env:
       CACHE_ENDPOINT: ${hub-cache.endpoint}</code></pre>
+        </div>
       </div>
     </div>
-  </div>
 
-  <hr class="divider">
+    <hr class="divider" />
 
-  <!-- Full example -->
-  <div class="full-example">
-    <div class="wrap">
-      <h2>Full worked example</h2>
-      <p>One environment that uses all of it: a source app with env interpolation, a welded <code>dependsOn</code> chain, a TCP-healthchecked cache, a component, an escape-hatched job, and a helm app.</p>
-      <div class="yaml-window">
-        <div class="yaml-titlebar">
-          <div class="dot dot-red"></div>
-          <div class="dot dot-yellow"></div>
-          <div class="dot dot-green"></div>
-          <span class="yaml-filename">kustron-env.yaml</span>
-        </div>
-        <pre><code>config:
+    <!-- Full example -->
+    <div class="full-example">
+      <div class="wrap">
+        <h2>Full worked example</h2>
+        <p>
+          One environment that uses all of it: a source app with env
+          interpolation, a welded <code>dependsOn</code> chain, a
+          TCP-healthchecked cache, a component, an escape-hatched job, and a
+          helm app.
+        </p>
+        <div class="yaml-window">
+          <div class="yaml-titlebar">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+            <span class="yaml-filename">kustron-env.yaml</span>
+          </div>
+          <pre><code>config:
   namespace: dev
 
 components:
@@ -806,26 +917,40 @@ apps:
 #
 # One command tears it all down:
 #   kustron env down</code></pre>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Back CTA -->
-  <div class="back-cta">
-    <a href="index.html" class="btn btn-primary">← Back to Kustron home</a>
-  </div>
-
-  <!-- Footer -->
-  <footer>
-    <div class="footer-inner">
-      <div class="footer-left">kustron &nbsp;·&nbsp; MIT License &nbsp;·&nbsp; by <a href="https://itsmunim.github.io" target="_blank" rel="noopener">Munim</a></div>
-      <div class="footer-right">
-        <a href="index.html">Home</a>
-        <a href="https://github.com/itsmunim/kustron" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://github.com/itsmunim/kustron/issues" target="_blank" rel="noopener">Issues</a>
-      </div>
+    <!-- Back CTA -->
+    <div class="back-cta">
+      <a href="index.html" class="btn btn-primary">← Back to Kustron home</a>
     </div>
-  </footer>
 
-</body>
+    <!-- Footer -->
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-left">
+          kustron &nbsp;·&nbsp; MIT License &nbsp;·&nbsp; by
+          <a href="https://itsmunim.github.io" target="_blank" rel="noopener"
+            >Munim</a
+          >
+        </div>
+        <div class="footer-right">
+          <a href="index.html">Home</a>
+          <a
+            href="https://github.com/itsmunim/kustron"
+            target="_blank"
+            rel="noopener"
+            >GitHub</a
+          >
+          <a
+            href="https://github.com/itsmunim/kustron/issues"
+            target="_blank"
+            rel="noopener"
+            >Issues</a
+          >
+        </div>
+      </div>
+    </footer>
+  </body>
 </html>
