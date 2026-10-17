@@ -12,11 +12,14 @@
     "test:unit": "vitest run test/unit --reporter=verbose",
     "test:e2e": "vitest run test/e2e --reporter=verbose",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "npm run build && changeset publish"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/dibosh/kustron.git"
+    "url": "git+https://github.com/itsmunim/kustron.git"
   },
   "keywords": [
     "kubernetes",
@@ -46,6 +49,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@changesets/cli": "^3.0.3",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.20.1",
     "@vitest/coverage-v8": "^5.0.4",
