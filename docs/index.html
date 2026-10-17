@@ -1,1117 +1,1248 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="google-site-verification" content="lcQ1Xwf6F07fGqKHd8tK9favfrdSmfv6t8-G1OJ4IA8" />
-
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NY00GC92QL"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
-
-    gtag('config', 'G-NY00GC92QL');
-  </script>
-  <title>Kustron | Local dev environment, up in minutes</title>
-  <link rel="canonical" href="https://itsmunim.github.io/kustron/">
-  <meta name="description"
-    content="Define your apps in one file. Kustron spins up a local Kubernetes cluster, builds, and deploys them. No Kubernetes knowledge required.">
-  <meta name="theme-color" content="#F1F4FA">
-
-  <!-- Open Graph (Facebook, LinkedIn, Discord, iMessage) -->
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Kustron">
-  <meta property="og:url" content="https://itsmunim.github.io/kustron/">
-  <meta property="og:title" content="Kustron | Local dev environment, up in minutes">
-  <meta property="og:description" content="Define your apps in one file. Kustron spins up a local Kubernetes cluster, builds, and deploys them. No Kubernetes knowledge required.">
-  <meta property="og:image" content="https://itsmunim.github.io/kustron/og-preview.jpg">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Kustron | Local dev environment, up in minutes">
-
-  <!-- Twitter / X -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Kustron | Local dev environment, up in minutes">
-  <meta name="twitter:description" content="Define your apps in one file. Kustron spins up a local Kubernetes cluster, builds, and deploys them. No Kubernetes knowledge required.">
-  <meta name="twitter:image" content="https://itsmunim.github.io/kustron/og-preview.jpg">
-  <meta name="twitter:image:alt" content="Kustron | Local dev environment, up in minutes">
-
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-
-  <!-- Structured data -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "Kustron",
-    "applicationCategory": "DeveloperApplication",
-    "operatingSystem": "macOS, Linux",
-    "description": "Define your apps in one file. Kustron spins up a local Kubernetes cluster, builds, and deploys them. No Kubernetes knowledge required.",
-    "url": "https://itsmunim.github.io/kustron/",
-    "image": "https://itsmunim.github.io/kustron/og-preview.jpg",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "USD"
-    },
-    "featureList": "Local Kubernetes clusters, deterministic redeploys, content-hash images, Podman and Docker support"
-  }
-  </script>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap"
-    rel="stylesheet">
-  <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark-dimmed.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
-  <style>
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    :root {
-      --bg: #f1f4fa;
-      --surface: #ffffff;
-      --surface2: #e5eaf3;
-      --border: #c9d4e6;
-      --text: #16233c;
-      --muted: #5b6a82;
-      --accent: #1d4ed8;
-      --accent-dim: rgba(29, 78, 216, .08);
-      --green: #2e7d4f;
-      --amber: #a97f1f;
-      --radius: 10px;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      background-color: var(--bg);
-      background-image:
-        linear-gradient(to right, rgba(22, 35, 60, .028) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(22, 35, 60, .028) 1px, transparent 1px);
-      background-size: 28px 28px;
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      font-size: 16px;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
-    /* ── Nav ── */
-    nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(241, 244, 250, .85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px;
-    }
-
-    .nav-inner {
-      max-width: 960px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 56px;
-    }
-
-    .nav-logo {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 18px;
-      font-weight: 500;
-      color: var(--text);
-      letter-spacing: -0.5px;
-    }
-
-    .nav-logo span {
-      color: var(--accent);
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 14px;
-      border-radius: 7px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background .15s, border-color .15s;
-      border: 1px solid transparent;
-    }
-
-    .btn-outline {
-      background: transparent;
-      border-color: var(--border);
-      color: var(--text);
-    }
-
-    .btn-outline:hover {
-      background: var(--surface2);
-      border-color: var(--muted);
-      text-decoration: none;
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-      font-weight: 600;
-    }
-
-    .btn-primary:hover {
-      background: #1d4ed8;
-      text-decoration: none;
-    }
-
-    /* ── Hero ── */
-    .hero {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 96px 24px 80px;
-      text-align: center;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--accent-dim);
-      border: 1px solid rgba(29, 78, 216, .28);
-      border-radius: 100px;
-      padding: 4px 12px;
-      font-size: 13px;
-      color: var(--accent);
-      margin-bottom: 32px;
-    }
-
-    .hero h1 {
-      font-size: clamp(36px, 6vw, 62px);
-      font-weight: 700;
-      line-height: 1.1;
-      letter-spacing: -2px;
-      margin-bottom: 20px;
-      background: linear-gradient(135deg, #16233c 30%, #1d4ed8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero p {
-      font-size: 18px;
-      color: var(--muted);
-      max-width: 520px;
-      margin: 0 auto 40px;
-
-    .hero-cta {
-      margin-top: -8px;
-    }
-
-    .hero-cta .btn {
-      font-size: 15px;
-      padding: 10px 22px;
-    }
-    }
-
-    .install-block {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      background: #10193a;
-      border: 1px solid #22315c;
-      border-radius: var(--radius);
-      padding: 12px 16px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 16px;
-      margin-bottom: 40px;
-    }
-
-    .install-block .prompt {
-      color: #93a3c8;
-      user-select: none;
-    }
-
-    .install-block code {
-      color: #e3e9f6;
-      background: none;
-      padding: 0;
-    }
-
-    .copy-btn {
-      background: var(--surface);
-      border: 1px solid #22315c;
-      color: var(--muted);
-      padding: 4px 10px;
-      border-radius: 5px;
-      font-size: 12px;
-      cursor: pointer;
-      font-family: 'Inter', sans-serif;
-      transition: all .15s;
-    }
-
-    .copy-btn:hover {
-      border-color: var(--muted);
-      color: var(--text);
-    }
-
-    .copy-btn.copied {
-      color: var(--green);
-      border-color: var(--green);
-    }
-
-
-    /* ── Sections ── */
-    section {
-      padding: 80px 24px;
-    }
-
-    .section-inner {
-      max-width: 960px;
-      margin: 0 auto;
-    }
-
-    .section-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      font-weight: 500;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 12px;
-    }
-
-    h2 {
-      font-size: clamp(24px, 4vw, 36px);
-      font-weight: 700;
-      letter-spacing: -1px;
-      margin-bottom: 12px;
-    }
-
-    .section-sub {
-      font-size: 17px;
-      color: var(--muted);
-      margin-bottom: 48px;
-    }
-
-    .yaml-window + .section-sub,
-    .install-block + .section-sub {
-      margin-top: 32px;
-    }
-
-    .section-sub a {
-      color: var(--accent);
-      font-weight: 500;
-    }
-
-    .divider {
-      border: none;
-      border-top: 1px solid var(--border);
-    }
-
-    /* ── Steps ── */
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-    }
-
-    .step {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-    }
-
-    .step-num {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: var(--accent);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      margin-bottom: 12px;
-    }
-
-    .step h3 {
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .step p {
-      font-size: 14px;
-      color: var(--muted);
-      margin-bottom: 14px;
-    }
-
-    .step-cmd {
-      margin-top: auto;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      color: #e3e9f6;
-      background: #10193a;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 13px;
-      color: #e3e9f6;
-      background: #10193a;
-      padding: 8px 12px;
-      border-radius: 6px;
-      border: 1px solid #22315c;
-    }
-
-    .step-cmd span {
-      color: #93a3c8;
-    }
-
-    /* ── YAML block ── */
-    .yaml-window {
-      background: #10193a;
-      border: 1px solid #22315c;
-      border-radius: var(--radius);
-      overflow: hidden;
-    }
-
-    .yaml-titlebar {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 10px 14px;
-      background: #0d1529;
-      border-bottom: 1px solid #22315c;
-    }
-
-    .dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-    }
-
-    .dot-red {
-      background: #ff5f57;
-    }
-
-    .dot-yellow {
-      background: #febc2e;
-    }
-
-    .dot-green {
-      background: #28c840;
-    }
-
-    .yaml-filename {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      color: #93a3c8;
-      margin-left: 8px;
-    }
-
-    .yaml-window pre {
-      margin: 0;
-      padding: 18px 20px;
-      overflow-x: auto;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    .yaml-window code.hljs {
-      background: transparent;
-      padding: 0;
-      color: #e3e9f6;
-    }
-
-    /* ── App types ── */
-    .types-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-    }
-
-    .type-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-      transition: border-color .15s;
-    }
-
-    .type-card:hover {
-      border-color: var(--accent);
-    }
-
-    .type-icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--accent);
-      margin-bottom: 14px;
-    }
-
-    .type-icon svg {
-      width: 20px;
-      height: 20px;
-    }
-
-    .type-card h3 {
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-
-    .type-card p {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
-    .type-tag {
-      display: inline-block;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      background: var(--accent-dim);
-      color: var(--accent);
-      border: 1px solid rgba(29, 78, 216, .22);
-      border-radius: 4px;
-      padding: 2px 7px;
-      margin-top: 10px;
-    }
-
-    .use-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      column-gap: 40px;
-      row-gap: 36px;
-    }
-
-    .use-item h3 {
-      font-size: 17px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .use-item p {
-      font-size: 14px;
-      color: var(--muted);
-      line-height: 1.6;
-      margin: 0;
-    }
-
-    .use-item code {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12.5px;
-      color: var(--accent);
-    }
-
-    /* ── Commands ── */
-    .cmds-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .cmds-table tr {
-      border-bottom: 1px solid var(--border);
-    }
-
-    .cmds-table tr:last-child {
-      border-bottom: none;
-    }
-
-    .cmds-table td {
-      padding: 14px 0;
-      vertical-align: top;
-    }
-
-    .cmds-table td:first-child {
-      width: 55%;
-      padding-right: 24px;
-    }
-
-    .cmd-code {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 14px;
-      color: var(--text);
-    }
-
-    .cmd-code .kw {
-      color: var(--accent);
-    }
-
-    .cmd-code .arg {
-      color: #5b6a82;
-    }
-
-    .cmd-code .flag {
-      color: #a97f1f;
-    }
-
-    .cmd-desc {
-      font-size: 14px;
-      color: var(--muted);
-    }
-
-    .cmd-group {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: var(--accent);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      padding-top: 24px;
-      padding-bottom: 6px;
-    }
-
-    /* ── Prerequisites ── */
-    .prereqs {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .prereq-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px 20px;
-    }
-
-    .prereq-status {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      padding: 2px 8px;
-      border-radius: 4px;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-
-    .required {
-      background: rgba(29, 78, 216, .1);
-      color: var(--accent);
-      border: 1px solid rgba(29, 78, 216, .28);
-    }
-
-    .optional {
-      background: rgba(161, 161, 170, .1);
-      color: var(--muted);
-      border: 1px solid var(--border);
-    }
-
-    .prereq-info h4 {
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 3px;
-    }
-
-    .prereq-info p {
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .orbstack-callout {
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
-      background: var(--accent-dim);
-      border: 1px solid rgba(29, 78, 216, .22);
-      border-radius: var(--radius);
-      padding: 16px 20px;
-      margin-bottom: 16px;
-    }
-
-    .orbstack-callout .callout-icon {
-      font-size: 20px;
-      flex-shrink: 0;
-    }
-
-    .orbstack-callout p {
-      font-size: 14px;
-      color: var(--muted);
-    }
-
-    .orbstack-callout strong {
-      color: var(--text);
-    }
-
-    /* ── Footer ── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 32px 24px;
-    }
-
-    .footer-inner {
-      max-width: 960px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-
-    .footer-left {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 14px;
-      color: var(--muted);
-    }
-
-    .footer-left span {
-      color: var(--text);
-    }
-
-    .footer-right {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .footer-right a {
-      color: var(--muted);
-    }
-
-    .footer-right a:hover {
-      color: var(--accent);
-      text-decoration: none;
-    }
-
-    /* ── FAQ ── */
-    .faq-list {
-      display: grid;
-      gap: 28px;
-      max-width: 760px;
-    }
-    .faq-item h4 {
-      color: var(--text);
-      font-size: 18px;
-      margin-bottom: 8px;
-    }
-    .faq-item p {
-      font-size: 15px;
-      color: var(--text);
-      line-height: 1.7;
-      margin-bottom: 10px;
-    }
-
-    /* ── Star button ── */
-    .star-btn {
-      gap: 8px;
-    }
-
-    .star-btn svg {
-      flex-shrink: 0;
-    }
-
-    .star-count {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 0px 6px;
-      font-size: 12px;
-      color: var(--muted);
-      font-family: 'JetBrains Mono', monospace;
-      min-width: 24px;
-      text-align: center;
-    }
-
-    /* ── VM section ── */
-    .vm-layout {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 48px;
-      align-items: start;
-    }
-
-    @media (max-width: 720px) {
-      .vm-layout {
-        grid-template-columns: 1fr;
-        gap: 32px;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="google-site-verification"
+      content="lcQ1Xwf6F07fGqKHd8tK9favfrdSmfv6t8-G1OJ4IA8"
+    />
+
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-NY00GC92QL"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
       }
-    }
+      gtag('js', new Date());
 
-    .vm-steps {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
+      gtag('config', 'G-NY00GC92QL');
+    </script>
+    <title>Kustron | Local dev environment, up in minutes</title>
+    <link rel="canonical" href="https://itsmunim.github.io/kustron/" />
+    <meta
+      name="description"
+      content="Define your apps in one file. Kustron spins up a local Kubernetes cluster, builds, and deploys them. No Kubernetes knowledge required."
+    />
+    <meta name="theme-color" content="#F1F4FA" />
 
-    .vm-step {
-      display: flex;
-      gap: 16px;
-      padding-bottom: 28px;
-      position: relative;
-    }
+    <!-- Open Graph (Facebook, LinkedIn, Discord, iMessage) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Kustron" />
+    <meta property="og:url" content="https://itsmunim.github.io/kustron/" />
+    <meta
+      property="og:title"
+      content="Kustron | Local dev environment, up in minutes"
+    />
+    <meta
+      property="og:description"
+      content="Define your apps in one file. Kustron spins up a local Kubernetes cluster, builds, and deploys them. No Kubernetes knowledge required."
+    />
+    <meta
+      property="og:image"
+      content="https://itsmunim.github.io/kustron/og-preview.jpg"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Kustron | Local dev environment, up in minutes"
+    />
 
-    .vm-step:not(:last-child)::before {
-      content: '';
-      position: absolute;
-      left: 15px;
-      top: 32px;
-      bottom: 0;
-      width: 1px;
-      background: var(--border);
-    }
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Kustron | Local dev environment, up in minutes"
+    />
+    <meta
+      name="twitter:description"
+      content="Define your apps in one file. Kustron spins up a local Kubernetes cluster, builds, and deploys them. No Kubernetes knowledge required."
+    />
+    <meta
+      name="twitter:image"
+      content="https://itsmunim.github.io/kustron/og-preview.jpg"
+    />
+    <meta
+      name="twitter:image:alt"
+      content="Kustron | Local dev environment, up in minutes"
+    />
 
-    .vm-step-num {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--accent-dim);
-      border: 1px solid rgba(29, 78, 216, .25);
-      color: var(--accent);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      position: relative;
-      z-index: 1;
-    }
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
 
-    .vm-step-body h4 {
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 4px;
-      padding-top: 4px;
-    }
+    <!-- Structured data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Kustron",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "macOS, Linux",
+        "description": "Define your apps in one file. Kustron spins up a local Kubernetes cluster, builds, and deploys them. No Kubernetes knowledge required.",
+        "url": "https://itsmunim.github.io/kustron/",
+        "image": "https://itsmunim.github.io/kustron/og-preview.jpg",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "featureList": "Local Kubernetes clusters, deterministic redeploys, content-hash images, Podman and Docker support"
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark-dimmed.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-    .vm-step-body p {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.6;
-    }
+      :root {
+        --bg: #f1f4fa;
+        --surface: #ffffff;
+        --surface2: #e5eaf3;
+        --border: #c9d4e6;
+        --text: #16233c;
+        --muted: #5b6a82;
+        --accent: #1d4ed8;
+        --accent-dim: rgba(29, 78, 216, 0.08);
+        --green: #2e7d4f;
+        --amber: #a97f1f;
+        --radius: 10px;
+      }
 
-    .vm-diagram {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-    }
+      html {
+        scroll-behavior: smooth;
+      }
 
-    .vm-diagram-title {
-      font-size: 11px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 20px;
-    }
+      body {
+        background-color: var(--bg);
+        background-image:
+          linear-gradient(
+            to right,
+            rgba(22, 35, 60, 0.028) 1px,
+            transparent 1px
+          ),
+          linear-gradient(
+            to bottom,
+            rgba(22, 35, 60, 0.028) 1px,
+            transparent 1px
+          );
+        background-size: 28px 28px;
+        color: var(--text);
+        font-family: 'Inter', sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
 
-    .vm-box {
-      border: 1px dashed var(--border);
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 12px;
-    }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
 
-    .vm-box-label {
-      font-size: 11px;
-      color: var(--muted);
-      margin-bottom: 12px;
-      letter-spacing: .5px;
-    }
+      a:hover {
+        text-decoration: underline;
+      }
 
-    .vm-services {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
+      /* ── Nav ── */
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(241, 244, 250, 0.85);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+        padding: 0 24px;
+      }
 
-    .vm-svc {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 6px 10px;
-      font-size: 12px;
-    }
+      .nav-inner {
+        max-width: 960px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 56px;
+      }
 
-    .vm-svc .svc-name {
-      color: var(--text);
-    }
+      .nav-logo {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 18px;
+        font-weight: 500;
+        color: var(--text);
+        letter-spacing: -0.5px;
+      }
 
-    .vm-svc .svc-port {
-      color: var(--accent);
-    }
+      .nav-logo span {
+        color: var(--accent);
+      }
 
-    .vm-svc .svc-badge {
-      font-size: 10px;
-      background: rgba(46, 125, 79, .1);
-      color: var(--green);
-      border: 1px solid rgba(46, 125, 79, .22);
-      border-radius: 3px;
-      padding: 1px 5px;
-      margin-left: 6px;
-    }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
 
-    .vm-arrow {
-      text-align: center;
-      color: var(--muted);
-      font-size: 18px;
-      line-height: 1;
-      margin: 4px 0;
-    }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 7px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          border-color 0.15s;
+        border: 1px solid transparent;
+      }
 
-    .vm-internet {
-      text-align: center;
-      padding: 10px;
-      font-size: 12px;
-      color: var(--muted);
-    }
+      .btn-outline {
+        background: transparent;
+        border-color: var(--border);
+        color: var(--text);
+      }
 
-    .vm-internet strong {
-      color: var(--green);
-    }
+      .btn-outline:hover {
+        background: var(--surface2);
+        border-color: var(--muted);
+        text-decoration: none;
+      }
 
-    .vm-callout {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      background: rgba(196, 140, 44, .08);
-      border: 1px solid rgba(196, 140, 44, .22);
-      border-radius: 7px;
-      padding: 12px 14px;
-      margin-top: 16px;
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+        font-weight: 600;
+      }
 
-    .vm-callout-icon {
-      flex-shrink: 0;
-    }
+      .btn-primary:hover {
+        background: #1d4ed8;
+        text-decoration: none;
+      }
 
-    /* ── Responsive ── */
-    @media (max-width: 600px) {
+      /* ── Hero ── */
       .hero {
-        padding: 64px 16px 56px;
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 96px 24px 80px;
+        text-align: center;
       }
 
-      section {
-        padding: 56px 16px;
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--accent-dim);
+        border: 1px solid rgba(29, 78, 216, 0.28);
+        border-radius: 100px;
+        padding: 4px 12px;
+        font-size: 13px;
+        color: var(--accent);
+        margin-bottom: 32px;
       }
 
-      .use-grid {
-        grid-template-columns: 1fr;
+      .hero h1 {
+        font-size: clamp(36px, 6vw, 62px);
+        font-weight: 700;
+        line-height: 1.1;
+        letter-spacing: -2px;
+        margin-bottom: 20px;
+        background: linear-gradient(135deg, #16233c 30%, #1d4ed8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .hero p {
+        font-size: 18px;
+        color: var(--muted);
+        max-width: 520px;
+        margin: 0 auto 40px;
+
+        .hero-cta {
+          margin-top: -8px;
+        }
+
+        .hero-cta .btn {
+          font-size: 15px;
+          padding: 10px 22px;
+        }
       }
 
       .install-block {
-        width: 100%;
-        max-width: 100%;
-        flex-wrap: wrap;
-        justify-content: flex-start;
-        gap: 8px;
-        padding: 12px 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        background: #10193a;
+        border: 1px solid #22315c;
+        border-radius: var(--radius);
+        padding: 12px 16px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 16px;
+        margin-bottom: 40px;
+      }
+
+      .install-block .prompt {
+        color: #93a3c8;
+        user-select: none;
       }
 
       .install-block code {
-        min-width: 0;
-        flex: 1 1 auto;
-        white-space: normal;
-        overflow-wrap: anywhere;
-        word-break: break-all;
-        font-size: 13px;
-        line-height: 1.5;
+        color: #e3e9f6;
+        background: none;
+        padding: 0;
       }
 
       .copy-btn {
+        background: var(--surface);
+        border: 1px solid #22315c;
+        color: var(--muted);
+        padding: 4px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        cursor: pointer;
+        font-family: 'Inter', sans-serif;
+        transition: all 0.15s;
+      }
+
+      .copy-btn:hover {
+        border-color: var(--muted);
+        color: var(--text);
+      }
+
+      .copy-btn.copied {
+        color: var(--green);
+        border-color: var(--green);
+      }
+
+      /* ── Sections ── */
+      section {
+        padding: 80px 24px;
+      }
+
+      .section-inner {
+        max-width: 960px;
+        margin: 0 auto;
+      }
+
+      .section-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 12px;
+      }
+
+      h2 {
+        font-size: clamp(24px, 4vw, 36px);
+        font-weight: 700;
+        letter-spacing: -1px;
+        margin-bottom: 12px;
+      }
+
+      .section-sub {
+        font-size: 17px;
+        color: var(--muted);
+        margin-bottom: 48px;
+      }
+
+      .yaml-window + .section-sub,
+      .install-block + .section-sub {
+        margin-top: 32px;
+      }
+
+      .section-sub a {
+        color: var(--accent);
+        font-weight: 500;
+      }
+
+      .divider {
+        border: none;
+        border-top: 1px solid var(--border);
+      }
+
+      /* ── Steps ── */
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+      }
+
+      .step {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 24px;
+      }
+
+      .step-num {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        color: var(--accent);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
+
+      .step h3 {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .step p {
+        font-size: 14px;
+        color: var(--muted);
+        margin-bottom: 14px;
+      }
+
+      .step-cmd {
+        margin-top: auto;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        color: #e3e9f6;
+        background: #10193a;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #e3e9f6;
+        background: #10193a;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #22315c;
+      }
+
+      .step-cmd span {
+        color: #93a3c8;
+      }
+
+      /* ── YAML block ── */
+      .yaml-window {
+        background: #10193a;
+        border: 1px solid #22315c;
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+
+      .yaml-titlebar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 14px;
+        background: #0d1529;
+        border-bottom: 1px solid #22315c;
+      }
+
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+
+      .dot-red {
+        background: #ff5f57;
+      }
+
+      .dot-yellow {
+        background: #febc2e;
+      }
+
+      .dot-green {
+        background: #28c840;
+      }
+
+      .yaml-filename {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        color: #93a3c8;
+        margin-left: 8px;
+      }
+
+      .yaml-window pre {
+        margin: 0;
+        padding: 18px 20px;
+        overflow-x: auto;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .yaml-window code.hljs {
+        background: transparent;
+        padding: 0;
+        color: #e3e9f6;
+      }
+
+      /* ── App types ── */
+      .types-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+      }
+
+      .type-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 24px;
+        transition: border-color 0.15s;
+      }
+
+      .type-card:hover {
+        border-color: var(--accent);
+      }
+
+      .type-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--accent);
+        margin-bottom: 14px;
+      }
+
+      .type-icon svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .type-card h3 {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+
+      .type-card p {
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .type-tag {
+        display: inline-block;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        background: var(--accent-dim);
+        color: var(--accent);
+        border: 1px solid rgba(29, 78, 216, 0.22);
+        border-radius: 4px;
+        padding: 2px 7px;
+        margin-top: 10px;
+      }
+
+      .use-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        column-gap: 40px;
+        row-gap: 36px;
+      }
+
+      .use-item h3 {
+        font-size: 17px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .use-item p {
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.6;
+        margin: 0;
+      }
+
+      .use-item code {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12.5px;
+        color: var(--accent);
+      }
+
+      /* ── Commands ── */
+      .cmds-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .cmds-table tr {
+        border-bottom: 1px solid var(--border);
+      }
+
+      .cmds-table tr:last-child {
+        border-bottom: none;
+      }
+
+      .cmds-table td {
+        padding: 14px 0;
+        vertical-align: top;
+      }
+
+      .cmds-table td:first-child {
+        width: 55%;
+        padding-right: 24px;
+      }
+
+      .cmd-code {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        color: var(--text);
+      }
+
+      .cmd-code .kw {
+        color: var(--accent);
+      }
+
+      .cmd-code .arg {
+        color: #5b6a82;
+      }
+
+      .cmd-code .flag {
+        color: #a97f1f;
+      }
+
+      .cmd-desc {
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      .cmd-group {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        color: var(--accent);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        padding-top: 24px;
+        padding-bottom: 6px;
+      }
+
+      /* ── Prerequisites ── */
+      .prereqs {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .prereq-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px 20px;
+      }
+
+      .prereq-status {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+
+      .required {
+        background: rgba(29, 78, 216, 0.1);
+        color: var(--accent);
+        border: 1px solid rgba(29, 78, 216, 0.28);
+      }
+
+      .optional {
+        background: rgba(161, 161, 170, 0.1);
+        color: var(--muted);
+        border: 1px solid var(--border);
+      }
+
+      .prereq-info h4 {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 3px;
+      }
+
+      .prereq-info p {
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .orbstack-callout {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        background: var(--accent-dim);
+        border: 1px solid rgba(29, 78, 216, 0.22);
+        border-radius: var(--radius);
+        padding: 16px 20px;
+        margin-bottom: 16px;
+      }
+
+      .orbstack-callout .callout-icon {
+        font-size: 20px;
         flex-shrink: 0;
       }
 
-      .footer-inner {
-        flex-direction: column;
-        align-items: flex-start;
+      .orbstack-callout p {
+        font-size: 14px;
+        color: var(--muted);
       }
-    }
-  </style>
-</head>
 
-<body>
+      .orbstack-callout strong {
+        color: var(--text);
+      }
 
-  <!-- Nav -->
-  <nav>
-    <div class="nav-inner">
-      <div class="nav-logo"><span>k</span>ustron</div>
-      <div class="nav-links">
-        <a href="features.html" class="btn btn-outline">Features</a>
-        <a href="https://github.com/itsmunim/kustron/stargazers" class="btn btn-outline star-btn" id="star-btn"
-          target="_blank" rel="noopener">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <polygon
-              points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-          </svg>
-          Star
-          <span class="star-count" id="star-count">—</span>
-        </a>
-        <a href="https://github.com/itsmunim/kustron" class="btn btn-outline" target="_blank" rel="noopener">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-            <path
-              d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
-          </svg>
-          GitHub
-        </a>
+      /* ── Footer ── */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 32px 24px;
+      }
+
+      .footer-inner {
+        max-width: 960px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+
+      .footer-left {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      .footer-left span {
+        color: var(--text);
+      }
+
+      .footer-right {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .footer-right a {
+        color: var(--muted);
+      }
+
+      .footer-right a:hover {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      /* ── FAQ ── */
+      .faq-list {
+        display: grid;
+        gap: 28px;
+        max-width: 760px;
+      }
+      .faq-item h4 {
+        color: var(--text);
+        font-size: 18px;
+        margin-bottom: 8px;
+      }
+      .faq-item p {
+        font-size: 15px;
+        color: var(--text);
+        line-height: 1.7;
+        margin-bottom: 10px;
+      }
+
+      /* ── Star button ── */
+      .star-btn {
+        gap: 8px;
+      }
+
+      .star-btn svg {
+        flex-shrink: 0;
+      }
+
+      .star-count {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 0px 6px;
+        font-size: 12px;
+        color: var(--muted);
+        font-family: 'JetBrains Mono', monospace;
+        min-width: 24px;
+        text-align: center;
+      }
+
+      /* ── VM section ── */
+      .vm-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 48px;
+        align-items: start;
+      }
+
+      @media (max-width: 720px) {
+        .vm-layout {
+          grid-template-columns: 1fr;
+          gap: 32px;
+        }
+      }
+
+      .vm-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .vm-step {
+        display: flex;
+        gap: 16px;
+        padding-bottom: 28px;
+        position: relative;
+      }
+
+      .vm-step:not(:last-child)::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 32px;
+        bottom: 0;
+        width: 1px;
+        background: var(--border);
+      }
+
+      .vm-step-num {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--accent-dim);
+        border: 1px solid rgba(29, 78, 216, 0.25);
+        color: var(--accent);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+      }
+
+      .vm-step-body h4 {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 4px;
+        padding-top: 4px;
+      }
+
+      .vm-step-body p {
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .vm-diagram {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 24px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+      }
+
+      .vm-diagram-title {
+        font-size: 11px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 20px;
+      }
+
+      .vm-box {
+        border: 1px dashed var(--border);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 12px;
+      }
+
+      .vm-box-label {
+        font-size: 11px;
+        color: var(--muted);
+        margin-bottom: 12px;
+        letter-spacing: 0.5px;
+      }
+
+      .vm-services {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .vm-svc {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+
+      .vm-svc .svc-name {
+        color: var(--text);
+      }
+
+      .vm-svc .svc-port {
+        color: var(--accent);
+      }
+
+      .vm-svc .svc-badge {
+        font-size: 10px;
+        background: rgba(46, 125, 79, 0.1);
+        color: var(--green);
+        border: 1px solid rgba(46, 125, 79, 0.22);
+        border-radius: 3px;
+        padding: 1px 5px;
+        margin-left: 6px;
+      }
+
+      .vm-arrow {
+        text-align: center;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1;
+        margin: 4px 0;
+      }
+
+      .vm-internet {
+        text-align: center;
+        padding: 10px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .vm-internet strong {
+        color: var(--green);
+      }
+
+      .vm-callout {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        background: rgba(196, 140, 44, 0.08);
+        border: 1px solid rgba(196, 140, 44, 0.22);
+        border-radius: 7px;
+        padding: 12px 14px;
+        margin-top: 16px;
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .vm-callout-icon {
+        flex-shrink: 0;
+      }
+
+      /* ── Responsive ── */
+      @media (max-width: 600px) {
+        .hero {
+          padding: 64px 16px 56px;
+        }
+
+        section {
+          padding: 56px 16px;
+        }
+
+        .use-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .install-block {
+          width: 100%;
+          max-width: 100%;
+          flex-wrap: wrap;
+          justify-content: flex-start;
+          gap: 8px;
+          padding: 12px 14px;
+        }
+
+        .install-block code {
+          min-width: 0;
+          flex: 1 1 auto;
+          white-space: normal;
+          overflow-wrap: anywhere;
+          word-break: break-all;
+          font-size: 13px;
+          line-height: 1.5;
+        }
+
+        .copy-btn {
+          flex-shrink: 0;
+        }
+
+        .footer-inner {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Nav -->
+    <nav>
+      <div class="nav-inner">
+        <div class="nav-logo"><span>k</span>ustron</div>
+        <div class="nav-links">
+          <a href="features.html" class="btn btn-outline">Features</a>
+          <a
+            href="https://github.com/itsmunim/kustron/stargazers"
+            class="btn btn-outline star-btn"
+            id="star-btn"
+            target="_blank"
+            rel="noopener"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polygon
+                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+              />
+            </svg>
+            Star
+            <span class="star-count" id="star-count">—</span>
+          </a>
+          <a
+            href="https://github.com/itsmunim/kustron"
+            class="btn btn-outline"
+            target="_blank"
+            rel="noopener"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"
+              />
+            </svg>
+            GitHub
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-badge">
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 8v4l3 3" />
+        </svg>
+        Works with Podman &amp; Docker
+      </div>
+      <h1>Local dev environment,<br />up in minutes.</h1>
+      <p>
+        Define your apps in one file. Kustron handles the rest: local cluster,
+        registry, build, deploy. Your kubectl context is never touched.
+      </p>
+
+      <div>
+        <div class="install-block">
+          <span class="prompt">$</span>
+          <code id="install-cmd"
+            >curl -fsSL
+            https://raw.githubusercontent.com/itsmunim/kustron/master/download.sh
+            | bash</code
+          >
+          <button class="copy-btn" onclick="copyInstall(this)">Copy</button>
+        </div>
+      </div>
+      <div class="hero-cta">
+        <a href="features.html" class="btn btn-primary"
+          >See all features &amp; examples →</a
+        >
       </div>
     </div>
-  </nav>
 
-  <!-- Hero -->
-  <div class="hero">
-    <div class="hero-badge">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M12 8v4l3 3" />
-      </svg>
-      Works with Podman &amp; Docker
-    </div>
-    <h1>Local dev environment,<br>up in minutes.</h1>
-    <p>Define your apps in one file. Kustron handles the rest: local cluster, registry, build, deploy. Your kubectl context is never touched.</p>
+    <hr class="divider" />
 
-    <div>
-      <div class="install-block">
-        <span class="prompt">$</span>
-        <code id="install-cmd">curl -fsSL https://raw.githubusercontent.com/itsmunim/kustron/master/download.sh | bash</code>
-        <button class="copy-btn" onclick="copyInstall(this)">Copy</button>
-      </div>
-    </div>
-    <div class="hero-cta">
-      <a href="features.html" class="btn btn-primary">See all features &amp; examples →</a>
-    </div>
-  </div>
+    <!-- How it works -->
+    <section>
+      <div class="section-inner">
+        <div class="section-label">How it works</div>
+        <h2>A real dev environment in four commands.</h2>
+        <p class="section-sub">
+          Kustron runs a local k3d cluster with its own registry. You define
+          what to run, it does the heavy lifting.
+        </p>
 
-  <hr class="divider">
-
-  <!-- How it works -->
-  <section>
-    <div class="section-inner">
-      <div class="section-label">How it works</div>
-      <h2>A real dev environment in four commands.</h2>
-      <p class="section-sub">Kustron runs a local k3d cluster with its own registry. You define what to run, it does the heavy lifting.</p>
-
-      <div class="steps">
-        <div class="step">
-          <div class="step-num">Step 01</div>
-          <h3>Initialise</h3>
-          <p>Create a <code>kustron-env.yaml</code> in your project folder, pre-filled with your app name.</p>
-          <div class="step-cmd"><span>$ </span>kustron env init</div>
-        </div>
-        <div class="step">
-          <div class="step-num">Step 02</div>
-          <h3>Edit the file</h3>
-          <p>Set ports, add more apps, configure env vars. Or just set the port and move on.</p>
-          <div class="step-cmd">kustron-env.yaml</div>
-        </div>
-        <div class="step">
-          <div class="step-num">Step 03</div>
-          <h3>Bring it up</h3>
-          <p>One command spins up the cluster, builds images, and deploys everything.</p>
-          <div class="step-cmd"><span>$ </span>kustron env up</div>
-        </div>
-        <div class="step">
-          <div class="step-num">Step 04</div>
-          <h3>Iterate</h3>
-          <p>Add apps, change config, redeploy. The file is the source of truth.</p>
-          <div class="step-cmd"><span>$ </span>kustron env reload</div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">Step 01</div>
+            <h3>Initialise</h3>
+            <p>
+              Create a <code>kustron-env.yaml</code> in your project folder,
+              pre-filled with your app name.
+            </p>
+            <div class="step-cmd"><span>$ </span>kustron env init</div>
+          </div>
+          <div class="step">
+            <div class="step-num">Step 02</div>
+            <h3>Edit the file</h3>
+            <p>
+              Set ports, add more apps, configure env vars. Or just set the port
+              and move on.
+            </p>
+            <div class="step-cmd">kustron-env.yaml</div>
+          </div>
+          <div class="step">
+            <div class="step-num">Step 03</div>
+            <h3>Bring it up</h3>
+            <p>
+              One command spins up the cluster, builds images, and deploys
+              everything.
+            </p>
+            <div class="step-cmd"><span>$ </span>kustron env up</div>
+          </div>
+          <div class="step">
+            <div class="step-num">Step 04</div>
+            <h3>Iterate</h3>
+            <p>
+              Add apps, change config, redeploy. The file is the source of
+              truth.
+            </p>
+            <div class="step-cmd"><span>$ </span>kustron env reload</div>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <hr class="divider">
+    <hr class="divider" />
 
-  <!-- Use kustron for -->
-  <section>
-    <div class="section-inner">
-      <div class="section-label">Use kustron for</div>
-      <h2>Where it takes an hour, Kustron takes one command.</h2>
-      <p class="section-sub">Six situations where the environment is the whole job.</p>
+    <!-- Use kustron for -->
+    <section>
+      <div class="section-inner">
+        <div class="section-label">Use kustron for</div>
+        <h2>Where it takes an hour, Kustron takes one command.</h2>
+        <p class="section-sub">
+          Six situations where the environment is the whole job.
+        </p>
 
-      <div class="use-grid">
-        <div class="use-item">
-          <h3>Full-stack local development</h3>
-          <p>Frontend, API, database, cache, workers — everything running together in one namespace, reachable by name. <code>env watch</code> auto-redeploys on every save.</p>
-        </div>
-        <div class="use-item">
-          <h3>Onboarding new team members</h3>
-          <p>The <code>kustron-env.yaml</code> is the environment documentation. Clone the repo, run <code>env up</code>, and you're productive in minutes instead of hours.</p>
-        </div>
-        <div class="use-item">
-          <h3>Reproducible environments anywhere</h3>
-          <p>The same file gives you an identical stack on your laptop, a teammate's machine, or a $6/month cloud VM. No "works on my machine."</p>
-        </div>
-        <div class="use-item">
-          <h3>Production parity before shipping</h3>
-          <p>Test Helm charts, private registry auth, deploy ordering with <code>dependsOn</code>, HPA autoscaling, and namespace isolation locally.</p>
-        </div>
-        <div class="use-item">
-          <h3>Ephemeral sandboxes and demos</h3>
-          <p>Spin up an isolated stack for a spike, a customer demo, or integration testing. <code>env destroy</code> when done and nothing lingers.</p>
-        </div>
-        <div class="use-item">
-          <h3>Safe experimentation</h3>
-          <p>Kustron never calls <code>kubectl config use-context</code>. Every command uses <code>--context=k3d-&lt;clusterName&gt;</code>, so your production clusters stay untouched.</p>
+        <div class="use-grid">
+          <div class="use-item">
+            <h3>Full-stack local development</h3>
+            <p>
+              Frontend, API, database, cache, workers — everything running
+              together in one namespace, reachable by name.
+              <code>env watch</code> auto-redeploys on every save.
+            </p>
+          </div>
+          <div class="use-item">
+            <h3>Onboarding new team members</h3>
+            <p>
+              The <code>kustron-env.yaml</code> is the environment
+              documentation. Clone the repo, run <code>env up</code>, and you're
+              productive in minutes instead of hours.
+            </p>
+          </div>
+          <div class="use-item">
+            <h3>Reproducible environments anywhere</h3>
+            <p>
+              The same file gives you an identical stack on your laptop, a
+              teammate's machine, or a $6/month cloud VM. No "works on my
+              machine."
+            </p>
+          </div>
+          <div class="use-item">
+            <h3>Production parity before shipping</h3>
+            <p>
+              Test Helm charts, private registry auth, deploy ordering with
+              <code>dependsOn</code>, HPA autoscaling, and namespace isolation
+              locally.
+            </p>
+          </div>
+          <div class="use-item">
+            <h3>Ephemeral sandboxes and demos</h3>
+            <p>
+              Spin up an isolated stack for a spike, a customer demo, or
+              integration testing. <code>env destroy</code> when done and
+              nothing lingers.
+            </p>
+          </div>
+          <div class="use-item">
+            <h3>Safe experimentation</h3>
+            <p>
+              Kustron never calls <code>kubectl config use-context</code>. Every
+              command uses <code>--context=k3d-&lt;clusterName&gt;</code>, so
+              your production clusters stay untouched.
+            </p>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <hr class="divider">
+    <hr class="divider" />
 
-  <!-- YAML example -->
-  <section>
-    <div class="section-inner">
-      <div class="section-label">kustron-env.yaml</div>
-      <h2>Your whole environment in one file.</h2>
-      <p class="section-sub">Apps find each other by name. Exposed apps are reachable at <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">localhost:&lt;nodePort&gt;</code>.</p>
+    <!-- YAML example -->
+    <section>
+      <div class="section-inner">
+        <div class="section-label">kustron-env.yaml</div>
+        <h2>Your whole environment in one file.</h2>
+        <p class="section-sub">
+          Apps find each other by name. Exposed apps are reachable at
+          <code
+            style="
+              font-family: 'JetBrains Mono', monospace;
+              font-size: 13px;
+              color: var(--accent);
+            "
+            >localhost:&lt;nodePort&gt;</code
+          >.
+        </p>
 
-      <div class="yaml-window">
-        <div class="yaml-titlebar">
-          <div class="dot dot-red"></div>
-          <div class="dot dot-yellow"></div>
-          <div class="dot dot-green"></div>
-          <span class="yaml-filename">kustron-env.yaml</span>
-        </div>
-        <pre>
+        <div class="yaml-window">
+          <div class="yaml-titlebar">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+            <span class="yaml-filename">kustron-env.yaml</span>
+          </div>
+          <pre>
           <code class="language-yaml">
           config:
             namespace: kustron-env        # all apps share this namespace
@@ -1121,7 +1252,7 @@
             - name: api
               source: ./services/api      # or: git@github.com:org/repo.git
               port: 3000
-              exposed: true               # reachable at localhost:<nodePort>
+              exposed: true               # reachable at localhost:&lt;nodePort&gt;
               ha: true                    # min 2 replicas, autoscales to 5
               env:
                 NODE_ENV: production
@@ -1145,27 +1276,30 @@
                   grafana.enabled: "true"
           </code>
         </pre>
-      </div>
-    </div>
-  </section>
-
-  <hr class="divider">
-
-  <!-- Example: a real env -->
-  <section>
-    <div class="section-inner">
-      <div class="section-label">Example</div>
-      <h2>Your repo, plus the infra it needs.</h2>
-      <p class="section-sub">Start inside a source repo with a Dockerfile. Add a local DynamoDB, an S3-compatible store, and a cache, then bring it all up.</p>
-
-      <div class="yaml-window">
-        <div class="yaml-titlebar">
-          <div class="dot dot-red"></div>
-          <div class="dot dot-yellow"></div>
-          <div class="dot dot-green"></div>
-          <span class="yaml-filename">terminal</span>
         </div>
-        <pre>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- Example: a real env -->
+    <section>
+      <div class="section-inner">
+        <div class="section-label">Example</div>
+        <h2>Your repo, plus the infra it needs.</h2>
+        <p class="section-sub">
+          Start inside a source repo with a Dockerfile. Add a local DynamoDB, an
+          S3-compatible store, and a cache, then bring it all up.
+        </p>
+
+        <div class="yaml-window">
+          <div class="yaml-titlebar">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+            <span class="yaml-filename">terminal</span>
+          </div>
+          <pre>
           <code class="language-bash">
           cd my-api                                  # your repo, with a Dockerfile
           kustron env init                           # creates kustron-env.yaml
@@ -1177,433 +1311,1078 @@
           kustron env up
           </code>
         </pre>
+        </div>
+
+        <p class="section-sub">
+          Your app now talks to
+          <code
+            style="
+              font-family: 'JetBrains Mono', monospace;
+              font-size: 13px;
+              color: var(--accent);
+            "
+            >local-ddb:8000</code
+          >,
+          <code
+            style="
+              font-family: 'JetBrains Mono', monospace;
+              font-size: 13px;
+              color: var(--accent);
+            "
+            >local-s3:80</code
+          >
+          and
+          <code
+            style="
+              font-family: 'JetBrains Mono', monospace;
+              font-size: 13px;
+              color: var(--accent);
+            "
+            >kivo:6379</code
+          >
+          by name. The cache is
+          <a
+            href="https://itsmunim.github.io/kivo"
+            target="_blank"
+            rel="noopener"
+            >kivo</a
+          >, our Redis-compatible in-memory store: same protocol, same port, so
+          it drops in where you'd use redis. Prefer the real thing? Swap in
+          <code
+            style="
+              font-family: 'JetBrains Mono', monospace;
+              font-size: 13px;
+              color: var(--accent);
+            "
+            >redis:7</code
+          >, nothing else changes.
+        </p>
       </div>
+    </section>
 
-      <p class="section-sub">Your app now talks to <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">local-ddb:8000</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">local-s3:80</code> and <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">kivo:6379</code> by name. The cache is <a href="https://itsmunim.github.io/kivo" target="_blank" rel="noopener">kivo</a>, our Redis-compatible in-memory store: same protocol, same port, so it drops in where you'd use redis. Prefer the real thing? Swap in <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">redis:7</code>, nothing else changes.</p>
-    </div>
-  </section>
+    <hr class="divider" />
+    <!-- App types -->
+    <section>
+      <div class="section-inner">
+        <div class="section-label">App types</div>
+        <h2>Deploy anything.</h2>
+        <p class="section-sub">
+          Every app type shares the same namespace. They reach each other at
+          <code
+            style="
+              font-family: 'JetBrains Mono', monospace;
+              font-size: 14px;
+              color: var(--accent);
+            "
+            >http://&lt;name&gt;:&lt;port&gt;</code
+          >.
+        </p>
 
-  <hr class="divider">
-  <!-- App types -->
-  <section>
-    <div class="section-inner">
-      <div class="section-label">App types</div>
-      <h2>Deploy anything.</h2>
-      <p class="section-sub">Every app type shares the same namespace. They reach each other at <code
-          style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--accent)">http://&lt;name&gt;:&lt;port&gt;</code>.
-      </p>
-
-      <div class="types-grid">
-        <div class="type-card">
-          <div class="type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></div>
-          <h3>Local source</h3>
-          <p>Point to a folder. Kustron uses your Dockerfile if it exists, or Railpack to containerize automatically.
-          </p>
-          <div class="type-tag">source: ./path</div>
-        </div>
-        <div class="type-card">
-          <div class="type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg></div>
-          <h3>Git repository</h3>
-          <p>Provide a git SSH URL. Kustron clones it, builds it, and deploys it. SSH access must already be set up.</p>
-          <div class="type-tag">source: git@…</div>
-        </div>
-        <div class="type-card">
-          <div class="type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><path d="m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7"/></svg></div>
-          <h3>Container image</h3>
-          <p>Use any image from Docker Hub or any registry. Perfect for databases and third-party services.</p>
-          <div class="type-tag">image: postgres:15</div>
-        </div>
-        <div class="type-card">
-          <div class="type-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v7.5"/><path d="m19 5-5.23 5.23"/><path d="M22 12h-7.5"/><path d="m19 19-5.23-5.23"/><path d="M12 14.5V22"/><path d="M10.23 13.77 5 19"/><path d="M9.5 12H2"/><path d="M10.23 10.23 5 5"/></svg></div>
-          <h3>Helm chart</h3>
-          <p>Install any Helm chart into your environment. Pass values directly from the yaml file.</p>
-          <div class="type-tag">helm: {chart: …}</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <hr class="divider">
-
-  <!-- Commands -->
-  <section>
-    <div class="section-inner">
-      <div class="section-label">Commands</div>
-      <h2>The commands you'll actually use.</h2>
-
-      <table class="cmds-table">
-        <tr>
-          <td colspan="2" class="cmd-group">env</td>
-        </tr>
-        <tr>
-          <td><code class="cmd-code"><span class="kw">kustron</span> env init</code></td>
-          <td><span class="cmd-desc">Create a <code>kustron-env.yaml</code> in the current folder, pre-filled with the
-              folder name as the app.</span></td>
-        </tr>
-        <tr>
-          <td><code class="cmd-code"><span class="kw">kustron</span> env up</code></td>
-          <td><span class="cmd-desc">Bring up the cluster and deploy all apps from <code>kustron-env.yaml</code>.
-              Idempotent, safe to re-run.</span></td>
-        </tr>
-        <tr>
-          <td><code class="cmd-code"><span class="kw">kustron</span> env reload</code></td>
-          <td><span class="cmd-desc">Stop all apps and bring them back up. Run this after changing
-              <code>kustron-env.yaml</code>. The cluster itself is not destroyed.</span></td>
-        </tr>
-        <tr>
-          <td><code class="cmd-code"><span class="kw">kustron</span> env watch</code></td>
-          <td><span class="cmd-desc">Watch local source directories and auto-redeploy on file changes.</span></td>
-        </tr>
-        <tr>
-          <td><code class="cmd-code"><span class="kw">kustron</span> env stop</code></td>
-          <td><span class="cmd-desc">Stop all apps (scale to 0, uninstall helm) without destroying the cluster.
-              Fast to restart with <code>env up</code>.</span></td>
-        </tr>
-        <tr>
-          <td><code class="cmd-code"><span class="kw">kustron</span> env down</code></td>
-          <td><span class="cmd-desc"><strong>Deprecated.</strong> Destroys the entire cluster. Use <code>env stop</code> to pause,
-              or <code>env destroy</code> to explicitly delete everything.</span></td>
-        </tr>
-        <tr>
-          <td colspan="2" class="cmd-group">cluster</td>
-        </tr>
-        <tr>
-          <td><code class="cmd-code"><span class="kw">kustron</span> env destroy <span class="flag">[--yes]</span></code></td>
-          <td><span class="cmd-desc">Delete the k3d cluster and all data in it. Confirmation prompt unless
-              <code>--yes</code> is passed.</span></td>
-        </tr>
-        <tr>
-          <td colspan="2" class="cmd-group">app</td>
-        </tr>
-        <tr>
-          <td><code class="cmd-code"><span class="kw">kustron</span> app stop <span class="arg">&lt;name&gt;</span></code></td>
-          <td><span class="cmd-desc">Stop a single app without affecting the rest of the environment.</span></td>
-        </tr>
-        <tr>
-          <td><code class="cmd-code"><span class="kw">kustron</span> app start <span class="arg">&lt;name&gt;</span></code></td>
-          <td><span class="cmd-desc">Start a single app that was previously stopped.</span></td>
-        </tr>
-        <tr>
-          <td><code class="cmd-code"><span class="kw">kustron</span> app logs <span class="arg">&lt;name&gt;</span> <span class="flag">[-f]</span></code></td>
-          <td><span class="cmd-desc">Stream logs for a single app. Use <code>-f</code> to follow, <code>--tail N</code> for last N lines.</span></td>
-        </tr>
-        <tr>
-          <td><code class="cmd-code"><span class="kw">kustron</span> app exec <span class="arg">&lt;name&gt;</span> <span class="flag">[command...]</span></code></td>
-          <td><span class="cmd-desc">Run a command inside a running app container. Defaults to <code>sh</code> if no command given.</span></td>
-        </tr>
-        <tr>
-          <td><code class="cmd-code"><span class="kw">kustron</span> app forward <span class="arg">&lt;name&gt;</span> <span class="arg">&lt;localPort&gt;</span> <span class="flag">[remotePort]</span></code></td>
-          <td><span class="cmd-desc">Forward a local port to an app. Useful for services that are not exposed via NodePort.</span></td>
-        </tr>
-          <td><code class="cmd-code"><span class="kw">kustron</span> env show-spec</code></td>
-          <td><span class="cmd-desc">Pretty-print the full <code>kustron-env.yaml</code> schema with annotations.</span>
-          </td>
-        </tr>
-        <tr>
-          <td><code class="cmd-code"><span class="kw">kustron</span> env status</code></td>
-          <td><span class="cmd-desc">Show the cluster and every app's state (Running, image pull failed, crash
-              loop) in one table.</span></td>
-        </tr>
-        <tr>
-          <td colspan="2" class="cmd-group">apps</td>
-        </tr>
-        <tr>
-          <td><code class="cmd-code"><span class="kw">kustron</span> apps add <span class="flag">[flags]</span></code>
-          </td>
-          <td><span class="cmd-desc">Add an app entry to <code>kustron-env.yaml</code>. Then run
-              <code>kustron env reload</code> to apply.</span></td>
-        </tr>
-        <tr>
-          <td><code
-              class="cmd-code"><span class="kw">kustron</span> apps remove <span class="arg">&lt;name&gt;</span></code>
-          </td>
-          <td><span class="cmd-desc">Remove an app entry from <code>kustron-env.yaml</code>. Then run
-              <code>kustron env reload</code> to apply.</span></td>
-        </tr>
-        <tr>
-          <td colspan="2" class="cmd-group">registry</td>
-        </tr>
-        <tr>
-          <td><code class="cmd-code"><span class="kw">kustron</span> registry login <span
-                class="arg">&lt;server&gt;</span></code></td>
-          <td><span class="cmd-desc">Log in to a container registry (docker/podman) so private images can be
-              pulled and pushed.</span></td>
-        </tr>
-        <tr>
-          <td><code class="cmd-code"><span class="kw">kustron</span> registry prune</code></td>
-          <td><span class="cmd-desc">Remove unused images from the local registry to reclaim disk space.</span></td>
-        </tr>
-      </table>
-    </div>
-  </section>
-
-  <hr class="divider">
-
-  <!-- Prerequisites -->
-  <section>
-    <div class="section-inner">
-      <div class="section-label">Prerequisites</div>
-      <h2>What you need installed.</h2>
-      <p class="section-sub">Kustron checks for these on install and tells you exactly what to do if anything is
-        missing.</p>
-
-      <div class="orbstack-callout">
-        <div class="callout-icon">⚡</div>
-        <div>
-          <p><strong>Recommended: OrbStack over Docker Desktop.</strong> OrbStack starts in ~2 seconds (vs 30+), uses a
-            fraction of the memory, and has native Apple Silicon support. <a href="https://orbstack.dev" target="_blank"
-              rel="noopener">orbstack.dev →</a></p>
-        </div>
-      </div>
-
-      <div class="prereqs">
-        <div class="prereq-row">
-          <div class="prereq-status required">required</div>
-          <div class="prereq-info">
-            <h4>Container runtime</h4>
-            <p><a href="https://orbstack.dev" target="_blank" rel="noopener">OrbStack</a> (recommended on macOS) ·
-              <a href="https://podman.io" target="_blank" rel="noopener">Podman</a> (any platform) · or <a
-                href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener">Docker Desktop</a>.
-              Kustron auto-detects whichever you have.</p>
+        <div class="types-grid">
+          <div class="type-card">
+            <div class="type-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
+                />
+              </svg>
+            </div>
+            <h3>Local source</h3>
+            <p>
+              Point to a folder. Kustron uses your Dockerfile if it exists, or
+              Railpack to containerize automatically.
+            </p>
+            <div class="type-tag">source: ./path</div>
+          </div>
+          <div class="type-card">
+            <div class="type-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="6" x2="6" y1="3" y2="15" />
+                <circle cx="18" cy="6" r="3" />
+                <circle cx="6" cy="18" r="3" />
+                <path d="M18 9a9 9 0 0 1-9 9" />
+              </svg>
+            </div>
+            <h3>Git repository</h3>
+            <p>
+              Provide a git SSH URL. Kustron clones it, builds it, and deploys
+              it. SSH access must already be set up.
+            </p>
+            <div class="type-tag">source: git@…</div>
+          </div>
+          <div class="type-card">
+            <div class="type-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"
+                />
+                <path d="M12 22V12" />
+                <path d="m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7" />
+              </svg>
+            </div>
+            <h3>Container image</h3>
+            <p>
+              Use any image from Docker Hub or any registry. Perfect for
+              databases and third-party services.
+            </p>
+            <div class="type-tag">image: postgres:15</div>
+          </div>
+          <div class="type-card">
+            <div class="type-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="8" />
+                <circle cx="12" cy="12" r="2.5" />
+                <path d="M12 2v7.5" />
+                <path d="m19 5-5.23 5.23" />
+                <path d="M22 12h-7.5" />
+                <path d="m19 19-5.23-5.23" />
+                <path d="M12 14.5V22" />
+                <path d="M10.23 13.77 5 19" />
+                <path d="M9.5 12H2" />
+                <path d="M10.23 10.23 5 5" />
+              </svg>
+            </div>
+            <h3>Helm chart</h3>
+            <p>
+              Install any Helm chart into your environment. Pass values directly
+              from the yaml file.
+            </p>
+            <div class="type-tag">helm: {chart: …}</div>
           </div>
         </div>
-        <div class="prereq-row">
-          <div class="prereq-status required">required</div>
-          <div class="prereq-info">
-            <h4>k3d</h4>
-            <p><code
-                style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent)">brew install k3d</code>
-              &nbsp;·&nbsp; <a href="https://k3d.io/stable/#installation" target="_blank"
-                rel="noopener">k3d.io/installation</a></p>
-          </div>
-        </div>
-        <div class="prereq-row">
-          <div class="prereq-status required">required</div>
-          <div class="prereq-info">
-            <h4>kubectl</h4>
-            <p><code
-                style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent)">brew install kubectl</code>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- Commands -->
+    <section>
+      <div class="section-inner">
+        <div class="section-label">Commands</div>
+        <h2>The commands you'll actually use.</h2>
+
+        <table class="cmds-table">
+          <tr>
+            <td colspan="2" class="cmd-group">env</td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> env init</code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Create a <code>kustron-env.yaml</code> in the current folder,
+                pre-filled with the folder name as the app.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> env up</code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Bring up the cluster and deploy all apps from
+                <code>kustron-env.yaml</code>. Idempotent, safe to re-run.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> env reload</code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Stop all apps and bring them back up. Run this after changing
+                <code>kustron-env.yaml</code>. The cluster itself is not
+                destroyed.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> env watch</code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Watch local source directories and auto-redeploy on file
+                changes.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> env stop</code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Stop all apps (scale to 0, uninstall helm) without destroying
+                the cluster. Fast to restart with <code>env up</code>.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> env down</code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                ><strong>Deprecated.</strong> Destroys the entire cluster. Use
+                <code>env stop</code> to pause, or <code>env destroy</code> to
+                explicitly delete everything.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" class="cmd-group">cluster</td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> env destroy
+                <span class="flag">[--yes]</span></code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Delete the k3d cluster and all data in it. Confirmation prompt
+                unless <code>--yes</code> is passed.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" class="cmd-group">app</td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> app stop
+                <span class="arg">&lt;name&gt;</span></code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Stop a single app without affecting the rest of the
+                environment.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> app start
+                <span class="arg">&lt;name&gt;</span></code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Start a single app that was previously stopped.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> app logs
+                <span class="arg">&lt;name&gt;</span>
+                <span class="flag">[-f]</span></code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Stream logs for a single app. Use <code>-f</code> to follow,
+                <code>--tail N</code> for last N lines.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> app exec
+                <span class="arg">&lt;name&gt;</span>
+                <span class="flag">[command...]</span></code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Run a command inside a running app container. Defaults to
+                <code>sh</code> if no command given.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> app forward
+                <span class="arg">&lt;name&gt;</span>
+                <span class="arg">&lt;localPort&gt;</span>
+                <span class="flag">[remotePort]</span></code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Forward a local port to an app. Useful for services that are
+                not exposed via NodePort.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> env show-spec</code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Pretty-print the full <code>kustron-env.yaml</code> schema with
+                annotations.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> env status</code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Show the cluster and every app's state (Running, image pull
+                failed, crash loop) in one table.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" class="cmd-group">apps</td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> apps add
+                <span class="flag">[flags]</span></code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Add an app entry to <code>kustron-env.yaml</code>. Then run
+                <code>kustron env reload</code> to apply.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> apps remove
+                <span class="arg">&lt;name&gt;</span></code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Remove an app entry from <code>kustron-env.yaml</code>. Then
+                run <code>kustron env reload</code> to apply.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" class="cmd-group">registry</td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> registry login
+                <span class="arg">&lt;server&gt;</span></code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Log in to a container registry (docker/podman) so private
+                images can be pulled and pushed.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> registry prune</code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Remove unused images from the local registry to reclaim disk
+                space.</span
+              >
+            </td>
+          </tr>
+        </table>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- Prerequisites -->
+    <section>
+      <div class="section-inner">
+        <div class="section-label">Prerequisites</div>
+        <h2>What you need installed.</h2>
+        <p class="section-sub">
+          Kustron checks for these on install and tells you exactly what to do
+          if anything is missing.
+        </p>
+
+        <div class="orbstack-callout">
+          <div class="callout-icon">⚡</div>
+          <div>
+            <p>
+              <strong>Recommended: OrbStack over Docker Desktop.</strong>
+              OrbStack starts in ~2 seconds (vs 30+), uses a fraction of the
+              memory, and has native Apple Silicon support.
+              <a href="https://orbstack.dev" target="_blank" rel="noopener"
+                >orbstack.dev →</a
+              >
             </p>
           </div>
         </div>
-        <div class="prereq-row">
-          <div class="prereq-status optional">optional</div>
-          <div class="prereq-info">
-            <h4>Railpack</h4>
-            <p>Only needed when deploying source without a Dockerfile. <a href="https://railpack.io" target="_blank"
-                rel="noopener">railpack.io</a></p>
-          </div>
-        </div>
-        <div class="prereq-row">
-          <div class="prereq-status optional">optional</div>
-          <div class="prereq-info">
-            <h4>Helm</h4>
-            <p>Only needed when deploying Helm chart apps. <code
-                style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent)">brew install helm</code>
-            </p>
-          </div>
-        </div>
-        <div class="prereq-row">
-          <div class="prereq-status optional">optional</div>
-          <div class="prereq-info">
-            <h4>git</h4>
-            <p>Only needed when deploying from a git SSH URL. Usually pre-installed.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <hr class="divider">
-
-  <!-- VM section -->
-  <section>
-    <div class="section-inner">
-      <div class="section-label">Beyond localhost</div>
-      <h2>Your whole stack, live on one VM.</h2>
-      <p class="section-sub">Not just for local dev. Run it on any cloud VM and your stack, APIs, frontends, databases, is on the real internet. No cluster management, no k8s babysitting.</p>
-
-      <div class="vm-layout">
-        <div class="vm-steps">
-          <div class="vm-step">
-            <div class="vm-step-num">1</div>
-            <div class="vm-step-body">
-              <h4>Get a VM</h4>
-              <p>Any Linux instance works: EC2, DigitalOcean Droplet, Hetzner Cloud, Linode. Even a $6/month box is
-                enough for a real multi-service stack.</p>
+        <div class="prereqs">
+          <div class="prereq-row">
+            <div class="prereq-status required">required</div>
+            <div class="prereq-info">
+              <h4>Container runtime</h4>
+              <p>
+                <a href="https://orbstack.dev" target="_blank" rel="noopener"
+                  >OrbStack</a
+                >
+                (recommended on macOS) ·
+                <a href="https://podman.io" target="_blank" rel="noopener"
+                  >Podman</a
+                >
+                (any platform) · or
+                <a
+                  href="https://www.docker.com/products/docker-desktop/"
+                  target="_blank"
+                  rel="noopener"
+                  >Docker Desktop</a
+                >. Kustron auto-detects whichever you have.
+              </p>
             </div>
           </div>
-          <div class="vm-step">
-            <div class="vm-step-num">2</div>
-            <div class="vm-step-body">
-              <h4>Install prereqs &amp; add your SSH key</h4>
-              <p>Install the container runtime (Docker or podman), k3d, kubectl, and kustron. Add your GitHub (or GitLab) SSH key so kustron can pull
-                private repos directly on the instance.</p>
+          <div class="prereq-row">
+            <div class="prereq-status required">required</div>
+            <div class="prereq-info">
+              <h4>k3d</h4>
+              <p>
+                <code
+                  style="
+                    font-family: 'JetBrains Mono', monospace;
+                    font-size: 13px;
+                    color: var(--accent);
+                  "
+                  >brew install k3d</code
+                >
+                &nbsp;·&nbsp;
+                <a
+                  href="https://k3d.io/stable/#installation"
+                  target="_blank"
+                  rel="noopener"
+                  >k3d.io/installation</a
+                >
+              </p>
             </div>
           </div>
-          <div class="vm-step">
-            <div class="vm-step-num">3</div>
-            <div class="vm-step-body">
-              <h4>Write your <code
-                  style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">kustron-env.yaml</code></h4>
-              <p>List your apps with <code
-                  style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">exposed: true</code> for anything
-                that needs to be public. Kustron maps each port to the VM's network interface.</p>
+          <div class="prereq-row">
+            <div class="prereq-status required">required</div>
+            <div class="prereq-info">
+              <h4>kubectl</h4>
+              <p>
+                <code
+                  style="
+                    font-family: 'JetBrains Mono', monospace;
+                    font-size: 13px;
+                    color: var(--accent);
+                  "
+                  >brew install kubectl</code
+                >
+              </p>
             </div>
           </div>
-          <div class="vm-step">
-            <div class="vm-step-num">4</div>
-            <div class="vm-step-body">
-              <h4>Bring it up</h4>
-              <p>One command: cluster, registry, images, deployments, all at once.</p>
+          <div class="prereq-row">
+            <div class="prereq-status optional">optional</div>
+            <div class="prereq-info">
+              <h4>Railpack</h4>
+              <p>
+                Only needed when deploying source without a Dockerfile.
+                <a href="https://railpack.io" target="_blank" rel="noopener"
+                  >railpack.io</a
+                >
+              </p>
             </div>
           </div>
-          <div class="vm-step">
-            <div class="vm-step-num">5</div>
-            <div class="vm-step-body">
-              <h4>Open the firewall &amp; share the URL</h4>
-              <p>Allow the exposed ports in your security group (AWS) or firewall rules. That's it, your stack is live
-                at <code
-                  style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent)">&lt;vm-ip&gt;:&lt;port&gt;</code>.
+          <div class="prereq-row">
+            <div class="prereq-status optional">optional</div>
+            <div class="prereq-info">
+              <h4>Helm</h4>
+              <p>
+                Only needed when deploying Helm chart apps.
+                <code
+                  style="
+                    font-family: 'JetBrains Mono', monospace;
+                    font-size: 13px;
+                    color: var(--accent);
+                  "
+                  >brew install helm</code
+                >
+              </p>
+            </div>
+          </div>
+          <div class="prereq-row">
+            <div class="prereq-status optional">optional</div>
+            <div class="prereq-info">
+              <h4>git</h4>
+              <p>
+                Only needed when deploying from a git SSH URL. Usually
+                pre-installed.
               </p>
             </div>
           </div>
         </div>
+      </div>
+    </section>
 
-        <div>
-          <div class="vm-diagram">
-            <div class="vm-diagram-title">Your VM: 1.2.3.4</div>
-            <div class="vm-box">
-              <div class="vm-box-label">kustron environment</div>
-              <div class="vm-services">
-                <div class="vm-svc">
-                  <span class="svc-name">frontend</span>
-                  <span class="svc-port">:8080</span>
-                  <span class="svc-badge">live</span>
-                </div>
-                <div class="vm-svc">
-                  <span class="svc-name">api</span>
-                  <span class="svc-port">:3000</span>
-                  <span class="svc-badge">live</span>
-                </div>
-                <div class="vm-svc">
-                  <span class="svc-name">postgres</span>
-                  <span class="svc-port">:5432</span>
-                </div>
-                <div class="vm-svc">
-                  <span class="svc-name">redis</span>
-                  <span class="svc-port">:6379</span>
-                </div>
+    <hr class="divider" />
+
+    <!-- VM section -->
+    <section>
+      <div class="section-inner">
+        <div class="section-label">Beyond localhost</div>
+        <h2>Your whole stack, live on one VM.</h2>
+        <p class="section-sub">
+          Not just for local dev. Run it on any cloud VM and your stack, APIs,
+          frontends, databases, is on the real internet. No cluster management,
+          no k8s babysitting.
+        </p>
+
+        <div class="vm-layout">
+          <div class="vm-steps">
+            <div class="vm-step">
+              <div class="vm-step-num">1</div>
+              <div class="vm-step-body">
+                <h4>Get a VM</h4>
+                <p>
+                  Any Linux instance works: EC2, DigitalOcean Droplet, Hetzner
+                  Cloud, Linode. Even a $6/month box is enough for a real
+                  multi-service stack.
+                </p>
               </div>
             </div>
-            <div class="vm-arrow">↓</div>
-            <div class="vm-internet">
-              <strong>1.2.3.4:8080</strong>&nbsp; · &nbsp;<strong>1.2.3.4:3000</strong><br>
-              <span style="font-size: 11px; margin-top: 4px; display: block;">accessible from anywhere</span>
+            <div class="vm-step">
+              <div class="vm-step-num">2</div>
+              <div class="vm-step-body">
+                <h4>Install prereqs &amp; add your SSH key</h4>
+                <p>
+                  Install the container runtime (Docker or podman), k3d,
+                  kubectl, and kustron. Add your GitHub (or GitLab) SSH key so
+                  kustron can pull private repos directly on the instance.
+                </p>
+              </div>
+            </div>
+            <div class="vm-step">
+              <div class="vm-step-num">3</div>
+              <div class="vm-step-body">
+                <h4>
+                  Write your
+                  <code
+                    style="
+                      font-family: 'JetBrains Mono', monospace;
+                      font-size: 12px;
+                    "
+                    >kustron-env.yaml</code
+                  >
+                </h4>
+                <p>
+                  List your apps with
+                  <code
+                    style="
+                      font-family: 'JetBrains Mono', monospace;
+                      font-size: 12px;
+                    "
+                    >exposed: true</code
+                  >
+                  for anything that needs to be public. Kustron maps each port
+                  to the VM's network interface.
+                </p>
+              </div>
+            </div>
+            <div class="vm-step">
+              <div class="vm-step-num">4</div>
+              <div class="vm-step-body">
+                <h4>Bring it up</h4>
+                <p>
+                  One command: cluster, registry, images, deployments, all at
+                  once.
+                </p>
+              </div>
+            </div>
+            <div class="vm-step">
+              <div class="vm-step-num">5</div>
+              <div class="vm-step-body">
+                <h4>Open the firewall &amp; share the URL</h4>
+                <p>
+                  Allow the exposed ports in your security group (AWS) or
+                  firewall rules. That's it, your stack is live at
+                  <code
+                    style="
+                      font-family: 'JetBrains Mono', monospace;
+                      font-size: 12px;
+                      color: var(--accent);
+                    "
+                    >&lt;vm-ip&gt;:&lt;port&gt;</code
+                  >.
+                </p>
+              </div>
             </div>
           </div>
-          <div class="vm-callout">
-            <span class="vm-callout-icon">🔒</span>
-            <span>Only open ports you intend to expose. Internal services like <code
-                style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">postgres</code> and <code
-                style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">redis</code> stay internal. Never
-              them.</span>
+
+          <div>
+            <div class="vm-diagram">
+              <div class="vm-diagram-title">Your VM: 1.2.3.4</div>
+              <div class="vm-box">
+                <div class="vm-box-label">kustron environment</div>
+                <div class="vm-services">
+                  <div class="vm-svc">
+                    <span class="svc-name">frontend</span>
+                    <span class="svc-port">:8080</span>
+                    <span class="svc-badge">live</span>
+                  </div>
+                  <div class="vm-svc">
+                    <span class="svc-name">api</span>
+                    <span class="svc-port">:3000</span>
+                    <span class="svc-badge">live</span>
+                  </div>
+                  <div class="vm-svc">
+                    <span class="svc-name">postgres</span>
+                    <span class="svc-port">:5432</span>
+                  </div>
+                  <div class="vm-svc">
+                    <span class="svc-name">redis</span>
+                    <span class="svc-port">:6379</span>
+                  </div>
+                </div>
+              </div>
+              <div class="vm-arrow">↓</div>
+              <div class="vm-internet">
+                <strong>1.2.3.4:8080</strong>&nbsp; · &nbsp;<strong
+                  >1.2.3.4:3000</strong
+                ><br />
+                <span style="font-size: 11px; margin-top: 4px; display: block"
+                  >accessible from anywhere</span
+                >
+              </div>
+            </div>
+            <div class="vm-callout">
+              <span class="vm-callout-icon">🔒</span>
+              <span
+                >Only open ports you intend to expose. Internal services like
+                <code
+                  style="
+                    font-family: 'JetBrains Mono', monospace;
+                    font-size: 12px;
+                  "
+                  >postgres</code
+                >
+                and
+                <code
+                  style="
+                    font-family: 'JetBrains Mono', monospace;
+                    font-size: 12px;
+                  "
+                  >redis</code
+                >
+                stay internal. Never them.</span
+              >
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- FAQ -->
-  <section>
-    <div class="section-inner">
-      <div class="section-label">FAQ</div>
-      <h2>Good questions, quick answers.</h2>
+    <!-- FAQ -->
+    <section>
+      <div class="section-inner">
+        <div class="section-label">FAQ</div>
+        <h2>Good questions, quick answers.</h2>
 
-      <div class="faq-list">
-        <div class="faq-item">
-          <h4>Which container runtime should I use, and how do I set it up?</h4>
-          <p><strong>OrbStack (macOS, recommended):</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">brew install --cask orbstack</code>, open it once, done. Kustron detects it automatically.</p>
-          <p><strong>Podman (any platform):</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">brew install podman</code> (macOS) or your package manager (Linux), then <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">podman machine init --rootful --cpus 4 --memory 4096</code> and <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">podman machine start</code>. The kustron installer does all of this for you and checks the daemon is responding.</p>
-          <p>Docker Desktop works too, but it's heavy with k3d. See the next question.</p>
-        </div>
+        <div class="faq-list">
+          <div class="faq-item">
+            <h4>
+              Which container runtime should I use, and how do I set it up?
+            </h4>
+            <p>
+              <strong>OrbStack (macOS, recommended):</strong>
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >brew install --cask orbstack</code
+              >, open it once, done. Kustron detects it automatically.
+            </p>
+            <p>
+              <strong>Podman (any platform):</strong>
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >brew install podman</code
+              >
+              (macOS) or your package manager (Linux), then
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >podman machine init --rootful --cpus 4 --memory 4096</code
+              >
+              and
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >podman machine start</code
+              >. The kustron installer does all of this for you and checks the
+              daemon is responding.
+            </p>
+            <p>
+              Docker Desktop works too, but it's heavy with k3d. See the next
+              question.
+            </p>
+          </div>
 
-        <div class="faq-item">
-          <h4>Docker Desktop + k3d hogs my CPU</h4>
-          <p>Docker Desktop runs Linux in a VM, and k3d runs a full Kubernetes cluster inside that VM. Two layers of virtualization means the k3d containers keep chewing CPU even when idle, plus several GB of RAM. OrbStack and Podman don't stack a second VM on top, which is why k3d is much happier on both.</p>
-        </div>
+          <div class="faq-item">
+            <h4>Docker Desktop + k3d hogs my CPU</h4>
+            <p>
+              Docker Desktop runs Linux in a VM, and k3d runs a full Kubernetes
+              cluster inside that VM. Two layers of virtualization means the k3d
+              containers keep chewing CPU even when idle, plus several GB of
+              RAM. OrbStack and Podman don't stack a second VM on top, which is
+              why k3d is much happier on both.
+            </p>
+          </div>
 
-        <div class="faq-item">
-          <h4>&ldquo;cannot create network with name 'bridge' because it conflicts with a valid network mode&rdquo;</h4>
-          <p>Podman reserves <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">bridge</code> as a network mode keyword, so a network can't be named that. Kustron used to try creating one before starting the cluster, which is exactly where this error came from. k3d handles networking itself (it auto-creates a <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">k3d-&lt;cluster&gt;</code> network on podman), and current kustron versions just let it. Update kustron with <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">./install.sh</code> and run <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">kustron env up</code>.</p>
-        </div>
+          <div class="faq-item">
+            <h4>
+              &ldquo;cannot create network with name 'bridge' because it
+              conflicts with a valid network mode&rdquo;
+            </h4>
+            <p>
+              Podman reserves
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >bridge</code
+              >
+              as a network mode keyword, so a network can't be named that.
+              Kustron used to try creating one before starting the cluster,
+              which is exactly where this error came from. k3d handles
+              networking itself (it auto-creates a
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >k3d-&lt;cluster&gt;</code
+              >
+              network on podman), and current kustron versions just let it.
+              Update kustron with
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >./install.sh</code
+              >
+              and run
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >kustron env up</code
+              >.
+            </p>
+          </div>
 
-        <div class="faq-item">
-          <h4>Railpack won't install, and I use a private npm registry</h4>
-          <p>Railpack used to ship on npm, so <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">npm i -g railpack</code> broke for anyone pointed at a private registry. It's not on npm anymore: the installer downloads the prebuilt binary straight from <a href="https://github.com/railwayapp/railpack/releases" target="_blank" rel="noopener">GitHub releases</a>. No npm, no brew, no package manager involved.</p>
-          <p>Building an app that pulls private npm deps (without a Dockerfile)? Keep your <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">.npmrc</code> auth or <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">NPM_TOKEN</code> env var in the app's build environment so railpack can authenticate.</p>
-        </div>
+          <div class="faq-item">
+            <h4>Railpack won't install, and I use a private npm registry</h4>
+            <p>
+              Railpack used to ship on npm, so
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >npm i -g railpack</code
+              >
+              broke for anyone pointed at a private registry. It's not on npm
+              anymore: the installer downloads the prebuilt binary straight from
+              <a
+                href="https://github.com/railwayapp/railpack/releases"
+                target="_blank"
+                rel="noopener"
+                >GitHub releases</a
+              >. No npm, no brew, no package manager involved.
+            </p>
+            <p>
+              Building an app that pulls private npm deps (without a
+              Dockerfile)? Keep your
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >.npmrc</code
+              >
+              auth or
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >NPM_TOKEN</code
+              >
+              env var in the app's build environment so railpack can
+              authenticate.
+            </p>
+          </div>
 
-        <div class="faq-item">
-          <h4>Port 5000 is already in use</h4>
-          <p>Kustron auto-detects an available port starting from 5000. If macOS AirPlay or another service is listening there, it picks the next free port automatically. You can also set a specific port via <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">config.registryPort</code> in <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">kustron-env.yaml</code>.</p>
-          <p>Kustron binds the local image registry to <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">localhost:5000</code>. If something else is listening there, free the port and re-run <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">kustron env up</code>.</p>
-        </div>
+          <div class="faq-item">
+            <h4>Port 5000 is already in use</h4>
+            <p>
+              Kustron auto-detects an available port starting from 5000. If
+              macOS AirPlay or another service is listening there, it picks the
+              next free port automatically. You can also set a specific port via
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >config.registryPort</code
+              >
+              in
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >kustron-env.yaml</code
+              >.
+            </p>
+            <p>
+              Kustron binds the local image registry to
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >localhost:5000</code
+              >. If something else is listening there, free the port and re-run
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >kustron env up</code
+              >.
+            </p>
+          </div>
 
-        <div class="faq-item">
-          <h4>Podman machine runs out of memory while k3d runs</h4>
-          <p>A k3d cluster wants around 4GB in the podman VM. On macOS: <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">podman machine init --rootful --cpus 4 --memory 4096</code> for a new machine, or <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">podman machine set --memory 4096</code> + restart for an existing one.</p>
-        </div>
+          <div class="faq-item">
+            <h4>Podman machine runs out of memory while k3d runs</h4>
+            <p>
+              A k3d cluster wants around 4GB in the podman VM. On macOS:
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >podman machine init --rootful --cpus 4 --memory 4096</code
+              >
+              for a new machine, or
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >podman machine set --memory 4096</code
+              >
+              + restart for an existing one.
+            </p>
+          </div>
 
-        <div class="faq-item">
-          <h4>Will Kustron change my kubectl context?</h4>
-          <p>No. Kustron never calls <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">kubectl config use-context</code>. Every kubectl and helm command includes <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">--context=k3d-&lt;clusterName&gt;</code> (or <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">--kube-context</code> for helm), so your global kubectl context is never touched. You can safely run <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent)">kustron env up</code> while working with production clusters in other terminals.</p>
+          <div class="faq-item">
+            <h4>Will Kustron change my kubectl context?</h4>
+            <p>
+              No. Kustron never calls
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >kubectl config use-context</code
+              >. Every kubectl and helm command includes
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >--context=k3d-&lt;clusterName&gt;</code
+              >
+              (or
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >--kube-context</code
+              >
+              for helm), so your global kubectl context is never touched. You
+              can safely run
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 13px;
+                  color: var(--accent);
+                "
+                >kustron env up</code
+              >
+              while working with production clusters in other terminals.
+            </p>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <hr class="divider">
-  <!-- Footer -->
-  <footer>
-    <div class="footer-inner">
-      <div class="footer-left">
-        <span>kustron</span> &nbsp;·&nbsp; MIT License &nbsp;·&nbsp; by <a href="https://itsmunim.github.io" target="_blank" rel="noopener">Munim</a>
+    <hr class="divider" />
+    <!-- Footer -->
+    <footer>
+      <div class="footer-inner">
+        <div class="footer-left">
+          <span>kustron</span> &nbsp;·&nbsp; MIT License &nbsp;·&nbsp; by
+          <a href="https://itsmunim.github.io" target="_blank" rel="noopener"
+            >Munim</a
+          >
+        </div>
+        <div class="footer-right">
+          <a
+            href="https://github.com/itsmunim/kustron"
+            target="_blank"
+            rel="noopener"
+            >GitHub</a
+          >
+          <a
+            href="https://github.com/itsmunim/kustron/issues"
+            target="_blank"
+            rel="noopener"
+            >Issues</a
+          >
+          <a
+            href="https://github.com/itsmunim/kustron/releases"
+            target="_blank"
+            rel="noopener"
+            >Releases</a
+          >
+        </div>
       </div>
-      <div class="footer-right">
-        <a href="https://github.com/itsmunim/kustron" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://github.com/itsmunim/kustron/issues" target="_blank" rel="noopener">Issues</a>
-        <a href="https://github.com/itsmunim/kustron/releases" target="_blank" rel="noopener">Releases</a>
-      </div>
-    </div>
-  </footer>
+    </footer>
 
-  <script>
-    hljs.highlightAll();
+    <script>
+      hljs.highlightAll();
 
-    // Fetch live star count from GitHub API
-    fetch('https://api.github.com/repos/itsmunim/kustron')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (!data) return;
-        const n = data.stargazers_count;
-        document.getElementById('star-count').textContent =
-          n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);
-      })
-      .catch(() => { });
+      // Fetch live star count from GitHub API
+      fetch('https://api.github.com/repos/itsmunim/kustron')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (!data) return;
+          const n = data.stargazers_count;
+          document.getElementById('star-count').textContent =
+            n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);
+        })
+        .catch(() => {});
 
-    function copyInstall(btn) {
-      const text = document.getElementById('install-cmd').textContent;
-      navigator.clipboard.writeText(text).then(() => {
-        btn.textContent = 'Copied!';
-        btn.classList.add('copied');
-        setTimeout(() => {
-          btn.textContent = 'Copy';
-          btn.classList.remove('copied');
-        }, 2000);
-      });
-    }
-  </script>
-</body>
-
+      function copyInstall(btn) {
+        const text = document.getElementById('install-cmd').textContent;
+        navigator.clipboard.writeText(text).then(() => {
+          btn.textContent = 'Copied!';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = 'Copy';
+            btn.classList.remove('copied');
+          }, 2000);
+        });
+      }
+    </script>
+  </body>
 </html>

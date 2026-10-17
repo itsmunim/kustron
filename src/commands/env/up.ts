@@ -18,6 +18,8 @@ import {mergeKubeconfig} from '../../core/context.js';
 import {readAndParseEnvFile} from '../../core/env-file.js';
 import {deployAll} from '../../core/deployer.js';
 import {expandComponents} from '../../core/components.js';
+import {pruneRemovedApps, recordDeployedApps} from '../../core/state.js';
+import {ensureNamespace} from '../../core/apply.js';
 import {ensureNamespace} from '../../core/apply.js';
 import {error, success, step, warn} from '../../utils/logger.js';
 import {t} from '../../utils/i18n.js';
