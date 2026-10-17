@@ -4,6 +4,11 @@ vi.mock('../../src/utils/exec.js', () => ({
   exec: vi.fn(),
 }));
 
+vi.mock('../../src/utils/container-runtime.js', () => ({
+  getDockerHostEnv: vi.fn().mockResolvedValue({}),
+  getRuntimeCommand: vi.fn().mockResolvedValue('docker'),
+}));
+
 import {exec} from '../../src/utils/exec.js';
 import {
   getK3dNodeIp,

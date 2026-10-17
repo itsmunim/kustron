@@ -3,15 +3,21 @@ import {mkdir, writeFile, rm} from 'fs/promises';
 import {mkdtemp} from 'fs/promises';
 import {tmpdir} from 'os';
 import {join} from 'path';
-import {detectBuildStrategy, buildImage} from '../../src/core/build.js';
 
 vi.mock('../../src/utils/exec.js', () => ({
   exec: vi.fn(),
 }));
 
+vi.mock('../../src/utils/container-runtime.js', () => ({
+  detectContainerRuntime: vi.fn(),
+}));
+
 import {exec} from '../../src/utils/exec.js';
+import {detectContainerRuntime} from '../../src/utils/container-runtime.js';
+import {detectBuildStrategy, buildImage} from '../../src/core/build.js';
 
 const mockedExec = vi.mocked(exec);
+const mockedRuntime = vi.mocked(detectContainerRuntime);
 
 describe('detectBuildStrategy', () => {
   it('returns dockerfile when Dockerfile exists', async () => {
@@ -36,6 +42,8 @@ describe('detectBuildStrategy', () => {
 
 describe('buildImage', () => {
   beforeEach(() => {
+    mockedRuntime.mockClear();
+    mockedRuntime.mockResolvedValue('docker');
     mockedExec.mockClear();
     mockedExec.mockResolvedValue({stdout: '', stderr: '', exitCode: 0});
   });

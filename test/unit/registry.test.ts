@@ -4,7 +4,12 @@ vi.mock('../../src/utils/exec.js', () => ({
   exec: vi.fn(),
 }));
 
+vi.mock('../../src/utils/container-runtime.js', () => ({
+  detectContainerRuntime: vi.fn().mockResolvedValue('docker'),
+}));
+
 import {exec} from '../../src/utils/exec.js';
+import {detectContainerRuntime} from '../../src/utils/container-runtime.js';
 import {
   ensurePullSecret,
   importImagesToCluster,
@@ -13,6 +18,7 @@ import {
 import type {AppEntry} from '../../src/types/index.js';
 
 const mockedExec = vi.mocked(exec);
+const mockedRuntime = vi.mocked(detectContainerRuntime);
 
 describe('ensurePullSecret', () => {
   beforeEach(() => {
