@@ -1,6 +1,6 @@
 {
   "name": "kustron",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "A CLI tool that gives anyone a fully working local Kubernetes setup in minutes",
   "type": "module",
   "scripts": {
