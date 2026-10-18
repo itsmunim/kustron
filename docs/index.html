@@ -1085,9 +1085,7 @@
         <div class="install-block">
           <span class="prompt">$</span>
           <code id="install-cmd"
-            >curl -fsSL
-            https://raw.githubusercontent.com/itsmunim/kustron/master/download.sh
-            | bash</code
+            >npm install -g kustron &amp;&amp; kustron doctor</code
           >
           <button class="copy-btn" onclick="copyInstall(this)">Copy</button>
         </div>
@@ -1783,6 +1781,24 @@
               >
             </td>
           </tr>
+          <tr>
+            <td colspan="2" class="cmd-group">doctor</td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> doctor</code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Check that the runtime dependencies (container runtime, k3d,
+                kubectl, railpack, helm, git) are installed and the container
+                daemon is reachable. Exits non-zero if anything required is
+                missing.</span
+              >
+            </td>
+          </tr>
         </table>
       </div>
     </section>
@@ -1795,8 +1811,9 @@
         <div class="section-label">Prerequisites</div>
         <h2>What you need installed.</h2>
         <p class="section-sub">
-          Kustron checks for these on install and tells you exactly what to do
-          if anything is missing.
+          Kustron tells you exactly which of these are missing and how to get
+          them: run <strong>kustron doctor</strong> to check, or let the
+          install script set everything up for you.
         </p>
 
         <div class="orbstack-callout">
@@ -1814,6 +1831,24 @@
         </div>
 
         <div class="prereqs">
+          <div class="prereq-row">
+            <div class="prereq-status required">required</div>
+            <div class="prereq-info">
+              <h4>Node.js 18+</h4>
+              <p>
+                Kustron is a Node CLI installed from npm (Node >= 18).
+                <code
+                  style="
+                    font-family: 'JetBrains Mono', monospace;
+                    font-size: 13px;
+                    color: var(--accent);
+                  "
+                  >brew install node</code
+                >
+                or <a href="https://github.com/nvm-sh/nvm" target="_blank" rel="noopener">nvm</a>.
+              </p>
+            </div>
+          </div>
           <div class="prereq-row">
             <div class="prereq-status required">required</div>
             <div class="prereq-info">
@@ -2179,7 +2214,7 @@
                   font-size: 13px;
                   color: var(--accent);
                 "
-                >./install.sh</code
+                >npm update -g kustron</code
               >
               and run
               <code

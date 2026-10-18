@@ -79,7 +79,16 @@ Optional:
 
 ## Installation
 
-One script installs everything. It checks what you already have, asks before installing anything (podman / OrbStack / Docker Desktop, k3d, kubectl, railpack, helm, git), then builds Kustron and puts a `kustron` command on your PATH.
+**From npm** — Kustron is a Node.js CLI (Node >= 18). Install it, then check your machine is ready:
+
+```bash
+npm install -g kustron
+kustron doctor
+```
+
+`kustron doctor` lists the runtime dependencies — container runtime (podman / OrbStack / Docker Desktop), k3d, kubectl (required); railpack, helm, git (optional) — with install links for whatever's missing, and verifies the container runtime daemon is reachable.
+
+**Or one script installs everything** — it checks what you already have, asks before installing anything (podman / OrbStack / Docker Desktop, k3d, kubectl, railpack, helm, git), then installs Kustron from npm and puts a `kustron` command on your PATH.
 
 ```bash
 # recommended: download the installer, review it, then run it
@@ -106,7 +115,7 @@ What it asks for, and what happens if you say no:
 | Install helm? (Helm charts only)                                     | no        | helm apps are skipped                                             |
 | Install git? (git-URL sources only)                                  | no        | `source: <git-url>` apps are skipped                              |
 
-The installer is idempotent. Re-run it and it skips whatever's already installed and just rebuilds Kustron.
+The installer is idempotent. Re-run it and it skips whatever's already installed and just re-installs Kustron from npm. To upgrade Kustron later: `npm update -g kustron`.
 
 ---
 
@@ -262,6 +271,7 @@ apps:
 
 | Command                                               | Description                                                               |
 | ----------------------------------------------------- | ------------------------------------------------------------------------- |
+| `kustron doctor`                                      | Check runtime dependencies and the container runtime daemon, print hints  |
 | `kustron env init`                                    | Create `kustron-env.yaml` in the current folder                           |
 | `kustron env up`                                      | Bring up the environment and deploy all apps                              |
 | `kustron env stop`                                    | Stop all apps (scale to 0, uninstall helm) without destroying the cluster |

@@ -12,7 +12,8 @@
 #   - helm                                           — optional (helm apps only)
 #   - git                                            — optional (git sources only)
 #
-# Then builds Kustron from source and puts a `kustron` command on your PATH.
+# Then installs Kustron from npm (`npm install -g kustron`) and puts a
+# `kustron` command on your PATH.
 #
 # Usage:
 #   ./install.sh            interactive (asks y/n before each install)
@@ -24,8 +25,6 @@ set -euo pipefail
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
-REPO_URL="https://github.com/itsmunim/kustron.git"
-CLONE_DIR="${KUSTRON_INSTALL_DIR:-$HOME/.kustron/kustron}"
 BIN_DIR_DEFAULT="/usr/local/bin"
 BIN_DIR_FALLBACK="$HOME/.local/bin"
 
@@ -100,10 +99,10 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Requirement: node/npm (needed to build + run kustron)
+# Requirement: node/npm (needed to run kustron and install it via npm)
 # ---------------------------------------------------------------------------
 if ! command -v node >/dev/null 2>&1; then
-  err "Node.js >= 18 is required to build and run kustron, but 'node' was not found."
+  err "Node.js >= 18 is required to run kustron, but 'node' was not found."
   if [[ "$PLATFORM" == "macos" ]]; then
     note "Install with:  brew install node"
   else
@@ -395,57 +394,42 @@ elif ask "Install git? (only needed for apps that install from a git URL)" "n"; 
 fi
 
 # ---------------------------------------------------------------------------
-# 7. Build + install kustron itself
+# 7. Install kustron itself (from npm)
 # ---------------------------------------------------------------------------
 printf '\n=== Installing kustron ===\n'
 
-if [[ -f package.json ]] && [[ -d src ]]; then
-  SRC_DIR="$(pwd)"
-  note "Using the current checkout: $SRC_DIR"
-elif [[ -f "$CLONE_DIR/package.json" ]]; then
-  SRC_DIR="$CLONE_DIR"
-  note "Found existing source at: $SRC_DIR — updating..."
-  (cd "$SRC_DIR" && git pull --ff-only) || warn "git pull failed; building whatever is checked out"
-else
-  note "Cloning kustron to $CLONE_DIR ..."
-  mkdir -p "$CLONE_DIR"
-  if have git; then
-    git clone --depth 1 "$REPO_URL" "$CLONE_DIR"
-  else
-    err "git is needed to download kustron. Install git and re-run."
-    exit 1
+# Remove any `kustron` symlink left behind by the old clone-and-build installer —
+# it would shadow the npm-installed command on PATH.
+for legacy_dir in "$BIN_DIR_DEFAULT" "$BIN_DIR_FALLBACK"; do
+  legacy="$legacy_dir/kustron"
+  if [[ -L "$legacy" ]] && [[ "$(readlink "$legacy")" == *"$HOME/.kustron/"* ]]; then
+    rm -f "$legacy" 2>/dev/null || true
+    note "Removed legacy kustron symlink at $legacy"
   fi
-  SRC_DIR="$CLONE_DIR"
-fi
+done
 
-(cd "$SRC_DIR" && npm ci --no-audit --no-fund 2>/dev/null || npm install --no-audit --no-fund)
-(cd "$SRC_DIR" && npm run build)
-
-LAUNCHER="$SRC_DIR/dist/bin/kustron.js"
-chmod +x "$LAUNCHER"
-
-# Pick the bin dir + make sure it is on PATH
-BIN_DIR="$BIN_DIR_FALLBACK"
-if [[ -w "$BIN_DIR_DEFAULT" ]] || [[ "$(id -u)" -eq 0 ]]; then
-  BIN_DIR="$BIN_DIR_DEFAULT"
+if npm install --global --no-audit --no-fund kustron; then
+  ok "kustron $(kustron --version 2>/dev/null || echo '') installed"
 else
-  mkdir -p "$BIN_DIR_FALLBACK"
-  note "No write access to $BIN_DIR_DEFAULT — installing to $BIN_DIR_FALLBACK"
+  err "npm install -g kustron failed."
+  note "If npm reported a permissions error (EACCES), fix your npm global prefix —"
+  note "https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally"
+  note "If your machine routes through a private npm registry, try:"
+  note "  npm install -g kustron --registry=https://registry.npmjs.org"
+  exit 1
 fi
-
-ln -sf "$LAUNCHER" "$BIN_DIR/kustron"
 
 # ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
 printf '\n'
 ok "kustron installation complete!"
-note "Command:   $BIN_DIR/kustron"
-if [[ "$BIN_DIR" == "$BIN_DIR_FALLBACK" ]] && [[ ":$PATH:" != *":$BIN_DIR_FALLBACK:"* ]]; then
-  warn "$BIN_DIR_FALLBACK is not on your PATH — add it with:  export PATH=\"$BIN_DIR_FALLBACK:\$PATH\""
-fi
+
 printf '\n%sNext steps:%s\n' "$c_dim" "$c_reset"
-note "  1. cd into your project"
-note "  2. kustron env init   (creates kustron-env.yaml)"
-note "  3. kustron env up     (builds and deploys your apps)"
+note "  1. kustron doctor   (verify runtime deps + container daemon)"
+note "  2. cd into your project"
+note "  3. kustron env init  (creates kustron-env.yaml)"
+note "  4. kustron env up    (builds and deploys your apps)"
+printf '\n%sUpgrading later:%s\n' "$c_dim" "$c_reset"
+note "  npm update -g kustron"
 printf '\n'

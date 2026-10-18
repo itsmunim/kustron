@@ -27,7 +27,8 @@
     "exposedOption": "Make app accessible at localhost:<port>",
     "replicasOption": "Replica count (default: 1)",
     "haOption": "HA mode: min 2, max 5 replicas, CPU 90%, mem 80%",
-    "envOption": "Environment variable (KEY=VALUE, repeatable)"
+    "envOption": "Environment variable (KEY=VALUE, repeatable)",
+    "doctorDescription": "Check that kustron's runtime dependencies are installed and the container runtime daemon is reachable"
   },
   "env": {
     "init": {
@@ -104,6 +105,16 @@
     "allRequiredInstalled": "All required dependencies are installed.",
     "missingRequiredError": "Missing required dependencies. Please install them and try again.",
     "optionalMissing": "Optional dependencies missing: {{deps}}. Some features may be unavailable."
+  },
+  "doctor": {
+    "versionLine": "kustron v{{version}} · node {{node}}",
+    "daemonChecking": "Checking container runtime daemon (docker info)...",
+    "daemonRunning": "Container runtime daemon is reachable.",
+    "daemonNotRunning": "Container runtime daemon is NOT reachable.",
+    "daemonHint": "Start your runtime (e.g. `podman machine start`, or open Docker Desktop / OrbStack), then re-run `kustron doctor`.",
+    "summaryFail": "kustron is not ready: required dependencies are missing or the container runtime daemon is down.",
+    "summaryHint": "Install the missing dependencies above (or run the install script, which installs them for you: https://raw.githubusercontent.com/itsmunim/kustron/master/install.sh), then re-run `kustron doctor`.",
+    "summaryOk": "kustron environment is ready: all required dependencies are installed and the container runtime is reachable."
   },
   "deploy": {
     "starting": "Deploying {{name}}...",

@@ -17,9 +17,11 @@ import {appStart} from '../commands/app/start.js';
 import {appLogs} from '../commands/app/logs.js';
 import {appExec} from '../commands/app/exec.js';
 import {appForward} from '../commands/app/forward.js';
+import {runDoctor} from '../commands/doctor.js';
 import {setVerbose} from '../utils/exec.js';
 import {t} from '../utils/i18n.js';
 import {printBanner} from '../utils/banner.js';
+import {getPackageVersion} from '../utils/version.js';
 
 const program = new Command();
 
@@ -38,7 +40,7 @@ process.on('SIGINT', () => {
 program
   .name('kustron')
   .description(t('cli.description'))
-  .version('2.0.0')
+  .version(getPackageVersion())
   .option('--verbose', t('cli.verboseOption'))
   .configureHelp({
     showGlobalOptions: true,
@@ -198,6 +200,13 @@ apps
   .description(t('cli.removeDescription'))
   .action(async (name) => {
     await appsRemove(name);
+  });
+
+program
+  .command('doctor')
+  .description(t('cli.doctorDescription'))
+  .action(async () => {
+    await runDoctor();
   });
 
 registerRegistryCommand(program);

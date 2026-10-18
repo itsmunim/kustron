@@ -31,6 +31,12 @@
   ],
   "author": "Munim Dibosh",
   "license": "MIT",
+  "bin": {
+    "kustron": "dist/bin/kustron.js"
+  },
+  "files": [
+    "dist"
+  ],
   "bugs": {
     "url": "https://github.com/dibosh/kustron/issues"
   },
