@@ -14,6 +14,7 @@ import {
   buildTag,
   buildPushTag,
   getRegistryPushHost,
+  registryHostFor,
   REGISTRY_HOST,
   pushImage,
 } from '../../src/core/push.js';
@@ -38,6 +39,18 @@ describe('push', () => {
   it('buildPushTag creates localhost push tag', () => {
     expect(buildPushTag('api', 'abc123', 5000)).toBe(
       'localhost:5000/api:abc123',
+    );
+  });
+
+  it('registryHostFor is cluster-scoped', () => {
+    expect(registryHostFor()).toBe('kustron-registry:5000');
+    expect(registryHostFor('kustron')).toBe('kustron-registry:5000');
+    expect(registryHostFor('ktverify')).toBe('ktverify-registry:5000');
+  });
+
+  it('buildTag honors the cluster-scoped registry host', () => {
+    expect(buildTag('api', 'abc123', 'ktverify-registry:5000')).toBe(
+      'ktverify-registry:5000/api:abc123',
     );
   });
 });

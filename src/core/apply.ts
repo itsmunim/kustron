@@ -2,6 +2,59 @@ import {kubectl} from './kubectl.js';
 import {error, info, warn} from '../utils/logger.js';
 import {t} from '../utils/i18n.js';
 
+/**
+ * All NodePort ports already allocated in the cluster (any namespace).
+ * Used to pin exposed services to a free NodePort in the loadbalancer's
+ * mapped window so exposed URLs remain stable and confirmably reachable.
+ */
+export async function listClusterNodePorts(
+  clusterName: string,
+): Promise<Set<number>> {
+  const used = new Set<number>();
+  try {
+    const {stdout} = await kubectl(clusterName, [
+      'get',
+      'svc',
+      '--all-namespaces',
+      '-o',
+      'json',
+    ]);
+    const list = JSON.parse(stdout) as {
+      items?: Array<{
+        spec?: {type?: string; ports?: Array<{nodePort?: number}>};
+      }>;
+    };
+    const services = list.items ?? [];
+    for (const svc of services) {
+      if (svc.spec?.type !== 'NodePort') continue;
+      for (const p of svc.spec.ports ?? []) {
+        if (p.nodePort) used.add(p.nodePort);
+      }
+    }
+  } catch {
+    // If listing fails fall through with an empty set; k8s will surface any
+    // conflict at apply time.
+  }
+  // Local loadbalancer host-mapped ports are taken too (other local services
+  // like AirPlay on 5000 don't matter — but we only pick from the mapped
+  // window, which the cluster shares with other k3d lb mappings).
+  return used;
+}
+
+/**
+ * Pick a free NodePort inside the kustron mapping window (30000..30100).
+ * Prefers ports adjacent to the app port for grep-ability, i.e. 30000+n.
+ */
+export async function pickFreeNodePort(
+  clusterName: string,
+): Promise<number | undefined> {
+  const used = await listClusterNodePorts(clusterName);
+  for (let port = 30000; port <= 30100; port++) {
+    if (!used.has(port)) return port;
+  }
+  return undefined;
+}
+
 export async function ensureNamespace(
   namespace: string,
   clusterName: string,

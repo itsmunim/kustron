@@ -3,6 +3,8 @@ import {readAndParseEnvFile} from '../../core/env-file.js';
 import {kubectl} from '../../core/kubectl.js';
 import {helmUninstall} from '../../core/helm.js';
 import {clusterExists, isClusterRunning} from '../../core/cluster.js';
+import {expandComponents} from '../../core/components.js';
+import {appDeploymentName} from '../../core/deps.js';
 import {success, warn, step} from '../../utils/logger.js';
 import {t} from '../../utils/i18n.js';
 
@@ -32,16 +34,30 @@ export async function envStop(): Promise<void> {
     return;
   }
 
-  step(t('env.stop.stoppingApps', {count: String(envFile.apps.length)}));
+  const {apps} = await expandComponents(envFile);
 
-  for (const app of envFile.apps) {
+  step(t('env.stop.stoppingApps', {count: String(apps.length)}));
+
+  for (const app of apps) {
+    const deploymentName = appDeploymentName(app);
     if (app.helm) {
-      await helmUninstall(app.name, namespace, clusterName);
+      await helmUninstall(
+        deploymentName,
+        app.namespace ?? namespace,
+        clusterName,
+      );
     } else {
       try {
         await kubectl(
           clusterName,
-          ['scale', 'deployment', app.name, '--replicas=0', '-n', namespace],
+          [
+            'scale',
+            'deployment',
+            deploymentName,
+            '--replicas=0',
+            '-n',
+            app.namespace ?? namespace,
+          ],
           {silent: true, reject: false},
         );
       } catch {

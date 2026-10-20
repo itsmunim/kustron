@@ -84,7 +84,7 @@ export interface ComponentSpec {
 }
 
 export interface EnvFile {
-  config?: {namespace?: string};
+  config?: {namespace?: string; clusterName?: string};
   components?: ComponentSpec[];
   apps: AppEntry[];
 }

@@ -63,7 +63,7 @@ export async function envInit(): Promise<void> {
     return;
   }
 
-  const type = await select<['source', 'image']>({
+  const type = await select<'source' | 'image'>({
     message: 'Deploy from source or use an existing image?',
     options: [
       {value: 'source', label: 'Source (build from local directory)'},

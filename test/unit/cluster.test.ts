@@ -18,6 +18,8 @@ import {
   deleteCluster,
   createCluster,
   ensureRegistry,
+  registryName,
+  discoverRegistryPort,
 } from '../../src/core/cluster.js';
 
 const mockedExec = vi.mocked(exec);
@@ -149,7 +151,7 @@ describe('ensureRegistry', () => {
 
   it('returns early when registry exists', async () => {
     mockedExec.mockResolvedValue({
-      stdout: JSON.stringify([{name: 'kustron-registry'}]),
+      stdout: JSON.stringify([{name: 'cluster-registry'}]),
       stderr: '',
       exitCode: 0,
     });
@@ -176,5 +178,47 @@ describe('ensureRegistry', () => {
       expect.arrayContaining(['registry', 'create']),
       expect.anything(),
     );
+  });
+});
+
+describe('registryName', () => {
+  it('keeps kustron-registry for the default cluster', () => {
+    expect(registryName()).toBe('kustron-registry');
+    expect(registryName('kustron')).toBe('kustron-registry');
+  });
+
+  it('scopes the registry name to non-default clusters', () => {
+    expect(registryName('ktverify')).toBe('ktverify-registry');
+  });
+});
+
+describe('discoverRegistryPort', () => {
+  beforeEach(() => {
+    mockedExec.mockClear();
+  });
+
+  it('reads the published host port from container inspect', async () => {
+    mockedExec.mockResolvedValue({
+      stdout: JSON.stringify({
+        '5000/tcp': [{HostIp: '127.0.0.1', HostPort: '5001'}],
+      }),
+      stderr: '',
+      exitCode: 0,
+    });
+    expect(await discoverRegistryPort('ktverify')).toBe(5001);
+  });
+
+  it('returns undefined when the registry container is missing', async () => {
+    mockedExec.mockResolvedValue({
+      stdout: '',
+      stderr: 'No such object',
+      exitCode: 1,
+    });
+    expect(await discoverRegistryPort('ktverify')).toBeUndefined();
+  });
+
+  it('returns undefined on malformed inspect output', async () => {
+    mockedExec.mockResolvedValue({stdout: 'not-json', stderr: '', exitCode: 0});
+    expect(await discoverRegistryPort('ktverify')).toBeUndefined();
   });
 });

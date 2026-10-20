@@ -1,5 +1,6 @@
 import {access} from 'fs/promises';
 import {readAndParseEnvFile} from '../../core/env-file.js';
+import {resolveAppByName} from '../../core/app-lookup.js';
 import {kubectl} from '../../core/kubectl.js';
 import {helmUninstall} from '../../core/helm.js';
 import {clusterExists, isClusterRunning} from '../../core/cluster.js';
@@ -22,11 +23,13 @@ export async function appStop(appName: string): Promise<void> {
   const namespace = envFile.config?.namespace ?? DEFAULT_NAMESPACE;
   const clusterName = envFile.config?.clusterName ?? DEFAULT_CLUSTER_NAME;
 
-  const app = envFile.apps.find((a) => a.name === appName);
-  if (!app) {
+  const resolved = await resolveAppByName(envFile, appName, namespace);
+  if (!resolved) {
     warn(t('app.notFound', {name: appName}));
     process.exit(1);
   }
+  const app = resolved.app;
+  const deploymentName = resolved.deploymentName;
 
   const exists = await clusterExists(clusterName);
   if (!exists || !(await isClusterRunning(clusterName))) {
@@ -37,15 +40,15 @@ export async function appStop(appName: string): Promise<void> {
   step(t('app.stopping', {name: appName}));
 
   if (app.helm) {
-    await helmUninstall(app.name, namespace, clusterName);
+    await helmUninstall(deploymentName, resolved.namespace, clusterName);
   } else {
     await kubectl(clusterName, [
       'scale',
       'deployment',
-      app.name,
+      deploymentName,
       '--replicas=0',
       '-n',
-      namespace,
+      resolved.namespace,
     ]);
   }
 
