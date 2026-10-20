@@ -7,6 +7,8 @@ import {
   getK3dNodeIp,
 } from '../../core/cluster.js';
 import {kubectl} from '../../core/kubectl.js';
+import {expandComponents} from '../../core/components.js';
+import {appDeploymentName} from '../../core/deps.js';
 import {error, info, warn} from '../../utils/logger.js';
 import {t} from '../../utils/i18n.js';
 
@@ -165,6 +167,10 @@ export async function envStatus(): Promise<void> {
   const namespace = envFile.config?.namespace ?? DEFAULT_NAMESPACE;
   const clusterName = envFile.config?.clusterName ?? DEFAULT_CLUSTER_NAME;
 
+  // Component apps (declared in a Kustronfile) are lifecycle-manageable
+  // citizens: status lists the expanded app set, not just declared entries.
+  const {apps: expandedApps} = await expandComponents(envFile);
+
   // Cluster state (informational; status still lists yaml apps regardless)
   const exists = await clusterExists(clusterName);
   if (!exists) {
@@ -175,20 +181,26 @@ export async function envStatus(): Promise<void> {
 
   const nodeIp = exists ? await getK3dNodeIp(clusterName) : null;
 
-  info(`${t('env.status.header')} (${envFile.apps.length})`);
+  info(`${t('env.status.header')} (${expandedApps.length})`);
   info(t('env.status.namespace', {namespace}));
   console.log();
 
   const rows = await Promise.all(
-    envFile.apps.map(async (app) => {
+    expandedApps.map(async (app) => {
+      const deploymentName = appDeploymentName(app);
+      const appNamespace = app.namespace ?? namespace;
       const deployment = await getDeploymentInfo(
-        app.name,
-        namespace,
+        deploymentName,
+        appNamespace,
         clusterName,
       );
-      const podState = await getPodState(app.name, namespace, clusterName);
+      const podState = await getPodState(
+        deploymentName,
+        appNamespace,
+        clusterName,
+      );
       const nodePort = app.exposed
-        ? await getNodePort(app.name, namespace, clusterName)
+        ? await getNodePort(deploymentName, appNamespace, clusterName)
         : null;
       const url =
         app.exposed && nodePort && nodeIp

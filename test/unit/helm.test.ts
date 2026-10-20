@@ -11,6 +11,7 @@ import {
   isHelmRelease,
   helmReleaseImage,
   createHelmExposureService,
+  applyImageValues,
 } from '../../src/core/helm.js';
 import type {AppEntry} from '../../src/types/index.js';
 
@@ -24,6 +25,68 @@ describe('createHelmExposureService', () => {
     expect(yaml).toContain('kind: Service');
     expect(yaml).toContain('type: NodePort');
     expect(yaml).toContain('port: 3000');
+  });
+
+  it('pins the NodePort when provided', () => {
+    const yaml = createHelmExposureService(
+      'grafana',
+      'default',
+      3000,
+      {},
+      30002,
+    );
+    expect(yaml).toContain('nodePort: 30002');
+  });
+});
+
+describe('applyImageValues', () => {
+  it('splits host:port/name:tag into repository and tag', () => {
+    const out = applyImageValues(
+      {},
+      'ktverify-registry:5000/srchelm:3cc6bbd1b7bf',
+      {repository: 'image.repository', tag: 'image.tag'},
+    );
+    expect(out).toEqual({
+      image: {
+        repository: 'ktverify-registry:5000/srchelm',
+        tag: '3cc6bbd1b7bf',
+      },
+    });
+  });
+
+  it('injects nothing for refs without a tag', () => {
+    expect(
+      applyImageValues({}, 'library/nginx', {
+        repository: 'image.repo',
+        tag: 'image.tag',
+      }),
+    ).toEqual({});
+  });
+
+  it('returns the original map when no imageValues are set', () => {
+    const values = {replicas: 2};
+    expect(applyImageValues(values, 'img:1.0', undefined)).toBe(values);
+  });
+
+  it('overrides existing values without mutating the input', () => {
+    const values = {image: {repository: 'old', tag: '0'}};
+    const out = applyImageValues(values, 'registry:5000/app:2.0', {
+      repository: 'image.repository',
+      tag: 'image.tag',
+    });
+    expect(out.image).toEqual({repository: 'registry:5000/app', tag: '2.0'});
+    expect(values.image).toEqual({repository: 'old', tag: '0'});
+  });
+
+  it('merges into deep pre-existing maps', () => {
+    const out = applyImageValues(
+      {deployment: {image: {pullPolicy: 'IfNotPresent'}}},
+      'reg:5000/x:9',
+      {repository: 'deployment.image.repository', tag: 'deployment.image.tag'},
+    );
+    expect(out.deployment).toEqual({
+      image: {pullPolicy: 'IfNotPresent', repository: 'reg:5000/x', tag: '9'},
+    });
   });
 });
 

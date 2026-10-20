@@ -29,6 +29,13 @@ export interface ManifestOptions {
   ha?: boolean;
   /** imagePullSecrets attached to the Deployment, needed for private registries (idea 6). */
   imagePullSecrets?: string[];
+  /**
+   * Explicit NodePort to pin for exposed services. Kubernetes assigns random
+   * NodePorts (30000-32767) when omitted; pinning keeps the service reachable
+   * through the loadbalancer host ports kustron mapped at cluster creation
+   * (30000-30100).
+   */
+  nodePort?: number;
 }
 
 function managedLabels(name: string): Record<string, string> {
@@ -110,13 +117,14 @@ export function buildDeployment(opts: ManifestOptions): string {
     Object.keys(opts.env).length > 0 ||
     Object.keys(opts.secret ?? {}).length > 0
   ) {
-    container.envFrom = [];
+    const envFrom: Record<string, unknown>[] = [];
     if (Object.keys(opts.env).length > 0) {
-      container.envFrom.push({configMapRef: {name: opts.name}});
+      envFrom.push({configMapRef: {name: opts.name}});
     }
     if (Object.keys(opts.secret ?? {}).length > 0) {
-      container.envFrom.push({secretRef: {name: `${opts.name}-env`}});
+      envFrom.push({secretRef: {name: `${opts.name}-env`}});
     }
+    container.envFrom = envFrom;
   }
 
   // Healthcheck is opt-in:
@@ -199,6 +207,7 @@ export function buildService(opts: ManifestOptions): string {
       port: opts.port,
       targetPort: opts.port,
       protocol: 'TCP',
+      ...(opts.expose && opts.nodePort ? {nodePort: opts.nodePort} : {}),
     },
   ];
 

@@ -21,7 +21,12 @@ import {
   buildHPA,
   assembleManifests,
 } from './manifest.js';
-import {applyManifests, waitForRollout, getServiceNodePort} from './apply.js';
+import {
+  applyManifests,
+  waitForRollout,
+  getServiceNodePort,
+  pickFreeNodePort,
+} from './apply.js';
 import {
   helmInstall,
   createHelmExposureService,
@@ -109,6 +114,10 @@ async function deployFromImage(
     resources: app.resources,
     patch: app.patch,
     imagePullSecrets,
+    nodePort:
+      app.exposed && !app.helm
+        ? await pickFreeNodePort(ctx.clusterName)
+        : undefined,
   };
 
   info(`[${app.name}] ${t('deploy.generatingManifests')}`);
@@ -185,7 +194,7 @@ async function buildSourceImage(
     const ref = await hashSourceDir(sourcePath);
     info(`[${app.name}] ${t('deploy.sourceHash', {ref})}`);
     const pushTag = buildPushTag(appDeploymentName(app), ref, ctx.registryPort);
-    const image = buildTag(appDeploymentName(app), ref);
+    const image = buildTag(appDeploymentName(app), ref, ctx.registryHost);
 
     if (await skipCheck(image, ref)) {
       info(`[${app.name}] ${t('deploy.upToDate', {ref})}`);
@@ -253,6 +262,7 @@ async function deployHelmApp(
   app: AppEntry,
   ctx: DeployContext,
   url: string | null,
+  builtImageRef?: string,
 ): Promise<DeployResult> {
   info(`[${app.name}] ${t('deploy.installingHelm')}`);
   await helmInstall(
@@ -260,17 +270,20 @@ async function deployHelmApp(
     ctx.namespace,
     ctx.clusterName,
     appDeploymentName(app),
+    builtImageRef ?? app.image,
   );
   info(`[${app.name}] ${t('deploy.helmInstalled')}`);
 
   let finalUrl = url;
   if (app.exposed && typeof app.port === 'number' && app.helm?.selector) {
     info(`[${app.name}] ${t('deploy.creatingExposureService')}`);
+    const pinnedNodePort = await pickFreeNodePort(ctx.clusterName);
     const serviceYaml = createHelmExposureService(
       appDeploymentName(app),
       ctx.namespace,
       app.port,
       app.helm.selector,
+      pinnedNodePort,
     );
     await applyManifests(serviceYaml, ctx.clusterName);
     info(`[${app.name}] ${t('deploy.exposureServiceCreated')}`);
@@ -305,9 +318,8 @@ async function deploySourceAsHelmApp(
     );
     return releaseImage === image;
   });
-  // Image is built and pushed, but helm.values must reference it explicitly.
-  // Kustron no longer auto-injects images into helm charts.
-  return await deployHelmApp(app, ctx, url);
+  // Inject the built image into the chart via helm.imageValues paths.
+  return await deployHelmApp(app, ctx, url, image);
 }
 
 export async function deployApp(

@@ -71,11 +71,55 @@ export async function helmReleaseImage(
   }
 }
 
+/**
+ * Inject a built/deployed image into the chart's values map via the
+ * `helm.imageValues` dotted paths (e.g. {repository: 'image.repository'}).
+ * The image ref (host:port/name:tag) is split into repository + tag.
+ */
+export function applyImageValues(
+  valuesMap: Record<string, unknown>,
+  imageRef: string,
+  imageValues: {repository?: string; tag?: string} | undefined,
+): Record<string, unknown> {
+  if (!imageValues) return valuesMap;
+  // Deep-copy so injecting image paths never mutates the caller's values map
+  // (app.helm.values) or any nested objects it shares with the clone.
+  const merged = structuredClone(valuesMap);
+  const setPath = (path: string, value: string) => {
+    const keys = path.split('.');
+    let obj = merged;
+    for (const [i, key] of keys.entries()) {
+      if (i === keys.length - 1) {
+        obj[key] = value;
+      } else if (
+        typeof obj[key] === 'object' &&
+        obj[key] !== null &&
+        !Array.isArray(obj[key])
+      ) {
+        obj = obj[key] as Record<string, unknown>;
+      } else {
+        obj[key] = {};
+        obj = obj[key] as Record<string, unknown>;
+      }
+    }
+  };
+  // host:port/name:tag → repository = host:port/name, tag = last segment
+  const lastColon = imageRef.lastIndexOf(':');
+  const tag =
+    lastColon > imageRef.lastIndexOf('/') ? imageRef.slice(lastColon + 1) : '';
+  const repository = tag ? imageRef.slice(0, lastColon) : imageRef;
+  if (imageValues.repository && tag)
+    setPath(imageValues.repository, repository);
+  if (imageValues.tag && tag) setPath(imageValues.tag, tag);
+  return merged;
+}
+
 export async function helmInstall(
   app: AppEntry,
   namespace: string,
   clusterName: string,
   releaseName?: string,
+  builtImageRef?: string,
 ): Promise<void> {
   if (!app.helm) throw new Error('App has no helm configuration');
 
@@ -108,7 +152,17 @@ export async function helmInstall(
   }
 
   // helm.values is passed directly as a --values file. No merging, no magic.
-  const valuesMap = app.helm.values ?? {};
+  let valuesMap: Record<string, unknown> = app.helm.values ?? {};
+  // Inject the built (or referenced) image through helm.imageValues paths so
+  // `source + helm` / `image + helm` deploys the kustron-built image.
+  const injectableRef = builtImageRef ?? app.image;
+  if (injectableRef && app.helm.imageValues) {
+    valuesMap = applyImageValues(
+      valuesMap,
+      injectableRef,
+      app.helm.imageValues,
+    );
+  }
 
   let tempDir: string | undefined;
   try {
@@ -169,6 +223,7 @@ export function createHelmExposureService(
   namespace: string,
   port: number,
   selector: Record<string, string>,
+  nodePort?: number,
 ): string {
   return dump({
     apiVersion: 'v1',
@@ -189,6 +244,7 @@ export function createHelmExposureService(
           port,
           targetPort: port,
           protocol: 'TCP',
+          ...(nodePort ? {nodePort} : {}),
         },
       ],
     },

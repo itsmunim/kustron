@@ -13,6 +13,7 @@ import {
   ensureRegistry,
   installMetricsServer,
   getK3dNodeIp,
+  discoverRegistryPort,
 } from '../../core/cluster.js';
 import {mergeKubeconfig} from '../../core/context.js';
 import {readAndParseEnvFile} from '../../core/env-file.js';
@@ -20,7 +21,7 @@ import {deployAll} from '../../core/deployer.js';
 import {expandComponents} from '../../core/components.js';
 import {pruneRemovedApps, recordDeployedApps} from '../../core/state.js';
 import {ensureNamespace} from '../../core/apply.js';
-import {ensureNamespace} from '../../core/apply.js';
+import {registryHostFor} from '../../core/push.js';
 import {error, success, step, warn} from '../../utils/logger.js';
 import {t} from '../../utils/i18n.js';
 import type {DeployContext} from '../../types/index.js';
@@ -78,7 +79,11 @@ export async function envUp(): Promise<void> {
   }
 
   const exists = await clusterExists(clusterName);
-  const registryPort = await findAvailablePort(5000);
+  // Reuse the existing registry's host port when one was already created —
+  // probing can drift to a new port between runs, breaking `docker push`.
+  const registryPort =
+    (await discoverRegistryPort(clusterName)) ??
+    (await findAvailablePort(5000));
 
   if (!exists) {
     step(t('env.up.creatingCluster', {name: clusterName}));
@@ -109,7 +114,7 @@ export async function envUp(): Promise<void> {
 
   const ctx: DeployContext = {
     namespace,
-    registryHost: 'kustron-registry:5000',
+    registryHost: registryHostFor(clusterName),
     clusterName,
     verbose: false,
     nodeIp: nodeIp ?? undefined,
@@ -121,6 +126,7 @@ export async function envUp(): Promise<void> {
   await ensureNamespace(namespace, clusterName);
 
   // Expand components (idea 8) into concrete apps, exposing ${component.output} vars.
+
   const {apps, outputs} = await expandComponents(envFile);
 
   // Remove apps that were previously deployed but are no longer in the env file.

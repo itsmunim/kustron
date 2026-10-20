@@ -184,7 +184,7 @@ export async function expandComponents(envFile: EnvFile): Promise<ExpandedEnv> {
     const result = appEntrySchema.safeParse(app);
     if (!result.success) {
       throw new Error(
-        `Component app '${app.name}' is invalid: ${result.error.errors.map((e) => e.message).join(', ')}`,
+        `Component app '${app.name}' is invalid: ${result.error.issues.map((e) => e.message).join(', ')}`,
       );
     }
   }
