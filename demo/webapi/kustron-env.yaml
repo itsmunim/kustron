@@ -1,0 +1,10 @@
+config:
+  namespace: kvdemo
+  clusterName: kvdemo
+
+apps:
+  - name: webapi
+    source: ./
+    port: 3000
+    exposed: true
+    healthcheck: /health

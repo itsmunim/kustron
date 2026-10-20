@@ -592,8 +592,9 @@ Done.</code></pre>
           <h3>Split build from deploy</h3>
           <p>
             Build an image from source, then deploy it anywhere: the built-in
-            template, a raw Kustomize/manifests directory, or a Helm chart of
-            your own via <code>helm.imageValues</code>.
+            template, or a Helm chart of your own via
+            <code>helm.imageValues</code> — your built image is injected into
+            the chart through the dotted paths you pick.
           </p>
           <span class="feature-meta">source + helm.imageValues</span>
         </div>
@@ -829,6 +830,42 @@ apps:
 
     <hr class="divider" />
 
+    <!-- 2-minute demo -->
+    <div class="feature" id="demo">
+      <div class="wrap feature-inner">
+        <div class="feature-text">
+          <h3>Watch: the whole flow in 2 minutes</h3>
+          <p>
+            From <code>kustron doctor</code> to a running cluster with a live
+            NodePort URL, a fast no-change re-up, a rebuilt app after editing
+            source, and a clean <code>env destroy</code> — the full lifecycle,
+            unscripted terminal output.
+          </p>
+          <span class="feature-meta">env init → up → curl → watch → destroy</span>
+        </div>
+        <div style="width: 100%">
+          <video
+            controls
+            preload="none"
+            poster="assets/demo-poster.png"
+            style="
+              width: 100%;
+              max-width: 900px;
+              border-radius: 14px;
+              box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+              background: #0b0e14;
+            "
+          >
+            <source src="assets/demo.mp4" type="video/mp4" />
+            Your browser doesn't support embedded video. Download it instead:
+            <a href="assets/demo.mp4">demo.mp4</a>.
+          </video>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
     <!-- Full example -->
     <div class="full-example">
       <div class="wrap">
@@ -917,6 +954,137 @@ apps:
 #
 # One command tears it all down:
 #   kustron env down</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparison with tilt.dev -->
+    <div class="feature">
+      <div class="wrap feature-inner">
+        <div class="feature-text">
+          <h3>kustron vs tilt.dev</h3>
+          <p>
+            Both make Kubernetes a pleasant dev environment — with different
+            bets. Tilt is an <strong>engine</strong>: a permanent control loop
+            with a web UI and in-container file sync
+            (live_update). Kustron is a
+            <strong>lifecycle tool</strong>: one declarative YAML that starts,
+            reconciles, and deletes a real k3d cluster — no daemon, no UI, no
+            Starlark.
+          </p>
+          <p>
+            Sourcing rule: every kustron cell was verified against a live k3d
+            test cluster; every Tilt cell is from Tilt's official docs (not
+            hand-tested). The full table, with links, lives at
+            <a
+              href="https://github.com/itsmunim/kustron/blob/master/docs/comparison.md"
+              style="color: var(--accent)"
+              >docs/comparison.md</a
+            >.
+          </p>
+          <span class="feature-meta">verified-vs-docs comparison</span>
+        </div>
+        <div style="overflow-x: auto; width: 100%">
+          <table
+            style="
+              width: 100%;
+              max-width: 900px;
+              border-collapse: collapse;
+              font-size: 14px;
+              background: rgba(255, 255, 255, 0.03);
+              border: 1px solid rgba(255, 255, 255, 0.09);
+              border-radius: 10px;
+            "
+          >
+            <thead>
+              <tr style="text-align: left">
+                <th
+                  style="
+                    padding: 12px 14px;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+                  "
+                >
+                  Question
+                </th>
+                <th
+                  style="
+                    padding: 12px 14px;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+                  "
+                >
+                  kustron <span class="c">[verified]</span>
+                </th>
+                <th
+                  style="
+                    padding: 12px 14px;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+                  "
+                >
+                  tilt.dev <span class="c">[docs]</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 10px 14px">Config</td>
+                <td style="padding: 10px 14px">
+                  One declarative <code>kustron-env.yaml</code>, strict schema
+                </td>
+                <td style="padding: 10px 14px">
+                  <code>Tiltfile</code> (Starlark program)
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 14px">Runtime model</td>
+                <td style="padding: 10px 14px">
+                  One-shot reconcile; nothing runs between commands
+                </td>
+                <td style="padding: 10px 14px">
+                  Long-running control loop + web UI
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 14px">Cluster ownership</td>
+                <td style="padding: 10px 14px">
+                  Creates, starts, and destroys the k3d cluster + registry
+                  itself
+                </td>
+                <td style="padding: 10px 14px">
+                  Deploys into a cluster you bring (ctlptl to create)
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 14px">Hot reload</td>
+                <td style="padding: 10px 14px">
+                  <code>env watch</code> = content-hash rebuild + rollout (no
+                  in-place sync yet)
+                </td>
+                <td style="padding: 10px 14px">
+                  <code>live_update</code> syncs files into running containers
+                  in seconds
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 14px">Compose lifecycle</td>
+                <td style="padding: 10px 14px">
+                  <code>env up/stop/status/reload/destroy</code>, per-app
+                  logs/exec/forward — including components
+                </td>
+                <td style="padding: 10px 14px">
+                  Pause/trigger per resource; no cluster/app teardown model
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 14px">CI mode</td>
+                <td style="padding: 10px 14px">
+                  Planned (<code>--ci</code>)
+                </td>
+                <td style="padding: 10px 14px">
+                  <code>tilt ci</code> headless runs
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

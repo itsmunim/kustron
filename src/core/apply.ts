@@ -55,6 +55,36 @@ export async function pickFreeNodePort(
   return undefined;
 }
 
+/**
+ * The NodePort an existing service currently holds, if it's inside the
+ * window kustron assigns from (30000..30100). Reconcile should keep an
+ * app's exposure port sticky across `env up` runs instead of drifting to
+ * the next free port each time.
+ */
+export async function getExistingNodePort(
+  clusterName: string,
+  serviceName: string,
+  namespace: string,
+): Promise<number | undefined> {
+  try {
+    const {exitCode, stdout} = await kubectl(
+      clusterName,
+      ['get', 'svc', serviceName, '-n', namespace, '-o', 'json'],
+      {silent: true},
+    );
+    if (exitCode !== 0) return undefined;
+    const svc = JSON.parse(stdout) as {
+      spec?: {type?: string; ports?: Array<{nodePort?: number}>};
+    };
+    if (svc.spec?.type !== 'NodePort') return undefined;
+    const hit = svc.spec.ports?.find((p) => p.nodePort);
+    const port = hit?.nodePort;
+    return port && port >= 30000 && port <= 30100 ? port : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function ensureNamespace(
   namespace: string,
   clusterName: string,

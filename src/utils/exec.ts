@@ -115,12 +115,16 @@ export async function exec(
       stderr ?? stdout ?? ex.message ?? t('errors.unknownError'),
     );
     // Sanitize before logging so passwords don't leak
-    error(
-      t('errors.commandFailed', {
-        command: sanitizeCommand(fullCommand),
-        message,
-      }),
-    );
+    // Silent callers (best-effort probes) print nothing — they handle the
+    // failure themselves.
+    if (!options?.silent) {
+      error(
+        t('errors.commandFailed', {
+          command: sanitizeCommand(fullCommand),
+          message,
+        }),
+      );
+    }
     throw new KustronExecError(
       message,
       sanitizeCommand(fullCommand),

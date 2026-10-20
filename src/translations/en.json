@@ -56,6 +56,12 @@
       "success": "Cluster '{{name}}' has been torn down.",
       "notFound": "Cluster '{{name}}' not found. Nothing to do."
     },
+    "destroy": {
+      "confirm": "Delete cluster '{{name}}' and all data in it?",
+      "cancelled": "Destroy cancelled.",
+      "success": "Cluster '{{name}}' destroyed. Your kubeconfig is untouched.",
+      "notFound": "Cluster '{{name}}' not found. Nothing to do."
+    },
     "status": {
       "noEnvFile": "No kustron-env.yaml found. Run `kustron env init` to create one.",
       "clusterNotCreated": "Cluster '{{name}}' does not exist. Run `kustron env up` to create it.",

@@ -1,11 +1,13 @@
 # [Kustron](https://itsmunim.github.io/kustron)
 
-![Coverage](https://img.shields.io/badge/coverage-51%25-green)
-[![CI](https://github.com/dibosh/kustron/actions/workflows/ci.yml/badge.svg)](https://github.com/dibosh/kustron/actions/workflows/ci.yml)
+![Coverage](https://img.shields.io/badge/coverage-53%25-green)
+[![CI](https://github.com/itsmunim/kustron/actions/workflows/ci.yml/badge.svg)](https://github.com/itsmunim/kustron/actions/workflows/ci.yml)
 
 A single CLI that takes you from "I have some apps" to a running local development environment.
 
 Think docker-compose, but powered with a lightweight kubernetes running locally. You define your apps in a `kustron-env.yaml` file, run `kustron env up`, and everything gets built, deployed, and exposed.
+
+> ▶ **New here?** Watch the [2-minute demo](https://itsmunim.github.io/kustron/features.html#demo), then read [How kustron compares with tilt.dev](docs/comparison.md).
 
 ---
 
@@ -52,7 +54,7 @@ Kustron never calls `kubectl config use-context`. Every command uses `--context=
 - **Secrets as Kubernetes Secrets.** `secret:` creates real K8s Secrets (not ConfigMaps). `${ENV}` interpolation pulls from your shell environment.
 - **Smart healthchecks that match the protocol.** `/<path>` for HTTP GET, `tcp` for socket probes, or omit for no probes. TCP-only services stop stalling rollouts.
 - **Deploy ordering with readiness checks.** `dependsOn` deploys apps in topological order, with `rollout`, `established`, or custom `command` readiness per dependency. `hooks.pre` / `hooks.post` for migrations and seeding.
-- **Helm support done right.** Nested `values` (real `--values` file), extra `valuesFiles`, local charts, OCI charts, and `helm.imageValues` (deprecated — set image values in `helm.values` instead) to inject a built image.
+- **Helm support done right.** Nested `values` (real `--values` file), extra `valuesFiles`, local charts, OCI charts — and split build from deploy: a `source`/`image` app pairs with a chart via `helm.imageValues` (dotted paths) so your built image runs inside the chart's deployment.
 - **Private registry support.** Per-app `registry` creds create and attach an imagePullSecret, plus `kustron registry login` and `registry prune`.
 - **Escape hatches when you need them.** `command`, `args`, `resources` as first-class fields, and a generic `patch` that deep-merges onto the generated Deployment.
 - **CLI scaffolding.** `kustron env init`, `apps add`, and `apps remove` build up your `kustron-env.yaml` without hand-editing YAML. `env show-spec` prints the full schema reference.
@@ -131,7 +133,7 @@ kustron env init
 kustron env up
 ```
 
-Your app will be built, pushed to a local registry, and deployed into a k3d Kubernetes cluster. If you set `exposed: true`, it's reachable at the k3d node IP (printed in the deployment summary).
+Your app will be built, pushed to a local registry, and deployed into a k3d Kubernetes cluster. If you set `exposed: true`, it's reachable at `http://localhost:<nodePort>` — the port is printed in the deployment summary.
 
 ---
 
@@ -242,7 +244,7 @@ apps:
 
 | Rule                                                                                                                                                     | Detail                                                                                                                     |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Exactly one of `source`, `image`, `helm` (a `source` or `image` combined with `helm` deploys the built image via the chart; requires `helm.imageValues`) | Required per app entry                                                                                                     |
+| Exactly one of `source`, `image`, `helm` (a `source` or `image` combined with `helm` deploys the built image via the chart through `helm.imageValues`) | Required per app entry                                                                                     |
 | `port`                                                                                                                                                   | Required for `source` and `image` apps using the builtin template; optional for `helm` (the chart owns ports)              |
 | `healthcheck`                                                                                                                                            | Optional for `source` and `image`; ignored for `helm`. `/<path>` = HTTP GET, `tcp` = port check, omit / `none` = no probes |
 | `ha: true`                                                                                                                                               | Overrides `replicas`; sets min 2 / max 5 / CPU 90% / mem 80%                                                               |
@@ -255,7 +257,7 @@ apps:
 | `patch`                                                                                                                                                  | Generic escape hatch: deep-merged onto the generated Deployment manifest (objects merge, arrays replace)                   |
 | `helm.values`                                                                                                                                            | Arbitrary chart values, nested YAML supported (passed via a `--values` file)                                               |
 | `helm.valuesFiles`                                                                                                                                       | Additional local values files, each passed as `--values`                                                                   |
-|                                                                                                                                                          | `helm.imageValues`                                                                                                         | Deprecated. Inject a kustron-built image into the chart: `{repository: 'image.repository', tag: 'image.tag'}` (dotted paths). Prefer setting image values directly in `helm.values` |
+| `helm.imageValues`                                                                                                                                       | Injects the kustron-built image into the chart as `<repository>:<tag>` at the dotted paths you give (`{repository: 'image.repository', tag: 'image.tag'}`). Needs a `source` or `image` field on the same app; you can also pass the image yourself via `helm.values` |
 | `helm.chart`                                                                                                                                             | Repo chart name, local path (`./charts/x`), OCI (`oci://...`), or packaged `.tgz`                                          |
 | `dependsOn`                                                                                                                                              | Deploy this app only after the listed apps are ready (topological order, cycle-checked)                                    |
 | `wait`                                                                                                                                                   | How a dependency must be ready: `rollout` (default), `established` (CRDs), or `command` with `wait.command`                |
@@ -296,7 +298,7 @@ apps:
 
 - **Cluster:** if the cluster already exists and is running, it is not touched. If it exists but is stopped, it is started. If it does not exist, it is created.
 - **kubectl access:** the k3d kubeconfig is merged into your default config every run (idempotent). Kustron never calls `kubectl config use-context` — all commands use `--context=k3d-<clusterName>` so your production clusters are safe.
-- **Registry:** the in-cluster registry is ensured every run; a pre-existing cluster without one is wired up automatically. The registry port is auto-detected if 5000 is in use.
+- **Registry:** the in-cluster registry is ensured every run; a pre-existing cluster without one is wired up automatically. Registry names are **cluster-scoped** (`kustron-registry` for the default cluster, `<clusterName>-registry` otherwise) so multiple projects can run their own clusters at the same time, and the host port actually in use is **discovered from the running container** instead of re-probed each run — `docker push` can't end up on a stale port. Port probing also honors ports held by macOS services (AirPlay on 5000).
 - **Images:** source apps are tagged with a **content hash** (`<registry>/<app>:<sha>`), not a timestamp. Unchanged source produces the same tag, the build is skipped, and the deployment manifest applies as a no-op. Change the source and the next `env up` builds and rolls out a new version.
 - **YAML-only changes** (env vars, replicas, exposure, secrets) are picked up by `kubectl apply` even when the image tag is unchanged. Removed apps are cleaned up automatically.
 - **Pruning:** apps removed from `kustron-env.yaml` since the last `env up` are deleted from the cluster automatically.
@@ -371,11 +373,15 @@ Exposed apps get a `NodePort` service mapped to `localhost` via the k3d loadbala
 
 ## How It Works
 
-1. **Cluster:** k3d creates a lightweight local Kubernetes cluster with a built-in container registry. NodePort range is mapped to localhost via k3d loadbalancer.
+1. **Cluster:** k3d creates a lightweight local Kubernetes cluster with a built-in container registry. Free ports in the NodePort window (30000–30100) are mapped to localhost via the k3d loadbalancer. Registry names are cluster-scoped (`kustron-registry`, `<clusterName>-registry`), so clusters don't collide.
 2. **Build:** Source apps are built with the detected container runtime (if `Dockerfile` exists) or Railpack (fallback). BuildKit is auto-detected.
-3. **Push:** Images are pushed to the local registry (`localhost:<port>`), referenced in-cluster as `kustron-registry:5000`. Podman gets `--tls-verify=false` for local registries.
+3. **Push:** Images are pushed to the local registry (`localhost:<port>` — discovered from the running registry container), referenced in-cluster as `<clusterName>-registry:5000`. Podman gets `--tls-verify=false` for local registries.
 4. **Deploy:** Kubernetes manifests (ConfigMap, Secret, Deployment, Service, HPA) are generated and applied. Every kubectl/helm call uses `--context=k3d-<clusterName>`.
-5. **Expose:** Apps with `exposed: true` get a `NodePort` service reachable at `http://localhost:<nodePort>`.
+5. **Expose:** Apps with `exposed: true` get a `NodePort` service **pinned to a cluster-free port** inside the mapped window, so it's reachable at `http://localhost:<nodePort>`.
+
+## Architecture
+
+Every command funnels through one pipeline: schema validation → component expansion → dependency sort → cluster ensure → build → push → deploy → wait. The module-level mermaid diagrams live in [plans/design.md](plans/design.md) — start there if you want to hack on the code.
 
 ---
 

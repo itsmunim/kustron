@@ -26,6 +26,7 @@ import {
   waitForRollout,
   getServiceNodePort,
   pickFreeNodePort,
+  getExistingNodePort,
 } from './apply.js';
 import {
   helmInstall,
@@ -98,6 +99,13 @@ async function deployFromImage(
     if (secretName) imagePullSecrets = [secretName];
   }
 
+  // Keep exposure stable across runs: reuse this service's existing NodePort
+  // when it's still in the assign window, otherwise claim a free one.
+  const existingNodePort =
+    app.exposed && !app.helm
+      ? await getExistingNodePort(ctx.clusterName, effectiveName, ctx.namespace)
+      : undefined;
+
   const opts = {
     name: effectiveName,
     namespace: ctx.namespace,
@@ -116,7 +124,7 @@ async function deployFromImage(
     imagePullSecrets,
     nodePort:
       app.exposed && !app.helm
-        ? await pickFreeNodePort(ctx.clusterName)
+        ? (existingNodePort ?? (await pickFreeNodePort(ctx.clusterName)))
         : undefined,
   };
 
@@ -277,7 +285,14 @@ async function deployHelmApp(
   let finalUrl = url;
   if (app.exposed && typeof app.port === 'number' && app.helm?.selector) {
     info(`[${app.name}] ${t('deploy.creatingExposureService')}`);
-    const pinnedNodePort = await pickFreeNodePort(ctx.clusterName);
+    // Sticky: prefer the exposure service's existing NodePort.
+    const stickyNodePort = await getExistingNodePort(
+      ctx.clusterName,
+      appDeploymentName(app),
+      ctx.namespace,
+    );
+    const pinnedNodePort =
+      stickyNodePort ?? (await pickFreeNodePort(ctx.clusterName));
     const serviceYaml = createHelmExposureService(
       appDeploymentName(app),
       ctx.namespace,

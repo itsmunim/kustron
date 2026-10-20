@@ -36,3 +36,6 @@ tmp
 
 # ignore test generated files
 /deployment/
+
+# demo recording artifacts
+demo/webapi/.kustron/

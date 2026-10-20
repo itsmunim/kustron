@@ -15,7 +15,9 @@ export async function mergeKubeconfig(clusterName?: string): Promise<void> {
 export async function deleteContext(clusterName?: string): Promise<void> {
   const name = clusterName ?? DEFAULT_CLUSTER_NAME;
   try {
-    await exec('kubectl', ['config', 'delete-context', `k3d-${name}`]);
+    await exec('kubectl', ['config', 'delete-context', `k3d-${name}`], {
+      silent: true,
+    });
   } catch {
     // ignore missing context
   }

@@ -1094,6 +1094,12 @@
         <a href="features.html" class="btn btn-primary"
           >See all features &amp; examples →</a
         >
+        <a
+          href="features.html#demo"
+          class="btn btn-outline"
+          style="margin-left: 12px"
+          >▶ Watch the 2-min demo</a
+        >
       </div>
     </div>
 
@@ -2277,9 +2283,10 @@
           <div class="faq-item">
             <h4>Port 5000 is already in use</h4>
             <p>
-              Kustron auto-detects an available port starting from 5000. If
-              macOS AirPlay or another service is listening there, it picks the
-              next free port automatically. You can also set a specific port via
+              Kustron probes ports with an exclusive bind, so services that are
+              genuinely listening there (macOS AirPlay is a classic on port
+              5000) are honored and the registry picks the next free port. You
+              can also set a specific port via
               <code
                 style="
                   font-family: 'JetBrains Mono', monospace;
@@ -2299,23 +2306,28 @@
               >.
             </p>
             <p>
-              Kustron binds the local image registry to
+              Once created, the port is stable: kustron reads it back from the
+              running registry container every run, so image pushes can't end up
+              on a stale port. The registry itself is cluster-scoped —
               <code
                 style="
                   font-family: 'JetBrains Mono', monospace;
                   font-size: 13px;
                   color: var(--accent);
                 "
-                >localhost:5000</code
-              >. If something else is listening there, free the port and re-run
+                >kustron-registry</code
+              >
+              for the default cluster,
               <code
                 style="
                   font-family: 'JetBrains Mono', monospace;
                   font-size: 13px;
                   color: var(--accent);
                 "
-                >kustron env up</code
-              >.
+                >&lt;clusterName&gt;-registry</code
+              >
+              otherwise — so multiple local clusters don't fight over one
+              registry.
             </p>
           </div>
 
