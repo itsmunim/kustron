@@ -2,7 +2,7 @@
 # NOTE: PlaybackSpeed must be top-level (vhs ignores mid-tape Set).
 # Sleeps cover real work: up 64, rebuild 27, rabbit 112, hello 40, destroy 8: up ~60s, rebuild ~25s,
 # rabbit ~115s, hello ~40s, destroy ~5s. Global speed 2.2 => ~2:50 video.
-Output "/tmp/opencode/fullstack-take5.mp4"
+Output "/tmp/opencode/fullstack-take6.mp4"
 Set Shell zsh
 Set FontSize 14
 Set Width 1600

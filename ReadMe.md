@@ -7,7 +7,7 @@ A single CLI that takes you from "I have some apps" to a running local developme
 
 Think docker-compose, but powered with a lightweight kubernetes running locally. You define your apps in a `kustron-env.yaml` file, run `kustron env up`, and everything gets built, deployed, and exposed.
 
-> ▶ **New here?** Watch the [2-minute demo](https://itsmunim.github.io/kustron/features.html#demo), then read [How kustron compares with tilt.dev](docs/comparison.md).
+> ▶ **New here?** Watch the [fullstack demo](https://itsmunim.github.io/kustron/features.html#demo) (a CRUD app, live rebuilds, a RabbitMQ stream and a public repo, in under 3 minutes), then read [How kustron compares with tilt.dev](docs/comparison.md).
 
 ---
 
