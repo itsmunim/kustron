@@ -1,5 +1,25 @@
 # kustron
 
+## 2.1.3
+
+### Patch Changes
+
+- b1639df: `kustron app logs` now streams pod logs as they arrive instead of swallowing
+  them — previously the command printed nothing without `--verbose` (captured,
+  never shown) and `app logs -f` appeared to hang forever. Implemented via a new
+  `stream` option on the shared exec helper that pipes child stdout/stderr to the
+  console while still capturing final output for command paths that need it.
+- f017652: `kustron env destroy` now clears the `.kustron/state.json` that tracks
+  deployed apps, and best-effort helm uninstalls (pruning apps removed from
+  the env file) no longer print a red "Command failed" banner when the
+  release is not loaded — stale state after a destroy made the next
+  `env up` prune against an empty cluster.
+- 563c9fa: `kustron app --help` printed raw i18n fallback keys (cli.appDescription, cli.appStopDescription, …) because the strings were missing from the translation table; all app command descriptions are now real text, and `t()` fails the test suite loudly on any missing key so this can't recur silently
+- 2e5b76a: Machine-readable agent contracts: `env status --json` and `doctor --json` print pure JSON snapshots (startup banner suppressed in --json mode), and `env status` now exits 1 when the cluster is down or any app is unhealthy — Helm apps are gated on their Helm release status (`deployed`/`missing`) since chart-owned Deployments don't follow kustron's naming. Documented in the new AGENTS.md
+- 2e5b76a: `env init` is now fully non-interactive when flags are given or the shell is a non-TTY (agents/CI): `--name`, `--port`, `--source`, `--image`, `--exposed`, `--force`; with no flags it defaults to the current folder name on `./` instead of hanging on prompts, and refuses to overwrite an existing file without `--force`. Also fixes the generated YAML mangling image references containing a colon (e.g. `redis:7` became the invalid `image: redis: 7`)
+- cba36df: Silent cleanup: `env destroy` no longer prints a red `Command failed` line for the kubecontext delete when the context entry isn't in the default kubeconfig file. Only consequential command failures are reported now; best-effort probes stay silent.
+- 11eb778: env watch now also watches `kustron-env.yaml`, so adding/removing apps (e.g. a new source or helm chart app) triggers a reconcile even when no local source file changes
+
 ## 2.1.2
 
 ### Patch Changes
