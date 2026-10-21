@@ -305,6 +305,14 @@
         user-select: none;
       }
 
+      .install-block.small {
+        font-size: 13px;
+        margin-bottom: 0;
+        max-width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+
       .install-block code {
         color: #e3e9f6;
         background: none;
@@ -1112,9 +1120,7 @@
       <div>
         <div class="install-block">
           <span class="prompt">$</span>
-          <code id="install-cmd"
-            >npm install -g kustron &amp;&amp; kustron doctor</code
-          >
+          <code>npm install -g kustron &amp;&amp; kustron doctor</code>
           <button class="copy-btn" onclick="copyInstall(this)">Copy</button>
         </div>
       </div>
@@ -1894,21 +1900,13 @@
               >
               to accept all — then installs kustron from npm.
             </p>
-            <code
-              style="
-                display: block;
-                font-family: 'JetBrains Mono', monospace;
-                font-size: 13px;
-                background: #10193a;
-                border: 1px solid #22315c;
-                border-radius: 6px;
-                padding: 10px 14px;
-                margin-top: 10px;
-                overflow-x: auto;
-                white-space: nowrap;
-              "
-              >curl -fsSL https://raw.githubusercontent.com/itsmunim/kustron/master/install.sh | bash</code
-            >
+            <div class="install-block small">
+              <span class="prompt">$</span>
+              <code
+                >curl -fsSL https://raw.githubusercontent.com/itsmunim/kustron/master/install.sh | bash</code
+              >
+              <button class="copy-btn" onclick="copyInstall(this)">Copy</button>
+            </div>
           </div>
         </div>
 
@@ -2525,7 +2523,8 @@
         .catch(() => {});
 
       function copyInstall(btn) {
-        const text = document.getElementById('install-cmd').textContent;
+        const block = btn.closest('.install-block');
+        const text = block.querySelector('code').textContent;
         navigator.clipboard.writeText(text).then(() => {
           btn.textContent = 'Copied!';
           btn.classList.add('copied');
