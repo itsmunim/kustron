@@ -26,7 +26,7 @@
     <link rel="canonical" href="https://itsmunim.github.io/kustron/" />
     <meta
       name="description"
-      content="Define your apps in one file. Kustron spins up a local Kubernetes cluster, builds, and deploys them. No Kubernetes knowledge required."
+      content="Define your apps in one file. Kustron builds, deploys, and watches them in a local environment — no cluster knowledge required."
     />
     <meta name="theme-color" content="#F1F4FA" />
 
@@ -40,7 +40,7 @@
     />
     <meta
       property="og:description"
-      content="Define your apps in one file. Kustron spins up a local Kubernetes cluster, builds, and deploys them. No Kubernetes knowledge required."
+      content="Define your apps in one file. Kustron builds, deploys, and watches them in a local environment — no cluster knowledge required."
     />
     <meta
       property="og:image"
@@ -61,7 +61,7 @@
     />
     <meta
       name="twitter:description"
-      content="Define your apps in one file. Kustron spins up a local Kubernetes cluster, builds, and deploys them. No Kubernetes knowledge required."
+      content="Define your apps in one file. Kustron builds, deploys, and watches them in a local environment — no cluster knowledge required."
     />
     <meta
       name="twitter:image"
@@ -84,7 +84,7 @@
         "name": "Kustron",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "macOS, Linux",
-        "description": "Define your apps in one file. Kustron spins up a local Kubernetes cluster, builds, and deploys them. No Kubernetes knowledge required.",
+        "description": "Define your apps in one file. Kustron builds, deploys, and watches them in a local environment — no cluster knowledge required.",
         "url": "https://itsmunim.github.io/kustron/",
         "image": "https://itsmunim.github.io/kustron/og-preview.jpg",
         "offers": {
@@ -92,7 +92,7 @@
           "price": "0",
           "priceCurrency": "USD"
         },
-        "featureList": "Local Kubernetes clusters, deterministic redeploys, content-hash images, Podman and Docker support"
+        "featureList": "Local environment up in minutes, deterministic redeploys, content-hash images, Podman and Docker support"
       }
     </script>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -248,19 +248,6 @@
         text-align: center;
       }
 
-      .hero-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: var(--accent-dim);
-        border: 1px solid rgba(29, 78, 216, 0.28);
-        border-radius: 100px;
-        padding: 4px 12px;
-        font-size: 13px;
-        color: var(--accent);
-        margin-bottom: 32px;
-      }
-
       .hero h1 {
         font-size: clamp(36px, 6vw, 62px);
         font-weight: 700;
@@ -278,14 +265,25 @@
         color: var(--muted);
         max-width: 520px;
         margin: 0 auto 40px;
+      }
 
+      .hero-cta {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+      }
+
+      .hero-cta .btn {
+        font-size: 15px;
+        padding: 10px 22px;
+      }
+
+      @media (max-width: 600px) {
         .hero-cta {
-          margin-top: -8px;
-        }
-
-        .hero-cta .btn {
-          font-size: 15px;
-          padding: 10px 22px;
+          flex-direction: column;
+          align-items: stretch;
+          max-width: 340px;
+          margin: 0 auto;
         }
       }
 
@@ -1068,6 +1066,7 @@
             id="star-btn"
             target="_blank"
             rel="noopener"
+            aria-label="Star kustron on GitHub"
           >
             <svg
               width="14"
@@ -1083,7 +1082,6 @@
                 points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
               />
             </svg>
-            Star
             <span class="star-count" id="star-count">—</span>
           </a>
           <a
@@ -1091,13 +1089,13 @@
             class="btn btn-outline"
             target="_blank"
             rel="noopener"
+            aria-label="kustron on GitHub"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
               <path
                 d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"
               />
             </svg>
-            GitHub
           </a>
         </div>
       </div>
@@ -1105,20 +1103,6 @@
 
     <!-- Hero -->
     <div class="hero">
-      <div class="hero-badge">
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-        >
-          <circle cx="12" cy="12" r="10" />
-          <path d="M12 8v4l3 3" />
-        </svg>
-        Works with Podman &amp; Docker
-      </div>
       <h1>Local dev environment,<br />up in minutes.</h1>
       <p>
         Define your apps in one file. Kustron handles the rest: local cluster,
@@ -1138,9 +1122,7 @@
         <a href="features.html" class="btn btn-primary"
           >See all features &amp; examples →</a
         >
-        <a href="#demo" class="btn btn-outline" style="margin-left: 12px"
-          >▶ Watch the fullstack demo</a
-        >
+        <a href="#demo" class="btn btn-outline">▶ Watch the fullstack demo</a>
       </div>
     </div>
 
@@ -1150,11 +1132,15 @@
     <section id="demo">
       <div class="section-inner" style="text-align: center">
         <div class="section-label">Demo</div>
-        <h2>From zero to a full-stack environment, in under 3 minutes.</h2>
+        <h2>
+          Watch the full demo: bringing the environment up with apps on it,
+          live watch included.
+        </h2>
         <p class="section-sub">
-          Cluster up from a 30-line yaml → CRUD over a Redis-compatible KV
-          store built from source → live rebuild on an edit → a Helm-charted
-          RabbitMQ + order stream → a public GitHub repo deployed as-is → clean
+          One kustron-env.yaml, one command → a CRUD API over a
+          Redis-compatible KV store built from source → live rebuild on an
+          edit → a Helm-charted RabbitMQ + order stream → a public GitHub repo
+          deployed as-is → clean
           <code>env destroy</code>. Hover the video for the full-screen button,
           or double-click it.
         </p>
@@ -1189,10 +1175,11 @@
     <section>
       <div class="section-inner">
         <div class="section-label">How it works</div>
-        <h2>A real dev environment in four commands.</h2>
+        <h2>A real stack to keep developing on, up in four commands.</h2>
         <p class="section-sub">
-          Kustron runs a local k3d cluster with its own registry. You define
-          what to run, it does the heavy lifting.
+          Kustron provisions a local container-native cluster with k3d under
+          the hood — you never touch it. You define what to run in one file;
+          it builds, deploys, and watches.
         </p>
 
         <div class="steps">
@@ -1252,7 +1239,8 @@
             <h3>Full-stack local development</h3>
             <p>
               Frontend, API, database, cache, workers — everything running
-              together in one namespace, reachable by name.
+              together and reachable by name. Each app can also get its own
+              namespace with a one-line <code>namespace:</code> override.
               <code>env watch</code> auto-redeploys on every save.
             </p>
           </div>
@@ -1329,7 +1317,7 @@
           <pre>
           <code class="language-yaml">
           config:
-            namespace: kustron-env        # all apps share this namespace
+            namespace: kustron-env        # default namespace; each app can override with `namespace:`
 
           apps:
             # Build from local source or git repo
@@ -1340,7 +1328,7 @@
               ha: true                    # min 2 replicas, autoscales to 5
               env:
                 NODE_ENV: production
-                DB_HOST: postgres         # 'postgres' resolves via k8s DNS
+                DB_HOST: postgres         # resolves to the postgres service by name
 
             # Run an existing container image
             - name: postgres
@@ -1452,7 +1440,7 @@
         <div class="section-label">App types</div>
         <h2>Deploy anything.</h2>
         <p class="section-sub">
-          Every app type shares the same namespace. They reach each other at
+          Every app lands with a service, so apps reach each other at
           <code
             style="
               font-family: 'JetBrains Mono', monospace;
@@ -1460,7 +1448,7 @@
               color: var(--accent);
             "
             >http://&lt;name&gt;:&lt;port&gt;</code
-          >.
+          >. Set <code>namespace:</code> per app to isolate any of them.
         </p>
 
         <div class="types-grid">
@@ -1626,8 +1614,8 @@
             </td>
             <td>
               <span class="cmd-desc"
-                >Watch local source directories and auto-redeploy on file
-                changes.</span
+                >Watch local source directories and <code>kustron-env.yaml</code>,
+                auto-redeploy on changes.</span
               >
             </td>
           </tr>
@@ -1639,27 +1627,11 @@
             </td>
             <td>
               <span class="cmd-desc"
-                >Stop all apps (scale to 0, uninstall helm) without destroying
-                the cluster. Fast to restart with <code>env up</code>.</span
+                >Stop all apps (scale to 0, uninstall helm charts) without
+                destroying the cluster. Fast to restart with
+                <code>env up</code>.</span
               >
             </td>
-          </tr>
-          <tr>
-            <td>
-              <code class="cmd-code"
-                ><span class="kw">kustron</span> env down</code
-              >
-            </td>
-            <td>
-              <span class="cmd-desc"
-                ><strong>Deprecated.</strong> Destroys the entire cluster. Use
-                <code>env stop</code> to pause, or <code>env destroy</code> to
-                explicitly delete everything.</span
-              >
-            </td>
-          </tr>
-          <tr>
-            <td colspan="2" class="cmd-group">env</td>
           </tr>
           <tr>
             <td>
@@ -1688,7 +1660,21 @@
             </td>
           </tr>
           <tr>
-            <td colspan="2" class="cmd-group">cluster</td>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> env down</code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                ><strong>Deprecated.</strong> Destroys everything. Use
+                <code>env stop</code> to pause, or <code>env destroy</code> to
+                explicitly tear down.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" class="cmd-group">teardown</td>
           </tr>
           <tr>
             <td>
@@ -1699,13 +1685,44 @@
             </td>
             <td>
               <span class="cmd-desc"
-                >Delete the k3d cluster and all data in it. Confirmation prompt
-                unless <code>--yes</code> is passed.</span
+                >Tear it all down: deletes the k3d cluster (and all data in
+                it), the kubeconfig context entry, and the local state file.
+                Confirmation prompt unless <code>--yes</code> is passed.</span
               >
             </td>
           </tr>
           <tr>
-            <td colspan="2" class="cmd-group">app</td>
+            <td colspan="2" class="cmd-group">apps</td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> apps add
+                <span class="flag">[flags]</span></code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Add an app entry to <code>kustron-env.yaml</code>
+                (<code>--name</code>, <code>--source</code>/<code>--image</code>/<code>--helm-chart</code>,
+                <code>--port</code>, <code>--env</code>…). Then run
+                <code>kustron env reload</code> to apply.</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code class="cmd-code"
+                ><span class="kw">kustron</span> apps remove
+                <span class="arg">&lt;name&gt;</span></code
+              >
+            </td>
+            <td>
+              <span class="cmd-desc"
+                >Remove an app entry from <code>kustron-env.yaml</code>. Then
+                run <code>kustron env reload</code> to apply.</span
+              >
+            </td>
           </tr>
           <tr>
             <td>
@@ -1739,13 +1756,14 @@
               <code class="cmd-code"
                 ><span class="kw">kustron</span> app logs
                 <span class="arg">&lt;name&gt;</span>
-                <span class="flag">[-f]</span></code
+                <span class="flag">[-f]</span>
+                <span class="flag">[-t N]</span></code
               >
             </td>
             <td>
               <span class="cmd-desc"
-                >Stream logs for a single app. Use <code>-f</code> to follow,
-                <code>--tail N</code> for last N lines.</span
+                >Stream logs for a single app. <code>-f</code> to follow,
+                <code>-t N</code> for the last N lines.</span
               >
             </td>
           </tr>
@@ -1781,64 +1799,7 @@
             </td>
           </tr>
           <tr>
-            <td>
-              <code class="cmd-code"
-                ><span class="kw">kustron</span> env show-spec</code
-              >
-            </td>
-            <td>
-              <span class="cmd-desc"
-                >Pretty-print the full <code>kustron-env.yaml</code> schema with
-                annotations.</span
-              >
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <code class="cmd-code"
-                ><span class="kw">kustron</span> env status</code
-              >
-            </td>
-            <td>
-              <span class="cmd-desc"
-                >Show the cluster and every app's state (Running, image pull
-                failed, crash loop) in one table.</span
-              >
-            </td>
-          </tr>
-          <tr>
-            <td colspan="2" class="cmd-group">apps</td>
-          </tr>
-          <tr>
-            <td>
-              <code class="cmd-code"
-                ><span class="kw">kustron</span> apps add
-                <span class="flag">[flags]</span></code
-              >
-            </td>
-            <td>
-              <span class="cmd-desc"
-                >Add an app entry to <code>kustron-env.yaml</code>. Then run
-                <code>kustron env reload</code> to apply.</span
-              >
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <code class="cmd-code"
-                ><span class="kw">kustron</span> apps remove
-                <span class="arg">&lt;name&gt;</span></code
-              >
-            </td>
-            <td>
-              <span class="cmd-desc"
-                >Remove an app entry from <code>kustron-env.yaml</code>. Then
-                run <code>kustron env reload</code> to apply.</span
-              >
-            </td>
-          </tr>
-          <tr>
-            <td colspan="2" class="cmd-group">registry</td>
+            <td colspan="2" class="cmd-group">container registry</td>
           </tr>
           <tr>
             <td>
@@ -1913,6 +1874,41 @@
                 >orbstack.dev →</a
               >
             </p>
+          </div>
+        </div>
+
+        <div class="orbstack-callout">
+          <div class="callout-icon">🛠️</div>
+          <div>
+            <p>
+              <strong>Or let the install script do it.</strong> It sets up the
+              container runtime, k3d, kubectl, railpack (plus optionally Helm
+              and git) — asking y/n before each step, or pass
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 12px;
+                  color: var(--accent);
+                "
+                >-y</code
+              >
+              to accept all — then installs kustron from npm.
+            </p>
+            <code
+              style="
+                display: block;
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 13px;
+                background: #10193a;
+                border: 1px solid #22315c;
+                border-radius: 6px;
+                padding: 10px 14px;
+                margin-top: 10px;
+                overflow-x: auto;
+                white-space: nowrap;
+              "
+              >curl -fsSL https://raw.githubusercontent.com/itsmunim/kustron/master/install.sh | bash</code
+            >
           </div>
         </div>
 
@@ -2048,8 +2044,7 @@
         <h2>Your whole stack, live on one VM.</h2>
         <p class="section-sub">
           Not just for local dev. Run it on any cloud VM and your stack, APIs,
-          frontends, databases, is on the real internet. No cluster management,
-          no k8s babysitting.
+          frontends, databases, is on the real internet. No cluster management.
         </p>
 
         <div class="vm-layout">
@@ -2257,8 +2252,8 @@
           <div class="faq-item">
             <h4>Docker Desktop + k3d hogs my CPU</h4>
             <p>
-              Docker Desktop runs Linux in a VM, and k3d runs a full Kubernetes
-              cluster inside that VM. Two layers of virtualization means the k3d
+              Docker Desktop runs Linux in a VM, and k3d runs its own cluster
+              inside that VM. Two layers of virtualization means the k3d
               containers keep chewing CPU even when idle, plus several GB of
               RAM. OrbStack and Podman don't stack a second VM on top, which is
               why k3d is much happier on both.

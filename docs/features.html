@@ -30,7 +30,7 @@
     />
     <meta
       name="description"
-      content="Every Kustron feature with example use cases, plus a full kustron-env.yaml showing them all working together."
+      content="Every Kustron feature with a concrete example, a worked kustron-env.yaml from the demo video, and a grounded tilt.dev comparison."
     />
     <meta name="theme-color" content="#F1F4FA" />
 
@@ -44,7 +44,7 @@
     <meta property="og:title" content="Features & Examples — Kustron" />
     <meta
       property="og:description"
-      content="Every Kustron feature with example use cases, plus a full kustron-env.yaml showing them all working together."
+      content="Every Kustron feature with a concrete example, a worked kustron-env.yaml from the demo video, and a grounded tilt.dev comparison."
     />
     <meta
       property="og:image"
@@ -59,7 +59,7 @@
     <meta name="twitter:title" content="Features & Examples — Kustron" />
     <meta
       name="twitter:description"
-      content="Every Kustron feature with example use cases, plus a full kustron-env.yaml showing them all working together."
+      content="Every Kustron feature with a concrete example, a worked kustron-env.yaml from the demo video, and a grounded tilt.dev comparison."
     />
     <meta
       name="twitter:image"
@@ -509,8 +509,14 @@
             class="btn btn-outline"
             target="_blank"
             rel="noopener"
-            >GitHub</a
+            aria-label="kustron on GitHub"
           >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"
+              />
+            </svg>
+          </a>
         </div>
       </div>
     </nav>
@@ -522,8 +528,9 @@
         <h1>Everything Kustron does,<br />with an example each.</h1>
         <p>
           Every feature, what it's for, and how it looks in
-          <code>kustron-env.yaml</code>. Scroll to the bottom for a full worked
-          example that uses them all at once.
+          <code>kustron-env.yaml</code>. At the bottom: a worked example taken
+          straight from the demo video, and a grounded comparison with
+          tilt.dev.
         </p>
       </div>
     </div>
@@ -590,10 +597,12 @@
             <span class="yaml-filename">terminal</span>
           </div>
           <pre><code>$ kustron env up
-[api] source hash 9f3ab2c41e07
-[api] image 9f3ab2c41e07 already deployed — skipping build
-[api] Rollout complete
-Done.</code></pre>
+ℹ Checking dependencies...
+ℹ [api] source hash 9f3ab2c41e07
+ℹ [api] image 9f3ab2c41e07 already deployed — skipping build
+✔ Deployment summary:
+ℹ api → NodePort 30000
+✔ Environment 'dev' is up and running!</code></pre>
         </div>
       </div>
     </div>
@@ -779,11 +788,13 @@ Done.</code></pre>
         <div class="feature-text">
           <h3>Private registries</h3>
           <p>
-            Login to any container registry, have Kustron create an
-            imagePullSecret per app and attach it to the Deployment, or import
-            images directly into the cluster when push isn't an option.
+            Login to a container registry with
+            <code>registry login</code> so private images pull and push. For
+            per-app credentials, set a <code>registry</code> block and Kustron
+            creates an <code>imagePullSecret</code> and wires it into the
+            Deployment.
           </p>
-          <span class="feature-meta">kustron registry login/import</span>
+          <span class="feature-meta">registry login<br>registry: per app</span>
         </div>
         <div class="yaml-window">
           <div class="yaml-titlebar">
@@ -917,15 +928,18 @@ apps:
 
     <hr class="divider" />
 
-    <!-- Full example -->
-    <div class="full-example">
+    <!-- Worked example: the demo file -->
+    <div class="full-example" id="worked-example">
       <div class="wrap">
-        <h2>Full worked example</h2>
+        <h2>The demo file, in full.</h2>
         <p>
-          One environment that uses all of it: a source app with env
-          interpolation, a welded <code>dependsOn</code> chain, a
-          TCP-healthchecked cache, a component, an escape-hatched job, and a
-          helm app.
+          The exact composition the
+          <a href="#demo" style="color: var(--accent)">demo video</a> brings up
+          — three app types, all tried on camera: a local source app with its
+          own Dockerfile, a public GitHub repo built as-is, and a
+          locally-authored Helm chart wrapping RabbitMQ as the message bus.
+          One <code>env up</code> for all of it, one <code>env destroy</code>
+          and nothing is left behind.
         </p>
         <div class="yaml-window">
           <div class="yaml-titlebar">
@@ -934,117 +948,98 @@ apps:
             <div class="dot dot-green"></div>
             <span class="yaml-filename">kustron-env.yaml</span>
           </div>
-          <pre><code>config:
-  namespace: dev
-
-components:
-  - name: hub-cache                      <span class="c"># reusable redis-compatible cache</span>
-    source: ./components/cache
-    inputs:
-      replicas: 3
+          <pre><code><span class="c"># kustron demo — zero to fullstack in 3 minutes</span>
+config:
+  namespace: kvdemo
+  clusterName: kvdemo
 
 apps:
-  <span class="c"># API: builds from source, waits for cache + postgres, interpolates endpoints</span>
-  - name: api
-    source: ./services/api
+  <span class="c"># the KV store: built straight from its GitHub source by kustron</span>
+  - name: kivo
+    source: https://github.com/itsmunim/kivo.git
+    port: 6379
+
+  <span class="c"># CRUD API over kivo (Redis protocol); queue consumer dormant</span>
+  - name: webapi
+    source: ./webapi
     port: 3000
-    exposed: true
-    dependsOn: [hub-cache-cache, postgres]
+    exposed: true              <span class="c"># → localhost:30000 (NodePort)</span>
+    healthcheck: /health       <span class="c"># rollout waits for HTTP 200</span>
+    dependsOn: [kivo, orders]  <span class="c"># ordered rollout</span>
     env:
-      CACHE_ENDPOINT: ${hub-cache.endpoint}
-      DB_ENDPOINT: ${postgres.endpoint}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-secret}
+      KIVO_URL: redis://kivo:6379
+      RABBIT_URL: amqp://guest:guest@orders:5672/
 
-  <span class="c"># Cache from the component, healthchecked over TCP</span>
-  # (apps under `components` are prefixed: hub-cache-cache)
-
-  <span class="c"># Postgres: TCP healthcheck + post-hook to seed a table</span>
-  - name: postgres
-    image: postgres:15
-    port: 5432
-    healthcheck: tcp
-    env:
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: app
-    hooks:
-      post:
-        - "kubectl exec deploy/postgres -- psql -U postgres -d app -c 'CREATE TABLE IF NOT EXISTS items(id text);'"
-
-  <span class="c"># Escape-hatched worker: no Dockerfile image, args overridden, patched</span>
-  - name: worker
-    image: alpine:3
-    port: 80
-    command: ["sleep"]
-    args: ["9999"]
-    patch:
-      spec:
-        template:
-          metadata:
-            labels:
-              role: worker
-
-  <span class="c"># Helm app with nested values + a local chart</span>
-  - name: nginx-ingress
+  <span class="c"># the orders message bus — a local helm chart wrapping rabbitmq</span>
+  - name: orders
     helm:
-      chart: ./charts/ingress
+      chart: ./charts/orders
       values:
-        controller:
-          replicaCount: 2
-        metrics:
-          enabled: true
-
-<span class="c"># One command brings it all up:</span>
-#   kustron env up
-#
-# One command stops everything (keeps the cluster):
-#   kustron env stop
-#
-# To destroy the cluster entirely:
-#   kustron env destroy
-#   kustron env up
-#
-# One command tears it all down:
-#   kustron env down</code></pre>
+        auth.username: guest
+        auth.password: guest</code></pre>
         </div>
+        <p style="margin-top: 16px; color: var(--muted)">
+          During the video the file grows live: <code>apps add</code> appends
+          entries while <code>kustron env watch</code> is running, and each
+          change redeploys only what changed.
+        </p>
       </div>
     </div>
 
     <!-- Comparison with tilt.dev -->
-    <div class="feature">
-      <div class="wrap feature-inner">
-        <div class="feature-text">
-          <h3>kustron vs tilt.dev</h3>
-          <p>
-            Both make Kubernetes a pleasant dev environment — with different
-            bets. Tilt is an <strong>engine</strong>: a permanent control loop
-            with a web UI and in-container file sync
-            (live_update). Kustron is a
-            <strong>lifecycle tool</strong>: one declarative YAML that starts,
-            reconciles, and deletes a real k3d cluster — no daemon, no UI, no
-            Starlark.
-          </p>
-          <p>
-            Sourcing rule: every kustron cell was verified against a live k3d
-            test cluster; every Tilt cell is from Tilt's official docs (not
-            hand-tested). The full table, with links, lives at
+    <div class="full-example" id="compare">
+      <div class="wrap">
+        <h2>Other tools in this space — and the different bet.</h2>
+        <p>
+          docker compose owns the up/stop/down muscle memory, but stops at
+          containers. skaffold automates build-and-deploy pipelines against
+          infrastructure you bring. The closest neighbor to kustron is
+          <strong>tilt.dev</strong> — same pain, different bet.
+        </p>
+        <p>
+          <strong>Tilt is an engine.</strong> A long-running control loop with
+          a web UI: you teach it in a <code>Tiltfile</code> (Starlark, a
+          Python-like DSL), it deploys into a cluster you supply (typically
+          created via ctlptl), and in the hot loop <code>live_update</code>
+          syncs files into running containers in seconds — the fastest edit
+          cycle around. In return, you keep Tilt running while you work, and
+          the cluster is yours to create, feed, and clean up yourself.
+        </p>
+        <p>
+          <strong>kustron is the lifecycle bet.</strong> One declarative yaml
+          — the same compose-shaped <code>up / stop / reload / destroy</code>
+          model, a strict schema, no Starlark — owns the whole loop: it
+          creates and deletes its own k3d cluster + registry, rebuilds from
+          content hashes, reconciles deterministically, then exits. Nothing
+          runs between commands; <code>env watch</code> is the only
+          long-lived mode and does exactly one thing (redeploy on change).
+          The trade: no in-container file sync yet (watch = rebuild + rollout,
+          a few seconds slower than <code>live_update</code>), no web UI. What
+          you get back: a full stack in one command, gone in one command —
+          nothing lingers.
+        </p>
+        <p>
+          <span class="c"
+            >Sourcing rule: every kustron cell below was verified against a
+            live k3d test cluster; every Tilt cell is from Tilt's official
+            docs (not hand-tested). The annotated table with links lives at
             <a
               href="https://github.com/itsmunim/kustron/blob/master/docs/comparison.md"
               style="color: var(--accent)"
               >docs/comparison.md</a
-            >.
-          </p>
-          <span class="feature-meta">verified-vs-docs comparison</span>
-        </div>
+            >.</span
+          >
+        </p>
         <div style="overflow-x: auto; width: 100%">
           <table
             style="
               width: 100%;
-              max-width: 900px;
               border-collapse: collapse;
               font-size: 14px;
               background: rgba(255, 255, 255, 0.03);
               border: 1px solid rgba(255, 255, 255, 0.09);
               border-radius: 10px;
+              margin-top: 28px;
             "
           >
             <thead>
