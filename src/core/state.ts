@@ -1,4 +1,4 @@
-import {readFile, writeFile, mkdir} from 'fs/promises';
+import {readFile, writeFile, mkdir, rm} from 'fs/promises';
 import {existsSync} from 'fs';
 import {join} from 'path';
 import {kubectl} from './kubectl.js';
@@ -75,4 +75,13 @@ export async function recordDeployedApps(
     })),
   };
   await saveState(state);
+}
+
+/**
+ * Clear the deployed-apps state (called on env destroy — the cluster is
+ * gone, so the recorded state no longer describes anything real and a
+ * stale entry would make the next `env up` prune against an empty cluster).
+ */
+export async function clearState(): Promise<void> {
+  await rm(STATE_FILE, {force: true});
 }

@@ -159,7 +159,7 @@ describe('helmUninstall', () => {
     expect(mockedExec).toHaveBeenCalledWith(
       'helm',
       expect.arrayContaining(['uninstall', 'app']),
-      undefined,
+      {silent: true},
     );
   });
 

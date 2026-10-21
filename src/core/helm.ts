@@ -191,7 +191,10 @@ export async function helmUninstall(
   clusterName: string,
 ): Promise<void> {
   try {
-    await helm(clusterName, ['uninstall', appName, '--namespace', namespace]);
+    // silent: best-effort cleanup — "release: not found" is not an error
+    await helm(clusterName, ['uninstall', appName, '--namespace', namespace], {
+      silent: true,
+    });
   } catch {
     // ignore if not installed
   }

@@ -3,6 +3,7 @@ import {confirm} from '@clack/prompts';
 import {deleteCluster} from '../../core/cluster.js';
 import {deleteContext} from '../../core/context.js';
 import {readAndParseEnvFile} from '../../core/env-file.js';
+import {clearState} from '../../core/state.js';
 import {success, warn} from '../../utils/logger.js';
 import {t} from '../../utils/i18n.js';
 
@@ -32,6 +33,7 @@ export async function envDestroy(options: {yes?: boolean} = {}): Promise<void> {
   try {
     await deleteCluster(clusterName);
     await deleteContext(clusterName);
+    await clearState();
     success(t('env.destroy.success', {name: clusterName}));
   } catch {
     warn(t('env.destroy.notFound', {name: clusterName}));

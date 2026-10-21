@@ -89,7 +89,7 @@ describe('pruneRemovedApps', () => {
     expect(mockedExec).toHaveBeenCalledWith(
       'helm',
       expect.arrayContaining(['uninstall', 'old-helm']),
-      undefined,
+      {silent: true},
     );
   });
 
