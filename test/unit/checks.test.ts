@@ -5,7 +5,11 @@ vi.mock('execa', () => ({
 }));
 
 import {execa} from 'execa';
-import {checkDependency, checkAll} from '../../src/utils/checks.js';
+import {
+  checkDependency,
+  checkAll,
+  collectDependencies,
+} from '../../src/utils/checks.js';
 
 const mockedExeca = vi.mocked(execa);
 
@@ -68,5 +72,33 @@ describe('checkAll', () => {
   it('warns when optional dependency is missing', async () => {
     mockedExeca.mockResolvedValue({exitCode: 0} as never);
     await expect(checkAll(['k3d'], ['helm'])).resolves.not.toThrow();
+  });
+});
+
+describe('collectDependencies', () => {
+  beforeEach(() => {
+    mockedExeca.mockClear();
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+  });
+
+  it('returns structured results without printing the table', async () => {
+    mockedExeca.mockResolvedValue({exitCode: 0} as never);
+    const logSpy = vi.spyOn(console, 'log');
+    const results = await collectDependencies(['k3d'], ['railpack']);
+    expect(results).toHaveLength(2);
+    const k3d = results.find((r) => r.dep.name === 'k3d')!;
+    expect(k3d.required).toBe(true);
+    expect(k3d.installed).toBe(true);
+    const railpack = results.find((r) => r.dep.name === 'railpack')!;
+    expect(railpack.required).toBe(false);
+    expect(console.log).not.toHaveBeenCalled();
+    logSpy.mockRestore();
+  });
+
+  it('marks required deps missing without throwing (doctor --json contract)', async () => {
+    mockedExeca.mockResolvedValue({exitCode: 1} as never);
+    const results = await collectDependencies(['k3d'], []);
+    expect(results[0].required).toBe(true);
+    expect(results[0].installed).toBe(false);
   });
 });

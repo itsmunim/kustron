@@ -90,26 +90,43 @@ export async function checkDependency(
   return {present: installed};
 }
 
+export interface DependencyCheck {
+  dep: Dependency;
+  required: boolean;
+  installed: boolean;
+}
+
+/**
+ * Check every named dependency and return the raw results WITHOUT printing
+ * anything. Used by doctor --json; checkAll wraps this for the human table.
+ */
+export async function collectDependencies(
+  required: string[],
+  optional: string[],
+): Promise<DependencyCheck[]> {
+  const names = [...required, ...optional];
+  const deps = dependencies.filter((d) => names.includes(d.name));
+
+  return Promise.all(
+    deps.map(async (dep) => {
+      const installed =
+        dep.name === 'container-runtime'
+          ? await isRuntimeInstalled()
+          : await isInstalled(dep.command);
+      return {dep, required: required.includes(dep.name), installed};
+    }),
+  );
+}
+
 export async function checkAll(
   required: string[],
   optional: string[],
 ): Promise<void> {
   info(t('checks.header'));
 
-  const names = [...required, ...optional];
-  const deps = dependencies.filter((d) => names.includes(d.name));
+  const results = await collectDependencies(required, optional);
 
-  const results = await Promise.all(
-    deps.map(async (dep) => {
-      const installed =
-        dep.name === 'container-runtime'
-          ? await isRuntimeInstalled()
-          : await isInstalled(dep.command);
-      return {dep, installed};
-    }),
-  );
-
-  const maxNameLen = Math.max(...deps.map((d) => d.name.length));
+  const maxNameLen = Math.max(...results.map((r) => r.dep.name.length));
   const maxStatusLen = 10;
 
   console.log();
@@ -120,8 +137,7 @@ export async function checkAll(
 
   let hasMissingRequired = false;
 
-  for (const {dep, installed} of results) {
-    const isReq = required.includes(dep.name);
+  for (const {dep, required: isReq, installed} of results) {
     const status = installed
       ? chalk.green(t('checks.installed').padEnd(maxStatusLen))
       : isReq
@@ -143,9 +159,7 @@ export async function checkAll(
     throw new Error(t('checks.missingRequiredError'));
   }
 
-  const missingOptional = results.filter(
-    (r) => !r.installed && optional.includes(r.dep.name),
-  );
+  const missingOptional = results.filter((r) => !r.installed && !r.required);
   if (missingOptional.length > 0) {
     warn(
       t('checks.optionalMissing', {

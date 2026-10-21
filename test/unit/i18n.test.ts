@@ -17,9 +17,11 @@ describe('i18n', () => {
     expect(result).toContain('{{name}}');
   });
 
-  it('returns the key itself for unknown keys', () => {
-    expect(t('unknown.key.that.does.not.exist')).toBe(
-      'unknown.key.that.does.not.exist',
+  it('throws for unknown keys under test (strict mode)', () => {
+    // t() must never silently echo a missing key in tests — that is how
+    // raw i18n keys were leaking into the shipped --help output.
+    expect(() => t('unknown.key.that.does.not.exist')).toThrow(
+      /Missing translation key/,
     );
   });
 });

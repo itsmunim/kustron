@@ -205,7 +205,7 @@ export function renderSpec(): string {
 
 `) +
     chalk.white(`config:
-  namespace: kustron-env   # default; all apps share this namespace
+  namespace: kustron-env   # default namespace; each app can override with its own \`namespace:\`
 
 apps:
   # --- Type 1: Source build (local path or git SSH/HTTPS URL) ---

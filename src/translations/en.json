@@ -28,14 +28,29 @@
     "replicasOption": "Replica count (default: 1)",
     "haOption": "HA mode: min 2, max 5 replicas, CPU 90%, mem 80%",
     "envOption": "Environment variable (KEY=VALUE, repeatable)",
-    "doctorDescription": "Check that kustron's runtime dependencies are installed and the container runtime daemon is reachable"
+    "doctorDescription": "Check that kustron's runtime dependencies are installed and the container runtime daemon is reachable",
+    "appDescription": "Stop, start, inspect, and proxy a single app by name",
+    "appStopDescription": "Stop a single app without touching the rest of the environment",
+    "appStartDescription": "Start a single app that was previously stopped",
+    "appLogsDescription": "Stream logs for a single app (-f follow, -t N last lines)",
+    "appExecDescription": "Run a command inside a single running app container (default: sh)",
+    "appForwardDescription": "Forward a local port to a single app",
+    "jsonOption": "output machine-readable JSON",
+    "initNameOption": "app name (default: current folder name)",
+    "initPortOption": "app port (default: 3000 for source, 80 for image)",
+    "initSourceOption": "local source directory (default: ./)",
+    "initImageOption": "existing container image (alternative to --source)",
+    "initExposedOption": "expose the app on localhost:<nodePort>",
+    "initForceOption": "overwrite an existing kustron-env.yaml"
   },
   "env": {
     "init": {
-      "alreadyExists": "kustron-env.yaml already exists. Skipping creation.",
-      "created": "Created {{file}}.",
-      "nextStep": "Open it, set the port, and run `kustron env up`.",
-      "missingDependencies": "Some required dependencies are missing. Install them before running `kustron env up`."
+      "existsForceHint": "kustron-env.yaml already exists. Pass --force (-f) to overwrite it.",
+      "overwriting": "Overwriting kustron-env.yaml (--force)",
+      "mutuallyExclusive": "Pass either --image or --source, not both.",
+      "badPort": "Invalid port: {{port}} (expected an integer between 1 and 65535)",
+      "nameSanitized": "Sanitized app name to '{{name}}'",
+      "nextHint": "Next: edit kustron-env.yaml if needed, then run 'kustron env up'"
     },
     "up": {
       "noEnvFile": "No kustron-env.yaml found. Run `kustron env init` to create one.",
