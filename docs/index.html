@@ -335,6 +335,50 @@
         border-color: var(--green);
       }
 
+      /* ── Demo video ── */
+      .demo-wrap {
+        position: relative;
+        width: 100%;
+        max-width: 860px;
+        margin: 40px auto 0;
+      }
+
+      .demo-wrap video {
+        width: 100%;
+        display: block;
+        border-radius: 14px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+        background: #0b0e14;
+      }
+
+      .fs-btn {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 2;
+        background: rgba(13, 17, 23, 0.72);
+        border: 1px solid rgba(240, 246, 252, 0.18);
+        color: #e6edf3;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        cursor: pointer;
+        font-family: 'Inter', sans-serif;
+        opacity: 0;
+        transition: opacity 0.15s;
+      }
+
+      .demo-wrap:hover .fs-btn,
+      .demo-wrap:focus-within .fs-btn,
+      .demo-wrap:active .fs-btn {
+        opacity: 1;
+      }
+
+      :fullscreen video {
+        border-radius: 0;
+        box-shadow: none;
+      }
+
       /* ── Sections ── */
       section {
         padding: 80px 24px;
@@ -1094,14 +1138,48 @@
         <a href="features.html" class="btn btn-primary"
           >See all features &amp; examples →</a
         >
-        <a
-          href="features.html#demo"
-          class="btn btn-outline"
-          style="margin-left: 12px"
+        <a href="#demo" class="btn btn-outline" style="margin-left: 12px"
           >▶ Watch the 2-min demo</a
         >
       </div>
     </div>
+
+    <hr class="divider" />
+
+    <!-- 2-minute demo -->
+    <section id="demo">
+      <div class="section-inner" style="text-align: center">
+        <div class="section-label">Demo</div>
+        <h2>From zero to running app, in 2 minutes.</h2>
+        <p class="section-sub">
+          <code>kustron doctor</code> → cluster up → NodePort URL → edit code →
+          instant rebuild → clean <code>env destroy</code>. Hover the video for
+          the full-screen button, or double-click it.
+        </p>
+        <div class="demo-wrap">
+          <video
+            id="kustron-demo"
+            controls
+            playsinline
+            preload="metadata"
+            poster="assets/demo-poster.png"
+            ondblclick="toggleDemoFullscreen('kustron-demo')"
+          >
+            <source src="assets/demo.mp4" type="video/mp4" />
+            Your browser doesn't support embedded video.
+            <a href="assets/demo.mp4">Download demo.mp4</a>.
+          </video>
+          <button
+            type="button"
+            class="fs-btn"
+            onclick="toggleDemoFullscreen('kustron-demo')"
+            title="Full screen (or double-click the video)"
+          >
+            ⛶ Full screen
+          </button>
+        </div>
+      </div>
+    </section>
 
     <hr class="divider" />
 
@@ -2459,6 +2537,27 @@
             btn.classList.remove('copied');
           }, 2000);
         });
+      }
+
+      function toggleDemoFullscreen(id) {
+        const el = document.getElementById(id);
+        const doc = document;
+        const isFs =
+          doc.fullscreenElement ||
+          doc.webkitFullscreenElement ||
+          doc.mozFullScreenElement;
+        if (isFs) {
+          (doc.exitFullscreen || doc.webkitExitFullscreen || function () {}).call(
+            doc,
+          );
+          return;
+        }
+        if (el.requestFullscreen) {
+          el.requestFullscreen();
+        } else if (el.webkitEnterFullscreen) {
+          // iOS Safari
+          el.webkitEnterFullscreen();
+        }
       }
     </script>
   </body>

@@ -449,6 +449,51 @@
         }
       }
     </style>
+    <style>
+      /* ── Demo video ── */
+      .demo-wrap {
+        position: relative;
+        width: 100%;
+        max-width: 860px;
+        margin: 0 auto;
+      }
+
+      .demo-wrap video {
+        width: 100%;
+        display: block;
+        border-radius: 14px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+        background: #0b0e14;
+      }
+
+      .fs-btn {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 2;
+        background: rgba(13, 17, 23, 0.72);
+        border: 1px solid rgba(240, 246, 252, 0.18);
+        color: #e6edf3;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        cursor: pointer;
+        font-family: 'Inter', sans-serif;
+        opacity: 0;
+        transition: opacity 0.15s;
+      }
+
+      .demo-wrap:hover .fs-btn,
+      .demo-wrap:focus-within .fs-btn,
+      .demo-wrap:active .fs-btn {
+        opacity: 1;
+      }
+
+      :fullscreen video {
+        border-radius: 0;
+        box-shadow: none;
+      }
+    </style>
   </head>
   <body>
     <!-- Nav -->
@@ -843,23 +888,27 @@ apps:
           </p>
           <span class="feature-meta">env init → up → curl → watch → destroy</span>
         </div>
-        <div style="width: 100%">
+        <div class="demo-wrap">
           <video
+            id="kustron-demo"
             controls
-            preload="none"
+            playsinline
+            preload="metadata"
             poster="assets/demo-poster.png"
-            style="
-              width: 100%;
-              max-width: 900px;
-              border-radius: 14px;
-              box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-              background: #0b0e14;
-            "
+            ondblclick="toggleDemoFullscreen('kustron-demo')"
           >
             <source src="assets/demo.mp4" type="video/mp4" />
             Your browser doesn't support embedded video. Download it instead:
             <a href="assets/demo.mp4">demo.mp4</a>.
           </video>
+          <button
+            type="button"
+            class="fs-btn"
+            onclick="toggleDemoFullscreen('kustron-demo')"
+            title="Full screen (or double-click the video)"
+          >
+            ⛶ Full screen
+          </button>
         </div>
       </div>
     </div>
@@ -1120,5 +1169,30 @@ apps:
         </div>
       </div>
     </footer>
+
+    <script>
+      function toggleDemoFullscreen(id) {
+        const el = document.getElementById(id);
+        const doc = document;
+        const isFs =
+          doc.fullscreenElement ||
+          doc.webkitFullscreenElement ||
+          doc.mozFullScreenElement;
+        if (isFs) {
+          (
+            doc.exitFullscreen ||
+            doc.webkitExitFullscreen ||
+            function () {}
+          ).call(doc);
+          return;
+        }
+        if (el.requestFullscreen) {
+          el.requestFullscreen();
+        } else if (el.webkitEnterFullscreen) {
+          // iOS Safari
+          el.webkitEnterFullscreen();
+        }
+      }
+    </script>
   </body>
 </html>
