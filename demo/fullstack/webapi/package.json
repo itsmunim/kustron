@@ -1,0 +1,12 @@
+{
+  "name": "webapi",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "kustron demo app: CRUD + orders backed by kivo (Redis protocol), queue consumer dormant until RABBIT_URL is set",
+  "license": "MIT",
+  "dependencies": {
+    "amqplib": "^0.10.4",
+    "express": "^4.19.2",
+    "redis": "^4.6.13"
+  }
+}

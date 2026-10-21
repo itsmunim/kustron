@@ -1,0 +1,20 @@
+# kustron demo — zero to fullstack in 3 minutes
+config:
+  namespace: kvdemo
+  clusterName: kvdemo
+
+apps:
+  # the KV store: built straight from its GitHub source by kustron
+  - name: kivo
+    source: https://github.com/itsmunim/kivo.git
+    port: 6379
+
+  # CRUD API over kivo (Redis protocol); queue consumer dormant
+  - name: webapi
+    source: ./webapi
+    port: 3000
+    exposed: true
+    healthcheck: /health
+    dependsOn: [kivo]
+    env:
+      KIVO_URL: redis://kivo:6379

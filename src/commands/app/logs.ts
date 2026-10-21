@@ -52,5 +52,7 @@ export async function appLogs(
   if (options.tail) args.push('--tail', String(options.tail));
   args.push('--all-containers=true');
 
-  await kubectl(clusterName, args);
+  // Stream the pod logs to the console as they arrive (and always capture —
+  // swallowed output made `app logs` silent and `-f` appear to hang).
+  await kubectl(clusterName, args, {stream: true});
 }

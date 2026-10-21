@@ -1,0 +1,6 @@
+apiVersion: v2
+name: orders
+description: RabbitMQ message bus for the kustron fullstack demo
+type: application
+version: 0.1.0
+appVersion: "3.13"

@@ -1,0 +1,13 @@
+fullnameOverride: orders
+replicaCount: 1
+
+image:
+  repository: rabbitmq
+  tag: "3.13-management-alpine"
+
+auth:
+  username: guest
+  password: guest
+
+persistence:
+  enabled: false

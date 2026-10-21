@@ -30,6 +30,20 @@ export interface ExecResult {
 }
 
 /**
+ * Options for {@link exec}.
+ *
+ * `stream`: pipe the child's stdout/stderr straight to the parent's console,
+ *  while still capturing the final text into the {@link ExecResult}. Use for
+ *  long-lived, human-directed commands (e.g. `kubectl logs -f`) whose output
+ *  matters while running — capture-only commands swallow them for good.
+ */
+export interface ExecOptions {
+  input?: string;
+  silent?: boolean;
+  stream?: boolean;
+}
+
+/**
  * Strip sensitive values from command strings before logging.
  * Matches common password flags across kubectl, helm, docker, podman, git, etc.
  */
@@ -46,7 +60,7 @@ export function sanitizeCommand(cmd: string): string {
 export async function exec(
   command: string,
   args: string[],
-  options?: {input?: string; silent?: boolean} & Omit<ExecaOptions, 'input'>,
+  options?: ExecOptions & Omit<ExecaOptions, 'input'>,
 ): Promise<ExecResult> {
   const opts: Record<string, unknown> = {
     ...(options ?? {}),
@@ -65,6 +79,13 @@ export async function exec(
 
   try {
     const subprocess = execa(command, args, opts as ExecaOptions);
+
+    if (options?.stream && subprocess.stdout) {
+      subprocess.stdout.pipe(process.stdout);
+    }
+    if (options?.stream && subprocess.stderr) {
+      subprocess.stderr.pipe(process.stderr);
+    }
 
     if (verboseMode && subprocess.stdout) {
       subprocess.stdout.on('data', (chunk: Buffer) => {
