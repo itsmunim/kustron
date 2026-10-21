@@ -135,6 +135,25 @@ kustron env up
 
 Your app will be built, pushed to a local registry, and deployed into a k3d Kubernetes cluster. If you set `exposed: true`, it's reachable at `http://localhost:<nodePort>` — the port is printed in the deployment summary.
 
+`kustron env init` never prompts when it can't (scripts, CI, agent shells): pass `--name/--port/--image/--source/--exposed` and it writes `kustron-env.yaml` directly; with no flags it defaults to the folder name on `./`.
+
+---
+
+## Using Kustron with coding agents
+
+Kustron is built to be driven by coding agents (Claude Code, Cursor, opencode, …). **Read [AGENTS.md](/AGENTS.md)** for the full runbook — it covers the flow an agent should follow to provision your stack, find the exposed ports, run tests against it, and tear everything down.
+
+The short version:
+
+```bash
+kustron env up             # exits 0 only when every app is ready (healthchecks passed)
+kustron env status --json  # {"healthy":true,"apps":[{"name":"api","nodePort":30000,"url":…}]}
+curl http://localhost:30000/health
+kustron env destroy --yes  # delete the whole stack, nothing lingers
+```
+
+Every command that can prompt has a non-interactive equivalent (`--force`, `--yes`, `--name`, …), and `env status --json` / `doctor --json` give you machine-readable output with exit codes that turn "wait for ready" into a single gated command.
+
 ---
 
 ## A real environment in practice

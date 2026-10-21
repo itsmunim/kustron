@@ -1,5 +1,10 @@
 # Kustron — Agent Skill Reference
 
+> **Scope:** this file is for agents *developing kustron* (the CLI tool
+> itself). To *operate* kustron from inside a user's project — provision a
+> stack, run their tests, tear it down — read [`AGENTS.md`](AGENTS.md)
+> instead.
+
 ## Project Overview
 
 Kustron is a CLI tool that provides "Docker Compose for Kubernetes" — local development environments using a single declarative YAML file (`kustron-env.yaml`). It wraps k3d (k3s in Docker), kubectl, helm, and container runtimes into a simplified workflow.
@@ -12,10 +17,11 @@ Kustron is a CLI tool that provides "Docker Compose for Kubernetes" — local de
 src/
   bin/kustron.ts          # CLI entry point (commander.js)
   commands/               # CLI command handlers
-    env/                  # env up, down, stop, reload, status
-    app/                  # app stop, start, logs
-    cluster/              # cluster destroy (now env destroy)
-    registry/             # registry login, prune
+    env/                  # env init, up, stop, reload, watch, destroy, status, show-spec, down (deprecated)
+    app/                  # app stop, start, logs, exec, forward
+    apps/                 # apps add, remove (mutation of kustron-env.yaml)
+    doctor.ts             # dependency + daemon probe (--json supported)
+    registry.ts           # registry login, prune
   core/                   # Business logic
     kubectl.ts            # Scoped kubectl/helm wrappers (NEVER mutate global context)
     cluster.ts            # k3d cluster lifecycle
@@ -36,13 +42,15 @@ src/
   utils/                  # Utilities
     exec.ts               # Shell execution wrapper (verbose-safe)
     logger.ts             # Structured logging
-    checks.ts             # Dependency availability checks
+    checks.ts             # Dependency availability checks (collectDependencies → doctor --json)
+    container-runtime.ts  # docker/podman detection
+    i18n.ts               # t() — throws on missing keys when NODE_ENV=test (strict)
     port.ts               # Available port detection
     merge.ts              # Deep merge utilities
     image.ts              # Docker image reference parser
-    container-runtime.ts  # docker/podman detection
   types/index.ts          # Shared TypeScript types
-  core/env-file.ts        # YAML parsing and validation (zod schemas)
+  core/env-file.ts        # YAML parsing and validation (zod strict schemas)
+  translations/en.json    # ALL user-facing strings — every t() key must exist
 ```
 
 ## Key Conventions
@@ -90,13 +98,26 @@ node dist/bin/kustron.js env up
 - **ConfigMap changes need pod restart.** The Deployment template includes a `kustron.dev/env-hash` annotation so env changes trigger rolling restarts.
 - **Git sources are cached.** They live in `~/.kustron/git-cache/`. `cleanupSource()` skips deletion of cached repos.
 
-## Testing Approach (not yet implemented)
+## Testing
 
-When adding tests:
-- Unit-test pure functions: `hashSourceDir`, `topoSortApps`, `interpolate`, `parseImageRef`, `injectImageValues`, `deepMerge`
-- Mock `exec()` for command tests
-- Use temporary directories for file-system tests
-- E2E: use `examples/` fixtures with short-lived k3d clusters
+The suite lives in `test/unit` (vitest, ~232 tests, no cluster needed) and
+`test/e2e` (fixture-driven manifest/parse tests). Run with `npm test`;
+`npm run typecheck` must also stay clean.
+
+- **t() is strict in tests.** `src/utils/i18n.ts` throws on any missing
+  key when `NODE_ENV=test` — if you add a `t('cli.newThing')` call, add the
+  string to `src/translations/en.json` in the same commit or the suite fails.
+- Unit-test pure functions: `hashSourceDir`, `topoSortApps`, `interpolate`,
+  `parseImageRef`, `injectImageValues`, `deepMerge`, `generateEnvFile`,
+  `collectDependencies`.
+- Mock `kubectl`/`helm`/cluster modules for command tests (see
+  `test/unit/status-json.test.ts` — it drives `env status --json` end to end
+  with mocked kubectl).
+- `process.exit` calls in handlers: spy it in tests, mock to throw
+  (`process.exit(1)` → `throw new Error('process.exit(1)')`), then assert
+  `rejects.toThrow` — never let a test process actually die.
+- E2E fixtures live in `test/e2e` with short-lived k3d clusters (run
+  explicitly via `npm run test:e2e`).
 
 ## Decision Log
 
@@ -109,3 +130,6 @@ When adding tests:
 | Content-hash skip instead of timestamp | Deterministic, survives clock changes |
 | Git cache in `~/.kustron/git-cache` | Avoids re-cloning, shared across projects |
 | Registry GC via catalog API | Simple, doesn't require registry admin tools |
+| Non-interactive `env init` flags | Agent shells are non-TTY; prompts there hang. `--name/--port/…` + folder-name fallback keeps humans interactive and agents flag-driven (AGENTS.md is the contract) |
+| `--json` + exit codes as contracts | Agents gate flows on exit codes; `doctor/status --json` prints the JSON shape documented in AGENTS.md, banner suppressed in `--json` mode |
+| Helm health via release status | Chart-owned Deployments don't match kustron's app naming; `helm status` is the only stable per-app signal for `status --json` health |

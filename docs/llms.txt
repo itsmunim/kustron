@@ -1,0 +1,24 @@
+# Kustron
+
+> Kustron is a CLI that turns one declarative file (kustron-env.yaml) into a
+> running local development environment: it provisions its own k3d cluster
+> and container registry, builds images from local source or public git
+> repos, deploys apps (source, existing images, or Helm charts) with
+> deterministic content-hashed builds, waits for healthchecks, and tears
+> everything down with env destroy — without ever mutating the user's
+> kubectl context.
+
+Coding agents should read AGENTS.md first: it contains the complete
+operating runbook (non-interactive flags, machine-readable `--json`
+contracts, and the exit-code semantics agents gate on).
+
+## Reference
+
+- [Website](https://itsmunim.github.io/kustron/): overview, quickstart, FAQ
+- [Features & examples](https://itsmunim.github.io/kustron/features.html): every feature with a concrete kustron-env.yaml example
+- [AGENTS.md (agent runbook)](https://github.com/itsmunim/kustron/blob/master/AGENTS.md): how coding agents provision, test, and tear down environments with kustron
+- [SKILL.md (contributor skill)](https://github.com/itsmunim/kustron/blob/master/SKILL.md): architecture and conventions for agents working on the kustron codebase itself
+- [README](https://github.com/itsmunim/kustron/blob/master/ReadMe.md): install (incl. install.sh), quickstart, command reference
+- [Schema reference](https://github.com/itsmunim/kustron#kustron-envyaml): every field of kustron-env.yaml; also available as `kustron env show-spec`
+- [Comparison with tilt.dev](https://github.com/itsmunim/kustron/blob/master/docs/comparison.md): verified-vs-docs capability table
+- [Source tree](https://github.com/itsmunim/kustron/tree/master/src): TypeScript (commander.js CLI + zod-validated yaml schema in src/core/env-file.ts)
