@@ -20,17 +20,12 @@ export async function envWatch(): Promise<void> {
   const envFile = await readAndParseEnvFile(filePath);
   const clusterName = envFile.config?.clusterName ?? DEFAULT_CLUSTER_NAME;
 
-  // Collect local source directories to watch
-  const sourcesToWatch: string[] = [];
+  // Collect things to watch: the env file itself plus local source dirs
+  const sourcesToWatch: string[] = ['./kustron-env.yaml'];
   for (const app of envFile.apps) {
     if (app.source && !isGitUrl(app.source)) {
       sourcesToWatch.push(app.source);
     }
-  }
-
-  if (sourcesToWatch.length === 0) {
-    warn(t('env.watch.noLocalSources'));
-    return;
   }
 
   step(
