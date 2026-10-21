@@ -1,12 +1,13 @@
 import {access} from 'fs/promises';
 import chalk from 'chalk';
 import {readAndParseEnvFile} from '../../core/env-file.js';
+import type {AppEntry, EnvFile} from '../../types/index.js';
 import {
   clusterExists,
   isClusterRunning,
   getK3dNodeIp,
 } from '../../core/cluster.js';
-import {kubectl} from '../../core/kubectl.js';
+import {kubectl, helm} from '../../core/kubectl.js';
 import {expandComponents} from '../../core/components.js';
 import {appDeploymentName} from '../../core/deps.js';
 import {error, info, warn} from '../../utils/logger.js';
@@ -154,7 +155,55 @@ async function getNodePort(
   return Number.isNaN(port) ? null : port;
 }
 
-export async function envStatus(): Promise<void> {
+export interface StatusOptions {
+  json?: boolean;
+}
+
+interface StatusRow {
+  name: string;
+  deployment: string;
+  namespace: string;
+  type: string;
+  exists: boolean;
+  readyReplicas: number;
+  desiredReplicas: number;
+  state: PodState['label'];
+  imageFull: string;
+  exposed: boolean;
+  nodePort: number | null;
+  url: string | null;
+  helmRelease: string | null;
+}
+
+async function getHelmReleaseState(
+  releaseName: string,
+  namespace: string,
+  clusterName: string,
+): Promise<string> {
+  const result = await helm(
+    clusterName,
+    ['status', releaseName, '-n', namespace, '-o', 'json'],
+    {silent: true, reject: false},
+  );
+  if (result.exitCode !== 0) return 'missing';
+  try {
+    const parsed = JSON.parse(result.stdout);
+    return parsed?.info?.status ?? 'unknown';
+  } catch {
+    return 'unknown';
+  }
+}
+
+function appHealthy(row: StatusRow): boolean {
+  if (row.type === 'helm') return row.helmRelease === 'deployed';
+  return (
+    row.exists &&
+    row.state === 'running' &&
+    row.readyReplicas >= row.desiredReplicas
+  );
+}
+
+export async function envStatus(options: StatusOptions = {}): Promise<void> {
   const filePath = './kustron-env.yaml';
   try {
     await access(filePath);
@@ -173,20 +222,20 @@ export async function envStatus(): Promise<void> {
 
   // Cluster state (informational; status still lists yaml apps regardless)
   const exists = await clusterExists(clusterName);
+  let running = false;
   if (!exists) {
     warn(t('env.status.clusterNotCreated', {name: clusterName}));
-  } else if (!(await isClusterRunning(clusterName))) {
-    warn(t('env.status.clusterNotRunning', {name: clusterName}));
+  } else {
+    running = await isClusterRunning(clusterName);
+    if (!running) {
+      warn(t('env.status.clusterNotRunning', {name: clusterName}));
+    }
   }
 
   const nodeIp = exists ? await getK3dNodeIp(clusterName) : null;
 
-  info(`${t('env.status.header')} (${expandedApps.length})`);
-  info(t('env.status.namespace', {namespace}));
-  console.log();
-
-  const rows = await Promise.all(
-    expandedApps.map(async (app) => {
+  const rows: StatusRow[] = await Promise.all(
+    expandedApps.map(async (app: AppEntry) => {
       const deploymentName = appDeploymentName(app);
       const appNamespace = app.namespace ?? namespace;
       const deployment = await getDeploymentInfo(
@@ -209,32 +258,11 @@ export async function envStatus(): Promise<void> {
             ? t('env.status.nodePortOnly', {port: String(nodePort)})
             : null;
 
-      let stateText: string;
       let state: PodState['label'];
       if (!deployment.exists) {
-        stateText = t('env.status.notDeployed');
         state = 'unknown';
       } else {
         state = podState.label;
-        switch (state) {
-          case 'running':
-            stateText = t('env.status.running');
-            break;
-          case 'starting':
-            stateText = t('env.status.starting');
-            break;
-          case 'imagepull':
-            stateText = t('env.status.imagePullFailed');
-            break;
-          case 'crashloop':
-            stateText = t('env.status.crashLoop');
-            break;
-          case 'pending':
-            stateText = t('env.status.pending');
-            break;
-          default:
-            stateText = t('env.status.unknown');
-        }
       }
 
       const type = app.helm
@@ -244,23 +272,98 @@ export async function envStatus(): Promise<void> {
           : app.image
             ? 'image'
             : '?';
-      const imageRef = deployment.exists
-        ? (deployment.image.split('/').pop() ?? deployment.image)
-        : '';
 
       return {
         name: app.name,
+        deployment: deploymentName,
+        namespace: appNamespace,
         type,
+        exists: deployment.exists,
+        readyReplicas: deployment.ready,
+        desiredReplicas: deployment.desired,
         state,
-        stateText,
-        ready: deployment.exists
-          ? `${deployment.ready}/${deployment.desired}`
-          : '-',
-        image: imageRef,
+        imageFull: deployment.image,
+        exposed: app.exposed ?? false,
+        nodePort,
         url,
+        helmRelease: null,
       };
     }),
   );
+
+  // Helm apps are only reliably visible through their release status (chart
+  // deployment/service names vary). Query each helm release once.
+  for (const row of rows.filter((candidate) => candidate.type === 'helm')) {
+    row.helmRelease = await getHelmReleaseState(
+      row.name,
+      row.namespace,
+      clusterName,
+    );
+  }
+
+  const clusterHealthy = exists && running;
+  const healthy = clusterHealthy && rows.every((row) => appHealthy(row));
+
+  if (!options.json) {
+    printHumanTable(rows, namespace);
+  } else {
+    console.log(
+      JSON.stringify(
+        {
+          cluster: {name: clusterName, exists, running},
+          namespace,
+          healthy,
+          apps: rows.map((row) => ({
+            name: row.name,
+            deployment: row.deployment,
+            namespace: row.namespace,
+            type: row.type,
+            deployed: row.exists,
+            readyReplicas: row.readyReplicas,
+            desiredReplicas: row.desiredReplicas,
+            state: row.type === 'helm' ? row.helmRelease : row.state,
+            image: row.imageFull,
+            exposed: row.exposed,
+            nodePort: row.nodePort,
+            url: row.url,
+            healthy: appHealthy(row),
+          })),
+        },
+        null,
+        2,
+      ),
+    );
+  }
+
+  // Machine + human callers gate test flows on the exit code: 0 only when
+  // the cluster is up and every app is running (helm: release deployed).
+  if (!healthy) {
+    process.exitCode = 1;
+  }
+}
+
+function printHumanTable(rows: StatusRow[], namespace: string): void {
+  info(`${t('env.status.header')} (${rows.length})`);
+  info(t('env.status.namespace', {namespace}));
+  console.log();
+
+  const stateText = (row: StatusRow): string => {
+    if (!row.exists) return t('env.status.notDeployed');
+    switch (row.state) {
+      case 'running':
+        return t('env.status.running');
+      case 'starting':
+        return t('env.status.starting');
+      case 'imagepull':
+        return t('env.status.imagePullFailed');
+      case 'crashloop':
+        return t('env.status.crashLoop');
+      case 'pending':
+        return t('env.status.pending');
+      default:
+        return t('env.status.unknown');
+    }
+  };
 
   const maxNameLen = Math.max(
     t('env.status.colApp').length,
@@ -272,7 +375,7 @@ export async function envStatus(): Promise<void> {
   );
   const maxStateLen = Math.max(
     t('env.status.colStatus').length,
-    ...rows.map((r) => r.stateText.length),
+    ...rows.map((r) => stateText(r).length),
   );
 
   console.log(
@@ -284,10 +387,14 @@ export async function envStatus(): Promise<void> {
 
   for (const row of rows) {
     const color = statusColor(row.state);
+    const readyText = row.exists
+      ? `${row.readyReplicas}/${row.desiredReplicas}`
+      : '-';
+    const shortImage = row.imageFull.split('/').pop() ?? row.imageFull;
     console.log(
       `${row.name.padEnd(maxNameLen + 2)}${row.type.padEnd(maxTypeLen + 2)}${color(
-        row.stateText.padEnd(maxStateLen + 2),
-      )}${row.ready.padEnd(9)}${chalk.dim(row.image.padEnd(36))}${row.url ? chalk.cyan(row.url) : chalk.dim('-')}`,
+        stateText(row).padEnd(maxStateLen + 2),
+      )}${readyText.padEnd(9)}${chalk.dim(shortImage.padEnd(36))}${row.url ? chalk.cyan(row.url) : chalk.dim('-')}`,
     );
   }
 

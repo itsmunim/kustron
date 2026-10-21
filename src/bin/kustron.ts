@@ -57,8 +57,21 @@ const env = program.command('env').description(t('cli.envDescription'));
 env
   .command('init')
   .description(t('cli.initDescription'))
-  .action(async () => {
-    await envInit();
+  .option('--name <name>', t('cli.initNameOption'))
+  .option('--port <n>', t('cli.initPortOption'), parseInt)
+  .option('--source <path>', t('cli.initSourceOption'))
+  .option('--image <image>', t('cli.initImageOption'))
+  .option('--exposed', t('cli.initExposedOption'))
+  .option('-f, --force', t('cli.initForceOption'))
+  .action(async (options) => {
+    await envInit({
+      name: options.name,
+      port: options.port,
+      source: options.source,
+      image: options.image,
+      exposed: options.exposed ?? false,
+      force: options.force ?? false,
+    });
   });
 
 env
@@ -99,8 +112,9 @@ env
 env
   .command('status')
   .description(t('cli.statusDescription'))
-  .action(async () => {
-    await envStatus();
+  .option('--json', t('cli.jsonOption'))
+  .action(async (options) => {
+    await envStatus({json: options.json === true});
   });
 
 env
@@ -205,8 +219,9 @@ apps
 program
   .command('doctor')
   .description(t('cli.doctorDescription'))
-  .action(async () => {
-    await runDoctor();
+  .option('--json', t('cli.jsonOption'))
+  .action(async (options) => {
+    await runDoctor({json: options.json === true});
   });
 
 registerRegistryCommand(program);
@@ -221,15 +236,17 @@ const originalOutputHelp = program.outputHelp.bind(program);
   return originalOutputHelp(options as any);
 };
 
-// Show banner at startup for non-help commands
+// Show banner at startup for non-help commands. Machine modes (--json) get
+// pure stdout so agents can consume the output without stripping the banner.
 const args = process.argv.slice(2);
 const isHelp =
   args.length === 0 ||
   args.some(
     (a) => a === '-h' || a === '--help' || a === '-V' || a === '--version',
   );
+const isMachine = args.includes('--json');
 
-if (!isHelp) {
+if (!isHelp && !isMachine) {
   printBanner();
 }
 
