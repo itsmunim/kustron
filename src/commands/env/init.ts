@@ -12,6 +12,7 @@ export interface InitFlags {
   source?: string;
   exposed?: boolean;
   force?: boolean;
+  cluster?: string;
 }
 
 interface InitOptions {
@@ -21,6 +22,7 @@ interface InitOptions {
   image?: string;
   port: number;
   exposed: boolean;
+  cluster?: string;
 }
 
 function generateEnvFile(options: InitOptions): string {
@@ -36,8 +38,12 @@ function generateEnvFile(options: InitOptions): string {
     lines.push('    exposed: true');
   }
 
+  const clusterLine = options.cluster
+    ? `  clusterName: ${options.cluster}\n`
+    : '';
+
   return `config:
-  namespace: ${options.name}-env
+${clusterLine}  namespace: ${options.name}-env
 
 apps:
 ${lines.join('\n')}
@@ -196,7 +202,15 @@ export async function envInit(flags: InitFlags = {}): Promise<void> {
     }
   }
 
-  const yaml = generateEnvFile({name, type, source, image, port, exposed});
+  const yaml = generateEnvFile({
+    name,
+    type,
+    source,
+    image,
+    port,
+    exposed,
+    cluster: flags.cluster ? sanitizeName(flags.cluster) : undefined,
+  });
   await writeFile('./kustron-env.yaml', yaml, 'utf-8');
   success(`Created kustron-env.yaml for app '${name}'`);
   info(t('env.init.nextHint'));

@@ -61,6 +61,21 @@ describe('env init (non-interactive)', () => {
     expect(content).toContain('name: my-app');
   });
 
+  it('--cluster writes config.clusterName so envs can isolate from default clusters', async () => {
+    await envInit({name: 'api', port: 3000, cluster: 'apidemo'});
+
+    const envFile = await readAndParseEnvFile('./kustron-env.yaml');
+    expect(envFile.config?.clusterName).toBe('apidemo');
+    expect(envFile.config?.namespace).toBe('api-env');
+  });
+
+  it('omits clusterName by default', async () => {
+    await envInit({name: 'api'});
+
+    const content = await readFile('./kustron-env.yaml', 'utf-8');
+    expect(content).not.toContain('clusterName');
+  });
+
   it('image apps default to port 80 and use the given image', async () => {
     await envInit({image: 'redis:7'});
 

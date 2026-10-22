@@ -63,6 +63,7 @@ env
   .option('--image <image>', t('cli.initImageOption'))
   .option('--exposed', t('cli.initExposedOption'))
   .option('-f, --force', t('cli.initForceOption'))
+  .option('--cluster <name>', t('cli.initClusterOption'))
   .action(async (options) => {
     await envInit({
       name: options.name,
@@ -71,6 +72,7 @@ env
       image: options.image,
       exposed: options.exposed ?? false,
       force: options.force ?? false,
+      cluster: options.cluster,
     });
   });
 

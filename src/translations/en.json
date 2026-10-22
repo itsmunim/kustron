@@ -41,7 +41,8 @@
     "initSourceOption": "local source directory (default: ./)",
     "initImageOption": "existing container image (alternative to --source)",
     "initExposedOption": "expose the app on localhost:<nodePort>",
-    "initForceOption": "overwrite an existing kustron-env.yaml"
+    "initForceOption": "overwrite an existing kustron-env.yaml",
+    "initClusterOption": "Name of the k3d cluster to provision for this environment (isolates agents from default-named clusters)"
   },
   "env": {
     "init": {
