@@ -30,7 +30,8 @@ For agents hacking on the kustron codebase itself, read `SKILL.md`.
 
 ```sh
 kustron doctor --json          # gate on .healthy (also implies deps OK)
-kustron env init --name api --port 3000 --exposed   # or write the yaml yourself
+kustron env init --name api --port 3000 --exposed --cluster <uniqueName>
+                               # --cluster isolates you from default-named clusters (see gotchas)
 kustron env up                 # exits 0 only when everything is ready
 kustron env status --json      # gate on .healthy; read .apps[].nodePort / .url
 curl http://localhost:<nodePort>/…   # run tests against the stack
@@ -85,11 +86,23 @@ apps:
     port: 5432
 ```
 
-Port notes: NodePorts are in the k3d assign window (≈30000–32767) and stay
-stable across reloads while the cluster lives. Non-exposed apps are only
-reachable inside the mesh (`app forward <name> <localPort> [remotePort]`).
+Port notes: only NodePorts **30000–30100** are mapped to the host at cluster
+create time (k3d assigns 30000–32767, so a NodePort above 30100 is assigned
+but not reachable from localhost). Ports stay stable across reloads while
+the cluster lives. Non-exposed apps are only reachable inside the mesh
+(`app forward <name> <localPort> [remotePort]`).
 
 ## Gotchas that cost agents time
+
+- **Default-named clusters adopt you.** Without `--cluster` (or a
+  `clusterName:` in the yaml) a stack controls the default-named `kustron`
+  cluster — if one already exists on the machine, `env up` deploys into it
+  silently. Always pass `--cluster <uniqueName>` from an agent sandbox.
+- **Legacy clusters don't remap NodePorts.** The 30000–30100 host mapping is
+  only added at cluster creation: an old cluster (or a cluster recreated by
+  other tooling) can report healthy pods whose exposed apps are still
+  unreachable on localhost. Recreate the cluster (`env destroy` + `env up`)
+  to fix reachability.
 
 - Env vars live in ConfigMaps; changes trigger a rolling restart via an
   env-hash annotation, but a `kubectl exec` session must be re-opened.
