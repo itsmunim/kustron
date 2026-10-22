@@ -251,12 +251,11 @@ export async function envStatus(options: StatusOptions = {}): Promise<void> {
       const nodePort = app.exposed
         ? await getNodePort(deploymentName, appNamespace, clusterName)
         : null;
-      const url =
-        app.exposed && nodePort && nodeIp
+      const url = app.exposed && nodePort
+        ? nodeIp
           ? `http://${nodeIp}:${nodePort}`
-          : app.exposed && nodePort
-            ? t('env.status.nodePortOnly', {port: String(nodePort)})
-            : null;
+          : `http://localhost:${nodePort}`
+        : null;
 
       let state: PodState['label'];
       if (!deployment.exists) {

@@ -250,6 +250,18 @@ describe('env status --json', () => {
     expect(process.exitCode).toBe(1);
   });
 
+  it('falls back to a localhost URL when no node IP is resolvable', async () => {
+    mockedNodeIp.mockResolvedValue(null as never);
+    mockedKubectl.mockImplementation(kubectlHandler('Running') as never);
+
+    await envStatus({json: true});
+
+    const snap = await snapshot();
+    expect(snap.apps[0].url).toBe('http://localhost:30777');
+    expect(snap.apps[0].healthy).toBe(true);
+    expect(process.exitCode).toBe(0);
+  });
+
   afterEach(async () => {
     process.chdir(originalDir);
     logSpy.mockRestore();
