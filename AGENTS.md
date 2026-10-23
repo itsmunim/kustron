@@ -30,15 +30,20 @@ For agents hacking on the kustron codebase itself, read `SKILL.md`.
 
 ```sh
 kustron doctor --json          # gate on .healthy (also implies deps OK)
-kustron env init --name api --port 3000 --exposed --cluster <uniqueName>
-                               # --cluster isolates you from default-named clusters (see gotchas)
-kustron env up                 # exits 0 only when everything is ready
-kustron env status --json      # gate on .healthy; read .apps[].nodePort / .url
+kustron env init --name api --port 3000 --exposed
+                               # writes kustron-env.yaml AND claims a unique
+                               # cluster (<folder>-<hash>); --cluster <name> overrides
+kustron env up --json          # one-shot: exit 0 + final snapshot on stdout
+kustron env status --json      # gate on .healthy; read .apps[].nodePort / .url / .reachable
 curl http://localhost:<nodePort>/…   # run tests against the stack
 kustron app logs api [-f]      # debug failures
 kustron app exec api -- env    # poke inside a container
 kustron env destroy --yes      # clean up: cluster, registry data, kubeconfig entry
 ```
+
+Adding/removing an app after `up`: `kustron apps add --name <name> [--source
+<dir>|--image <img>|--chart <name> …]` edits the yaml, then run
+`kustron env reload` — the cluster is reused, only the diff deploys.
 
 ## Machine-readable commands (`--json`, banner suppressed)
 
@@ -49,6 +54,9 @@ kustron env destroy --yes      # clean up: cluster, registry data, kubeconfig en
  "checks":[{"name":"k3d","required":true,"present":true,"installHint":"…"}]}
 ```
 
+`kustron env up --json` → the same snapshot as below, printed once with the
+final state; stdout carries no other lines in this mode.
+
 `kustron env status --json` →
 
 ```json
@@ -57,8 +65,13 @@ kustron env destroy --yes      # clean up: cluster, registry data, kubeconfig en
  "apps":[{"name":"webapi","deployment":"webapi","namespace":"kvdemo","type":"source",
    "deployed":true,"readyReplicas":1,"desiredReplicas":1,"state":"running",
    "image":"…","exposed":true,"nodePort":30000,"url":"http://127.0.0.1:30000",
-   "healthy":true}]}
+   "reachable":true,"healthy":true}]}
 ```
+
+`.reachable` is the host-reachability signal for exposed apps (TCP dial of
+the NodePort through the cluster's port mapping, separate from `.healthy`
+which reflects pod readiness): `false` with healthy pods is the legacy
+cluster symptom — see gotchas.
 
 For Helm-chart apps, `.state` is the Helm release status
 (`deployed`/`missing`/…) instead of a deployment table state — chart-owned
@@ -94,10 +107,10 @@ the cluster lives. Non-exposed apps are only reachable inside the mesh
 
 ## Gotchas that cost agents time
 
-- **Default-named clusters adopt you.** Without `--cluster` (or a
-  `clusterName:` in the yaml) a stack controls the default-named `kustron`
-  cluster — if one already exists on the machine, `env up` deploys into it
-  silently. Always pass `--cluster <uniqueName>` from an agent sandbox.
+- **Hand-written yamls without `clusterName` adopt the default cluster.**
+  `env init` always stamps a unique `config.clusterName`; if you write the
+  yaml yourself, set `config.clusterName:` or the stack controls the
+  default-named `kustron` cluster, colliding with anything that used it.
 - **Legacy clusters don't remap NodePorts.** The 30000–30100 host mapping is
   only added at cluster creation: an old cluster (or a cluster recreated by
   other tooling) can report healthy pods whose exposed apps are still

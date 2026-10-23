@@ -2,7 +2,7 @@ import {describe, it, expect, beforeEach, afterEach, vi} from 'vitest';
 import {mkdtemp, writeFile, readFile, rm} from 'fs/promises';
 import {tmpdir} from 'os';
 import {join} from 'path';
-import {envInit} from '../../src/commands/env/init.js';
+import {envInit, defaultClusterName} from '../../src/commands/env/init.js';
 import {readAndParseEnvFile} from '../../src/core/env-file.js';
 
 const mockedExit = vi.spyOn(process, 'exit').mockImplementation((code) => {
@@ -61,7 +61,7 @@ describe('env init (non-interactive)', () => {
     expect(content).toContain('name: my-app');
   });
 
-  it('--cluster writes config.clusterName so envs can isolate from default clusters', async () => {
+  it('--cluster overrides the default cluster name in the yaml', async () => {
     await envInit({name: 'api', port: 3000, cluster: 'apidemo'});
 
     const envFile = await readAndParseEnvFile('./kustron-env.yaml');
@@ -69,11 +69,25 @@ describe('env init (non-interactive)', () => {
     expect(envFile.config?.namespace).toBe('api-env');
   });
 
-  it('omits clusterName by default', async () => {
+  it('derives a unique, path-stable default clusterName per directory', async () => {
     await envInit({name: 'api'});
 
-    const content = await readFile('./kustron-env.yaml', 'utf-8');
-    expect(content).not.toContain('clusterName');
+    const envFile = await readAndParseEnvFile('./kustron-env.yaml');
+    const clusterName = envFile.config?.clusterName;
+    expect(clusterName).toBeTruthy();
+    expect(clusterName).toMatch(/^[a-z0-9-]+$/);
+    expect(clusterName).not.toBe('kustron');
+    // deterministic across invocations in the same directory
+    await envInit({name: 'api', force: true});
+    const again = await readAndParseEnvFile('./kustron-env.yaml');
+    expect(again.config?.clusterName).toBe(clusterName);
+  });
+
+  it('default cluster name differs for directories with the same basename', async () => {
+    const a = defaultClusterName('/tmp/opencode/lib-demo');
+    const b = defaultClusterName('/tmp/opencode/core/lib-demo');
+    expect(a).not.toBe(b);
+    expect(a).toContain('lib-demo-');
   });
 
   it('image apps default to port 80 and use the given image', async () => {

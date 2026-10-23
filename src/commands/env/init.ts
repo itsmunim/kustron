@@ -1,6 +1,7 @@
 import {writeFile} from 'fs/promises';
+import {createHash} from 'node:crypto';
 import {existsSync} from 'fs';
-import {basename} from 'path';
+import {basename, resolve} from 'path';
 import {text, select, confirm, isCancel} from '@clack/prompts';
 import {success, warn, error, info} from '../../utils/logger.js';
 import {t} from '../../utils/i18n.js';
@@ -48,6 +49,20 @@ ${clusterLine}  namespace: ${options.name}-env
 apps:
 ${lines.join('\n')}
 `;
+}
+
+/**
+ * Directory-derived default cluster name: '<folder>-<path-hash>'. Two
+ * kustron stacks can no longer silently adopt each other's default-named
+ * cluster ('kustron'); the name is deterministic per absolute path, so
+ * `env init` → `env up` → `env destroy` all agree in later runs too.
+ */
+export function defaultClusterName(cwd = process.cwd()): string {
+  const hash = createHash('sha1')
+    .update(resolve(cwd))
+    .digest('hex')
+    .slice(0, 6);
+  return `${sanitizeName(basename(resolve(cwd)))}-${hash}`;
 }
 
 function sanitizeName(raw: string): string {
@@ -209,7 +224,7 @@ export async function envInit(flags: InitFlags = {}): Promise<void> {
     image,
     port,
     exposed,
-    cluster: flags.cluster ? sanitizeName(flags.cluster) : undefined,
+    cluster: flags.cluster ? sanitizeName(flags.cluster) : defaultClusterName(),
   });
   await writeFile('./kustron-env.yaml', yaml, 'utf-8');
   success(`Created kustron-env.yaml for app '${name}'`);
