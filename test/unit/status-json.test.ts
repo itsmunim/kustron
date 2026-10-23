@@ -114,7 +114,10 @@ describe('env status --json', () => {
   it('prints a machine-readable snapshot and exits 0 when healthy', async () => {
     mockedKubectl.mockImplementation(kubectlHandler('Running') as never);
 
-    await envStatus({json: true});
+    await envStatus({
+      json: true,
+      prober: async () => true,
+    });
 
     const snap = await snapshot();
     expect(snap.cluster).toEqual({
@@ -133,6 +136,7 @@ describe('env status --json', () => {
       exposed: true,
       nodePort: 30777,
       url: 'http://127.0.0.1:30777',
+      reachable: true,
       healthy: true,
     });
     // db is not exposed — no nodePort, not reachable by name from outside
@@ -140,6 +144,7 @@ describe('env status --json', () => {
       name: 'db',
       exposed: false,
       nodePort: null,
+      reachable: null,
       healthy: true,
     });
     expect(process.exitCode).toBe(0);
@@ -260,6 +265,21 @@ describe('env status --json', () => {
     expect(snap.apps[0].url).toBe('http://localhost:30777');
     expect(snap.apps[0].healthy).toBe(true);
     expect(process.exitCode).toBe(0);
+  });
+
+  it('exposed pod-healthy app is reachable:false when the host probe fails', async () => {
+    mockedKubectl.mockImplementation(kubectlHandler('Running') as never);
+
+    await envStatus({
+      json: true,
+      prober: async () => false,
+    });
+
+    const snap = await snapshot();
+    // pods are ready — healthy stays true; reachable is the separate,
+    // informational warn that the host cannot dial the exposed NodePort
+    expect(snap.apps[0].healthy).toBe(true);
+    expect(snap.apps[0].reachable).toBe(false);
   });
 
   afterEach(async () => {

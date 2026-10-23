@@ -12,6 +12,7 @@ import {expandComponents} from '../../core/components.js';
 import {appDeploymentName} from '../../core/deps.js';
 import {error, info, warn} from '../../utils/logger.js';
 import {t} from '../../utils/i18n.js';
+import {probeTcp} from '../../utils/net-probe.js';
 
 const DEFAULT_CLUSTER_NAME = 'kustron';
 const DEFAULT_NAMESPACE = 'kustron-env';
@@ -157,62 +158,19 @@ async function getNodePort(
 
 export interface StatusOptions {
   json?: boolean;
+  prober?: TcpProber;
 }
 
-interface StatusRow {
-  name: string;
-  deployment: string;
-  namespace: string;
-  type: string;
-  exists: boolean;
-  readyReplicas: number;
-  desiredReplicas: number;
-  state: PodState['label'];
-  imageFull: string;
-  exposed: boolean;
-  nodePort: number | null;
-  url: string | null;
-  helmRelease: string | null;
-}
-
-async function getHelmReleaseState(
-  releaseName: string,
-  namespace: string,
-  clusterName: string,
-): Promise<string> {
-  const result = await helm(
-    clusterName,
-    ['status', releaseName, '-n', namespace, '-o', 'json'],
-    {silent: true, reject: false},
-  );
-  if (result.exitCode !== 0) return 'missing';
-  try {
-    const parsed = JSON.parse(result.stdout);
-    return parsed?.info?.status ?? 'unknown';
-  } catch {
-    return 'unknown';
-  }
-}
-
-function appHealthy(row: StatusRow): boolean {
-  if (row.type === 'helm') return row.helmRelease === 'deployed';
-  return (
-    row.exists &&
-    row.state === 'running' &&
-    row.readyReplicas >= row.desiredReplicas
-  );
-}
-
-export async function envStatus(options: StatusOptions = {}): Promise<void> {
-  const filePath = './kustron-env.yaml';
-  try {
-    await access(filePath);
-  } catch {
-    error(t('env.status.noEnvFile'));
-    process.exit(1);
-  }
-
-  const envFile = await readAndParseEnvFile(filePath);
+/**
+ * Query cluster + apps and assemble the machine snapshot. Shared by
+ * `env status --json` and `env up --json` so both commands report the
+ * exact same contract. health stays pod/deployment-based; `reachable`
+ * is a separate, informational host-reachability signal for exposed apps.
+ */
+export async function loadEnvSnapshot(
+  envFile: EnvFile,
+  prober: TcpProber = probeTcp,
+): Promise<EnvSnapshot> {
   const namespace = envFile.config?.namespace ?? DEFAULT_NAMESPACE;
   const clusterName = envFile.config?.clusterName ?? DEFAULT_CLUSTER_NAME;
 
@@ -251,11 +209,12 @@ export async function envStatus(options: StatusOptions = {}): Promise<void> {
       const nodePort = app.exposed
         ? await getNodePort(deploymentName, appNamespace, clusterName)
         : null;
-      const url = app.exposed && nodePort
-        ? nodeIp
-          ? `http://${nodeIp}:${nodePort}`
-          : `http://localhost:${nodePort}`
-        : null;
+      const url =
+        app.exposed && nodePort
+          ? nodeIp
+            ? `http://${nodeIp}:${nodePort}`
+            : `http://localhost:${nodePort}`
+          : null;
 
       let state: PodState['label'];
       if (!deployment.exists) {
@@ -300,45 +259,183 @@ export async function envStatus(options: StatusOptions = {}): Promise<void> {
     );
   }
 
+  // Reachability of exposed apps from the host: the NodePort range is only
+  // mapped to localhost at cluster create time, so an old cluster can hold
+  // healthy pods that are still unreachable. Informal field — health above
+  // stays pod-based so a dead LB mapping can't false-negative an app.
+  await Promise.all(
+    rows.map(async (row) => {
+      if (row.exposed && row.nodePort && exists) {
+        row.reachable = await prober('127.0.0.1', row.nodePort);
+      }
+    }),
+  );
+
   const clusterHealthy = exists && running;
   const healthy = clusterHealthy && rows.every((row) => appHealthy(row));
 
-  if (!options.json) {
-    printHumanTable(rows, namespace);
+  return snapshotFromRows(
+    clusterName,
+    exists,
+    running,
+    namespace,
+    healthy,
+    rows,
+  );
+}
+
+function snapshotFromRows(
+  clusterName: string,
+  exists: boolean,
+  running: boolean,
+  namespace: string,
+  healthy: boolean,
+  rows: StatusRow[],
+): EnvSnapshot {
+  return {
+    cluster: {name: clusterName, exists, running},
+    namespace,
+    healthy,
+    apps: rows.map((row) => ({
+      name: row.name,
+      deployment: row.deployment,
+      namespace: row.namespace,
+      type: row.type,
+      deployed: row.exists,
+      readyReplicas: row.readyReplicas,
+      desiredReplicas: row.desiredReplicas,
+      state: row.type === 'helm' ? (row.helmRelease ?? 'unknown') : row.state,
+      image: row.imageFull,
+      exposed: row.exposed,
+      nodePort: row.nodePort,
+      url: row.url,
+      reachable: row.exposed ? (row.reachable ?? false) : null,
+      healthy: appHealthy(row),
+    })),
+  };
+}
+
+export function printSnapshotJson(snapshot: EnvSnapshot): void {
+  console.log(JSON.stringify(snapshot, null, 2));
+}
+
+export async function envStatus(options: StatusOptions = {}): Promise<void> {
+  const filePath = './kustron-env.yaml';
+  try {
+    await access(filePath);
+  } catch {
+    error(t('env.status.noEnvFile'));
+    process.exit(1);
+  }
+
+  const envFile = await readAndParseEnvFile(filePath);
+  const snapshot = await loadEnvSnapshot(envFile, options.prober);
+
+  if (options.json) {
+    printSnapshotJson(snapshot);
   } else {
-    console.log(
-      JSON.stringify(
-        {
-          cluster: {name: clusterName, exists, running},
-          namespace,
-          healthy,
-          apps: rows.map((row) => ({
-            name: row.name,
-            deployment: row.deployment,
-            namespace: row.namespace,
-            type: row.type,
-            deployed: row.exists,
-            readyReplicas: row.readyReplicas,
-            desiredReplicas: row.desiredReplicas,
-            state: row.type === 'helm' ? row.helmRelease : row.state,
-            image: row.imageFull,
-            exposed: row.exposed,
-            nodePort: row.nodePort,
-            url: row.url,
-            healthy: appHealthy(row),
-          })),
-        },
-        null,
-        2,
-      ),
-    );
+    printHumanTable(await statusRowsFromSnapshot(snapshot), snapshot.namespace);
   }
 
   // Machine + human callers gate test flows on the exit code: 0 only when
   // the cluster is up and every app is running (helm: release deployed).
-  if (!healthy) {
+  if (!snapshot.healthy) {
     process.exitCode = 1;
   }
+}
+
+async function statusRowsFromSnapshot(
+  snapshot: EnvSnapshot,
+): Promise<StatusRow[]> {
+  return snapshot.apps.map((app) => ({
+    name: app.name,
+    deployment: app.deployment,
+    namespace: app.namespace,
+    type: app.type,
+    exists: app.deployed,
+    readyReplicas: app.readyReplicas,
+    desiredReplicas: app.desiredReplicas,
+    state: app.type === 'helm' ? 'unknown' : (app.state as PodState['label']),
+    imageFull: app.image,
+    exposed: app.exposed,
+    nodePort: app.nodePort,
+    url: app.url,
+    helmRelease: null,
+    reachable: app.reachable ?? undefined,
+  }));
+}
+
+interface StatusRow {
+  name: string;
+  deployment: string;
+  namespace: string;
+  type: string;
+  exists: boolean;
+  readyReplicas: number;
+  desiredReplicas: number;
+  state: PodState['label'];
+  imageFull: string;
+  exposed: boolean;
+  nodePort: number | null;
+  url: string | null;
+  helmRelease: string | null;
+  reachable?: boolean;
+}
+
+export type TcpProber = (
+  host: string,
+  port: number,
+  timeoutMs?: number,
+) => Promise<boolean>;
+
+export interface EnvSnapshot {
+  cluster: {name: string; exists: boolean; running: boolean};
+  namespace: string;
+  healthy: boolean;
+  apps: Array<{
+    name: string;
+    deployment: string;
+    namespace: string;
+    type: string;
+    deployed: boolean;
+    readyReplicas: number;
+    desiredReplicas: number;
+    state: string;
+    image: string;
+    exposed: boolean;
+    nodePort: number | null;
+    url: string | null;
+    reachable: boolean | null;
+    healthy: boolean;
+  }>;
+}
+
+async function getHelmReleaseState(
+  releaseName: string,
+  namespace: string,
+  clusterName: string,
+): Promise<string> {
+  const result = await helm(
+    clusterName,
+    ['status', releaseName, '-n', namespace, '-o', 'json'],
+    {silent: true, reject: false},
+  );
+  if (result.exitCode !== 0) return 'missing';
+  try {
+    const parsed = JSON.parse(result.stdout);
+    return parsed?.info?.status ?? 'unknown';
+  } catch {
+    return 'unknown';
+  }
+}
+
+function appHealthy(row: StatusRow): boolean {
+  if (row.type === 'helm') return row.helmRelease === 'deployed';
+  return (
+    row.exists &&
+    row.state === 'running' &&
+    row.readyReplicas >= row.desiredReplicas
+  );
 }
 
 function printHumanTable(rows: StatusRow[], namespace: string): void {
