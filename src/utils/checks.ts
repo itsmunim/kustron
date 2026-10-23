@@ -121,10 +121,21 @@ export async function collectDependencies(
 export async function checkAll(
   required: string[],
   optional: string[],
+  options: {silent?: boolean} = {},
 ): Promise<void> {
-  info(t('checks.header'));
-
   const results = await collectDependencies(required, optional);
+
+  // Machine mode (up --json) must keep stdout pure JSON; failures still
+  // throw and surface through stderr.
+  if (options.silent) {
+    const missingRequired = results.find((r) => r.required && !r.installed);
+    if (missingRequired) {
+      throw new Error(t('checks.missingRequiredError'));
+    }
+    return;
+  }
+
+  info(t('checks.header'));
 
   const maxNameLen = Math.max(...results.map((r) => r.dep.name.length));
   const maxStatusLen = 10;

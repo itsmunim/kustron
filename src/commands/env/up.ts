@@ -22,14 +22,28 @@ import {expandComponents} from '../../core/components.js';
 import {pruneRemovedApps, recordDeployedApps} from '../../core/state.js';
 import {ensureNamespace} from '../../core/apply.js';
 import {registryHostFor} from '../../core/push.js';
-import {error, success, step, warn} from '../../utils/logger.js';
+import {
+  error,
+  success,
+  step,
+  warn,
+  setMachineQuiet,
+} from '../../utils/logger.js';
 import {t} from '../../utils/i18n.js';
 import type {DeployContext} from '../../types/index.js';
 import {findAvailablePort} from '../../utils/port.js';
+import {loadEnvSnapshot, printSnapshotJson} from './status.js';
 
 const DEFAULT_CLUSTER_NAME = 'kustron';
 
-export async function envUp(): Promise<void> {
+export interface UpOptions {
+  json?: boolean;
+}
+
+export async function envUp(options: UpOptions = {}): Promise<void> {
+  // Machine mode: logger-facing progress goes quiet so stdout stays pure
+  // JSON (@see setMachineQuiet); warnings/errors still reach stderr.
+  setMachineQuiet(options.json === true);
   const filePath = './kustron-env.yaml';
   try {
     await access(filePath);
@@ -48,11 +62,13 @@ export async function envUp(): Promise<void> {
       await checkAll(
         ['container-runtime', 'k3d', 'kubectl', 'helm'],
         ['railpack', 'docker'],
+        {silent: options.json === true},
       );
     } else {
       await checkAll(
         ['container-runtime', 'k3d', 'kubectl'],
         ['helm', 'railpack', 'docker'],
+        {silent: options.json === true},
       );
     }
   } catch {
@@ -141,4 +157,12 @@ export async function envUp(): Promise<void> {
   await recordDeployedApps(apps, namespace);
 
   success(t('env.up.success', {name: clusterName}));
+
+  // Machine contract (agents): the same snapshot `env status --json`
+  // reports, printed once at the end so up → act on it needs no second run.
+  if (options.json) {
+    const snapshot = await loadEnvSnapshot(envFile);
+    printSnapshotJson(snapshot);
+    if (!snapshot.healthy) process.exitCode = 1;
+  }
 }

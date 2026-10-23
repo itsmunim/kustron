@@ -79,8 +79,9 @@ env
 env
   .command('up')
   .description(t('cli.upDescription'))
-  .action(async () => {
-    await envUp();
+  .option('--json', t('cli.jsonOption'))
+  .action(async (options) => {
+    await envUp({json: options.json ?? false});
   });
 
 env
