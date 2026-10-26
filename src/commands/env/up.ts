@@ -107,6 +107,7 @@ export async function envUp(options: UpOptions = {}): Promise<void> {
       name: clusterName,
       namespace,
       registryPort,
+      mapNodePorts: envFile.config?.mapNodePorts,
     });
   } else if (!(await isClusterRunning(clusterName))) {
     step(t('env.up.startingCluster', {name: clusterName}));

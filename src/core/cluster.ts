@@ -54,8 +54,10 @@ export async function createCluster(config: ClusterConfig): Promise<void> {
   // already hold some of these ports (Kubernetes assigns NodePorts from the
   // same range), so map every port in the range but the already-allocated
   // ones. k3d only supports port additions at create time.
-  for (const port of await freeNodePortCandidatesForMapping()) {
-    args.push('-p', `${port}:${port}@loadbalancer`);
+  if (config.mapNodePorts !== false) {
+    for (const port of await freeNodePortCandidatesForMapping()) {
+      args.push('-p', `${port}:${port}@loadbalancer`);
+    }
   }
 
   const env = await getK3dEnv();

@@ -121,6 +121,7 @@ const envFileSchema = z
       .object({
         namespace: z.string().optional(),
         clusterName: z.string().optional(),
+        mapNodePorts: z.boolean().optional(),
       })
       .optional(),
     components: z.array(componentSpecSchema).optional(),

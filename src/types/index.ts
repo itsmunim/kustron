@@ -84,7 +84,11 @@ export interface ComponentSpec {
 }
 
 export interface EnvFile {
-  config?: {namespace?: string; clusterName?: string};
+  config?: {
+    namespace?: string;
+    clusterName?: string;
+    mapNodePorts?: boolean;
+  };
   components?: ComponentSpec[];
   apps: AppEntry[];
 }
@@ -93,6 +97,7 @@ export interface ClusterConfig {
   name: string;
   namespace: string;
   registryPort?: number;
+  mapNodePorts?: boolean;
 }
 
 export interface DeployContext {
