@@ -1,5 +1,15 @@
 # kustron
 
+## 2.1.4
+
+### Patch Changes
+
+- 037cf4e: `env init --cluster <name>` writes `config.clusterName` so an environment provisions its own k3d cluster instead of silently adopting the default-named 'kustron' cluster if one already exists on the machine — verified end to end with a fresh cluster (init → up → status --json → curl 200 → destroy --yes)
+- 17cb758: `env init` now stamps a directory-derived `config.clusterName` (`<folder>-<6-hex of absolute path>`) into the generated yaml, so two kustron stacks can no longer silently adopt each other's default-named 'kustron' cluster; `--cluster <name>` overrides, and yamls written by hand that omit `clusterName` still resolve to the default for backward compatibility
+- 045131c: `env status --json` now reports `apps[].url` as a deterministic reachable address (`http://localhost:<nodePort>` when no k3d node IP is resolvable) instead of the human-mode prose fallback (`NodePort 30000`) that previously leaked into machine output
+- a31d0dd: `env status --json` / `env up --json` app rows gain `reachable` — a host TCP-dial of the exposed NodePort through the cluster's port mapping, kept separate from pod-based `healthy` so a legacy cluster (healthy pods, but the 30000–30100 host mapping was never created) is visible as `reachable: false` instead of silently unreachable
+- 5868970: `env up --json` prints the final machine snapshot (same contract as `env status --json`) once up completes, with stdout carrying nothing but the JSON; dependencies still gate the run and all human progress is suppressed in this mode
+
 ## 2.1.3
 
 ### Patch Changes
