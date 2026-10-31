@@ -60,7 +60,7 @@
     "@types/node": "^22.20.1",
     "@vitest/coverage-v8": "^5.0.4",
     "prettier": "^3.9.6",
-    "tsup": "^8.4.0",
+    "tsup": "^9.0.0",
     "typescript": "^5.8.2",
     "vitest": "^5.0.4"
   }
